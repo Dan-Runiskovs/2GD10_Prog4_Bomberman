@@ -15,6 +15,7 @@
 #include "SceneManager.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
+#include "Timer.h"
 
 SDL_Window* g_window{};
 
@@ -77,11 +78,13 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 
 	Renderer::GetInstance().Init(g_window);
 	ResourceManager::GetInstance().Init(dataPath);
+	Timer::GetInstance().Start();
 }
 
 dae::Minigin::~Minigin()
 {
 	Renderer::GetInstance().Destroy();
+	Timer::GetInstance().Stop();
 	SDL_DestroyWindow(g_window);
 	g_window = nullptr;
 	SDL_Quit();
@@ -100,7 +103,16 @@ void dae::Minigin::Run(const std::function<void()>& load)
 
 void dae::Minigin::RunOneFrame()
 {
+	float lag{};
+	Timer::GetInstance().Update();
+	lag += Timer::GetInstance().GetElapsed();
 	m_quit = !InputManager::GetInstance().ProcessInput();
-	SceneManager::GetInstance().Update();
+
+	while (lag >= Timer::GetInstance().GetMsPerFrame())
+	{
+		SceneManager::GetInstance().Update();
+		lag -= Timer::GetInstance().GetMsPerFrame();
+	}
+	//Renderer::GetInstance().Render( lag / Timer::GetInstance().GetMsPerFrame());
 	Renderer::GetInstance().Render();
 }

@@ -29,6 +29,9 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Minigin/Transform.cpp
   Minigin/Timer.cpp
   Minigin/ComponentBase.cpp
+  Minigin/TransformComponent.cpp
+  Minigin/TextComponent.cpp
+  Minigin/FPSComponent.cpp
 )
 
 # enable c++20 features

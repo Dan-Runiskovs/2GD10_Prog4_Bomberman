@@ -1,7 +1,9 @@
 #pragma once
+#include <memory>
 
 namespace dae
 {
+	class GameObject;
 	class ComponentBase
 	{
 	public:
@@ -12,7 +14,7 @@ namespace dae
 			Text = 2,
 			FPS = 255
 		};
-		ComponentBase(ComponentID id);
+		ComponentBase(ComponentID id, std::shared_ptr<GameObject> pOwner);
 		virtual ~ComponentBase() = default;
 
 		ComponentID GetID() const { return m_ID; }
@@ -25,5 +27,6 @@ namespace dae
 		
 	protected:
 		const ComponentID m_ID;
+		std::shared_ptr<GameObject> m_pOwner;
 	};
 }

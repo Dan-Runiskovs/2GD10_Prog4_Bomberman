@@ -1,24 +1,23 @@
 #include <string>
+#include <algorithm>
 #include "GameObject.h"
 #include "ResourceManager.h"
 #include "Renderer.h"
 
-dae::GameObject::~GameObject() = default;
-
-void dae::GameObject::Update(){}
-
-void dae::GameObject::Render() const
+void dae::GameObject::Update() const
 {
-	const auto& pos = m_transform.GetPosition();
-	Renderer::GetInstance().RenderTexture(*m_texture, pos.x, pos.y);
+	for (auto const& pComponent : m_pComponents)
+	{
+		pComponent->Update();
+	}
 }
 
-void dae::GameObject::SetTexture(const std::string& filename)
+std::optional<std::vector<std::unique_ptr<dae::ComponentBase>>::iterator> dae::GameObject::HasComponent(ComponentBase::ComponentID id)
 {
-	m_texture = ResourceManager::GetInstance().LoadTexture(filename);
-}
-
-void dae::GameObject::SetPosition(float x, float y)
-{
-	m_transform.SetPosition(x, y, 0.0f);
+	for (auto it = m_pComponents.begin(); it != m_pComponents.end(); ++it)
+	{
+		if ((*it)->HasSameID(id))
+			return it;
+	}
+	return std::nullopt;
 }

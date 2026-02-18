@@ -2,15 +2,19 @@
 #include <string>
 #include <memory>
 #include "ComponentBase.h"
+#include <SDL3_ttf/SDL_ttf.h>
 
 namespace dae
 {
 	class Font;
 	class Texture2D;
+	class RenderComponent;
 	class TextComponent final : public  ComponentBase
 	{
 	public:
-		TextComponent(std::shared_ptr<GameObject> pOwner, const std::string& text, std::shared_ptr<Font> font, const SDL_Color& color);
+		static constexpr ComponentID ID{ ComponentID::Text };
+
+		TextComponent(GameObject& owner, const std::string& text, std::shared_ptr<Font> font, const SDL_Color& color);
 
 		void Update() override;
 
@@ -18,6 +22,7 @@ namespace dae
 		const std::shared_ptr<Texture2D> GetTexture() const { return m_pTextTexture; }
 
 		void SetText(const std::string& text);
+		void SetFont(std::shared_ptr<Font> font);
 		void SetColor(const SDL_Color& color);
 
 		virtual ~TextComponent() = default;
@@ -31,5 +36,7 @@ namespace dae
 		SDL_Color m_Color{ 255, 255, 255, 255 };
 		std::shared_ptr<Font> m_pFont{ nullptr };
 		std::shared_ptr<Texture2D> m_pTextTexture{ nullptr };
+
+		RenderComponent* m_pRenderComponent{ nullptr }; // Requires RenderComponent 
 	};
 }

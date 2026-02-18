@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <concepts>
 
 namespace dae
 {
@@ -14,19 +15,22 @@ namespace dae
 			Text = 2,
 			FPS = 255
 		};
-		ComponentBase(ComponentID id, std::shared_ptr<GameObject> pOwner);
-		virtual ~ComponentBase() = default;
-
 		ComponentID GetID() const { return m_ID; }
+		const bool HasSameID(ComponentID id) const { return m_ID == id; }
 		virtual void Update() = 0;
 
-		ComponentBase(const ComponentBase& other) = delete;
-		ComponentBase(ComponentBase&& other) = delete;
-		ComponentBase& operator=(const ComponentBase& other) = delete;
-		ComponentBase& operator=(ComponentBase&& other) = delete;
-		
+		virtual ~ComponentBase() noexcept = default;
+		ComponentBase(const ComponentBase& other) noexcept = delete;
+		ComponentBase(ComponentBase&& other) noexcept = delete;
+		ComponentBase& operator=(const ComponentBase& other) noexcept = delete;
+		ComponentBase& operator=(ComponentBase&& other) noexcept = delete;
+
 	protected:
+		ComponentBase(GameObject& owner, ComponentID id);
 		const ComponentID m_ID;
-		std::shared_ptr<GameObject> m_pOwner;
+		GameObject& m_Owner;
 	};
+
+	template<typename DerivedComponentType>
+	concept DerivedComponent = std::derived_from<DerivedComponentType, ComponentBase>;
 }

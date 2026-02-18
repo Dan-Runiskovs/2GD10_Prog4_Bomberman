@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <assert.h>
 #include "Scene.h"
+#include "RenderComponent.h"
 
 using namespace dae;
 
@@ -38,7 +40,7 @@ void Scene::Render() const
 {
 	for (const auto& object : m_objects)
 	{
-		object->Render();
+		object->TryGetComponent<dae::RenderComponent>()->Render();
 	}
 }
 

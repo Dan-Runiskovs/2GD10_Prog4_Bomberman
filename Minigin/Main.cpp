@@ -8,7 +8,8 @@
 #include "Minigin.h"
 #include "SceneManager.h"
 #include "ResourceManager.h"
-#include "TextObject.h"
+#include "TextComponent.h"
+#include "RenderComponent.h"
 #include "Scene.h"
 
 #include <filesystem>
@@ -19,9 +20,12 @@ static void load()
 	auto& scene = dae::SceneManager::GetInstance().CreateScene();
 
 	auto go = std::make_unique<dae::GameObject>();
-	go->SetTexture("background.png");
+	go->AddComponent<dae::RenderComponent>();
+	go->TryGetComponent<dae::RenderComponent>()->SetTexture("background.png");
+	//go->SetTexture("background.png");
 	scene.Add(std::move(go));
 
+	/*
 	go = std::make_unique<dae::GameObject>();
 	go->SetTexture("logo.png");
 	go->SetPosition(358, 180);
@@ -32,6 +36,7 @@ static void load()
 	to->SetColor({ 255, 255, 0, 255 });
 	to->SetPosition(292, 20);
 	scene.Add(std::move(to));
+	*/
 }
 
 int main(int, char*[]) {

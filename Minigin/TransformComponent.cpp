@@ -1,12 +1,17 @@
 #include "TransformComponent.h"
 
-dae::TransformComponent::TransformComponent(std::shared_ptr<GameObject> pOwner, float x, float y, float z)
-	: TransformComponent(std::move(pOwner), glm::vec3{x, y, z})
+dae::TransformComponent::TransformComponent(GameObject& owner) noexcept
+	:TransformComponent(owner, glm::vec3{0.f, 0.f, 0.f})
 {
 }
 
-dae::TransformComponent::TransformComponent(std::shared_ptr<GameObject> pOwner, glm::vec3 position)
-	: ComponentBase(ComponentID::Transform, std::move(pOwner))
+dae::TransformComponent::TransformComponent(GameObject& owner, float x, float y, float z) noexcept
+	:TransformComponent(owner, glm::vec3{x, y, z})
+{
+}
+
+dae::TransformComponent::TransformComponent(GameObject& owner, glm::vec3 position) noexcept
+	: ComponentBase(owner, ID)
 	, m_Position{ position }
 {
 }

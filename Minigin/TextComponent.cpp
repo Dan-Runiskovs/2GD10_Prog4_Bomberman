@@ -8,49 +8,49 @@
 #include "Texture2D.h"
 
 
-dae::TextComponent::TextComponent(GameObject& owner, const std::string& text, std::shared_ptr<Font> font, const SDL_Color& color = { 255, 255, 255, 255 })
+dae::TextComponent::TextComponent(GameObject& owner, const std::string& text, std::shared_ptr<Font> font)
 	: ComponentBase(owner, ID)
-	, m_NeedsUpdate{ true }
 	, m_Text{ text }
-	, m_Color{ color }
 	, m_pFont{std::move(font)}
 {
-	m_pRenderComponent = owner.AddComponent<RenderComponent>(owner);
+	m_pRenderComponent = owner.TryGetComponent<RenderComponent>();
+	if (!m_pRenderComponent)
+	{
+		m_pRenderComponent = owner.AddComponent<RenderComponent>();
+	}
 }
 
-void dae::TextComponent::Update()
+void dae::TextComponent::UpdateText()
 {
-	if (!m_NeedsUpdate) return;
-
-	const auto surface = TTF_RenderText_Blended(m_pFont->GetFont(), m_Text.c_str(), m_Text.length(), m_Color);
-	if (surface == nullptr)
+	const auto pSurface = TTF_RenderText_Blended(m_pFont->GetFont(), m_Text.c_str(), m_Text.length(), m_Color);
+	if (pSurface == nullptr)
 	{
 		throw std::runtime_error(std::string("Render text failed: ") + SDL_GetError());
 	}
-	auto texture = SDL_CreateTextureFromSurface(Renderer::GetInstance().GetSDLRenderer(), surface);
-	if (texture == nullptr)
+	auto pTexture = SDL_CreateTextureFromSurface(Renderer::GetInstance().GetSDLRenderer(), pSurface);
+	if (pTexture == nullptr)
 	{
 		throw std::runtime_error(std::string("Create text texture from surface failed: ") + SDL_GetError());
 	}
-	SDL_DestroySurface(surface);
-	m_pTextTexture = std::make_shared<Texture2D>(texture);
-	m_NeedsUpdate = false;
+	SDL_DestroySurface(pSurface);
+	m_pTextTexture = std::make_shared<Texture2D>(pTexture);
+	m_pRenderComponent->SetTexture(m_pTextTexture);
 }
 
 void dae::TextComponent::SetText(const std::string& text)
 {
 	m_Text = text;
-	m_NeedsUpdate = true;
+	UpdateText();
 }
 
 void dae::TextComponent::SetFont(std::shared_ptr<Font> font)
 {
 	m_pFont = font;
-	m_NeedsUpdate = true;
+	UpdateText();
 }
 
 void dae::TextComponent::SetColor(const SDL_Color& color)
 {
 	m_Color = color;
-	m_NeedsUpdate = true;
+	UpdateText();
 }

@@ -5,6 +5,7 @@
 namespace dae
 {
 	class Texture2D;
+	class TransformComponent;
 	class RenderComponent final : public ComponentBase
 	{
 	public:
@@ -27,5 +28,7 @@ namespace dae
 		RenderComponent& operator=(RenderComponent&& other) = delete;
 	private:
 		std::shared_ptr<Texture2D> m_pTexture{ nullptr };
+
+		TransformComponent* m_pTransformComponent{ nullptr };
 	};
 }

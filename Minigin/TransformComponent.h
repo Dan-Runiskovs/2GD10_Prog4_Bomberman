@@ -13,6 +13,8 @@ namespace dae
 		TransformComponent(GameObject& owner, float x, float y, float z = 0) noexcept;
 		TransformComponent(GameObject& owner, glm::vec3 position) noexcept;
 
+		void Update() override {}
+
 		const glm::vec3& GetPosition() const { return m_Position; }
 		void SetPosition(float x, float y, float z = 0);
 		void SetPosition(glm::vec3 position);

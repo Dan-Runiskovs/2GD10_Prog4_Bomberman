@@ -103,16 +103,8 @@ void dae::Minigin::Run(const std::function<void()>& load)
 
 void dae::Minigin::RunOneFrame()
 {
-	float lag{};
 	Timer::GetInstance().Update();
-	lag += Timer::GetInstance().GetElapsed();
 	m_quit = !InputManager::GetInstance().ProcessInput();
-
-	while (lag >= Timer::GetInstance().GetMsPerFrame())
-	{
-		SceneManager::GetInstance().Update();
-		lag -= Timer::GetInstance().GetMsPerFrame();
-	}
-	//Renderer::GetInstance().Render( lag / Timer::GetInstance().GetMsPerFrame());
+	SceneManager::GetInstance().Update();
 	Renderer::GetInstance().Render();
 }

@@ -3,6 +3,7 @@
 
 namespace dae
 {
+	class TextComponent;
 	class FPSComponent final : public ComponentBase
 	{
 	public:
@@ -23,5 +24,7 @@ namespace dae
 		float m_FPS{};
 		float m_InternalTimer{};
 		unsigned char m_FrameCounter{};
+
+		TextComponent* m_pTextComponent{ nullptr }; // Requires Text Component
 	};
 }

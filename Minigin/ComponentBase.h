@@ -17,6 +17,7 @@ namespace dae
 		};
 		ComponentID GetID() const { return m_ID; }
 		const bool HasSameID(ComponentID id) const { return m_ID == id; }
+
 		virtual void Update() = 0;
 
 		virtual ~ComponentBase() noexcept = default;

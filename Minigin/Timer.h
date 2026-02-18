@@ -9,6 +9,7 @@ namespace dae
 	public:
 		void Start();
 		void Stop();
+
 		float GetElapsed() const;
 		float GetMsPerFrame() const { return m_MsPerFrame.count(); }
 

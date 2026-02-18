@@ -14,9 +14,10 @@ namespace dae
 	public:
 		static constexpr ComponentID ID{ ComponentID::Text };
 
-		TextComponent(GameObject& owner, const std::string& text, std::shared_ptr<Font> font, const SDL_Color& color);
+		TextComponent(GameObject& owner, const std::string& text, std::shared_ptr<Font> font);
 
-		void Update() override;
+		void Update() override {}
+		void UpdateText();
 
 		const std::string GetText() const { return m_Text; } // why not... maybe will need
 		const std::shared_ptr<Texture2D> GetTexture() const { return m_pTextTexture; }
@@ -31,7 +32,6 @@ namespace dae
 		TextComponent& operator=(const TextComponent& other) = delete;
 		TextComponent& operator=(TextComponent&& other) = delete;
 	private:
-		bool m_NeedsUpdate{};
 		std::string m_Text{};
 		SDL_Color m_Color{ 255, 255, 255, 255 };
 		std::shared_ptr<Font> m_pFont{ nullptr };

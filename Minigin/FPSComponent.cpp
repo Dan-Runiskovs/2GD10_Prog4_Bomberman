@@ -3,11 +3,13 @@
 #include "Timer.h"
 #include <cmath>
 #include <format>
+#include <assert.h>
 #include "TextComponent.h"
 
 dae::FPSComponent::FPSComponent(GameObject& owner) noexcept
 	:ComponentBase(owner, ID)
 {
+	assert(owner.HasComponent(ComponentID::Text) && "Owner must have text component!");
 }
 
 void dae::FPSComponent::Update()

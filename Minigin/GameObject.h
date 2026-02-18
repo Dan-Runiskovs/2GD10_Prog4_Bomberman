@@ -58,14 +58,14 @@ namespace dae
 			return rawPtr;
 		}
 
+		std::optional<std::vector<std::unique_ptr<ComponentBase>>::iterator> HasComponent(ComponentBase::ComponentID id);
+
 		virtual ~GameObject() = default;
 		GameObject(const GameObject& other) = delete;
 		GameObject(GameObject&& other) = delete;
 		GameObject& operator=(const GameObject& other) = delete;
 		GameObject& operator=(GameObject&& other) = delete;
 	private:
-		std::optional<std::vector<std::unique_ptr<ComponentBase>>::iterator> HasComponent(ComponentBase::ComponentID id);
-		
 		std::vector<std::unique_ptr<ComponentBase>> m_pComponents{};
 	};
 }

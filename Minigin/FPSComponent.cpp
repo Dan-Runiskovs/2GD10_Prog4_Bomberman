@@ -2,7 +2,6 @@
 #include "GameObject.h"
 #include "Timer.h"
 #include <cmath>
-#include <format>
 #include <assert.h>
 #include "TextComponent.h"
 
@@ -25,6 +24,8 @@ void dae::FPSComponent::Update()
 		fps = std::round(fps * 10) / 10;		// round to 1 decimal to avoid floating point errors
 		m_FrameCounter = 0;
 		m_InternalTimer -= margin;
-		m_pTextComponent->SetText(std::format("{:.1f} FPS", fps));
+		std::string message = std::to_string(fps);
+		message.resize(message.find('.') + 2);
+		m_pTextComponent->SetText(message + " FPS");
 	}
 }

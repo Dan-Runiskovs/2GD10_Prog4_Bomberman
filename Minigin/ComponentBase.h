@@ -28,8 +28,8 @@ namespace dae
 
 	protected:
 		ComponentBase(GameObject& owner, ComponentID id);
-		const ComponentID m_ID;
 		GameObject& m_Owner;
+		const ComponentID m_ID;
 	};
 
 	template<typename DerivedComponentType>

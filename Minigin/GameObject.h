@@ -13,6 +13,8 @@ namespace dae
 	public:
 		GameObject() = default;
 		void Update() const;
+		void MarkForDelete() { m_IsMarkedForDelete = true; }			//TODO: Mark children for deletion as well
+		bool IsMarkedForDelete() const { return m_IsMarkedForDelete; }
 		
 		template<dae::DerivedComponent ComponentType>
 		void TryRemoveComponent()
@@ -68,5 +70,6 @@ namespace dae
 		GameObject& operator=(GameObject&& other) = delete;
 	private:
 		std::vector<std::unique_ptr<ComponentBase>> m_pComponents{};
+		bool m_IsMarkedForDelete{ false };
 	};
 }

@@ -36,6 +36,15 @@ void Scene::Update()
 	}
 }
 
+void Scene::CleanUpScene()
+{
+	for (auto& object : m_objects)
+	{
+		if (object->IsMarkedForDelete())
+			m_objectsToDelete.emplace_back(std::move(object));
+	}
+}
+
 void Scene::Render() const
 {
 	for (const auto& object : m_objects)

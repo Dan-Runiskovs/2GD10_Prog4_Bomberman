@@ -12,8 +12,6 @@ namespace dae
 		FPSComponent(GameObject& owner) noexcept;
 		void Update() override;
 
-		const float GetFPS() const { return m_FPS; }
-
 		~FPSComponent() = default;
 
 		FPSComponent(const FPSComponent& other) noexcept = delete;
@@ -21,7 +19,6 @@ namespace dae
 		FPSComponent& operator=(const FPSComponent& other) noexcept = delete;
 		FPSComponent& operator=(FPSComponent&& other) noexcept = delete;
 	private:
-		float m_FPS{};
 		float m_InternalTimer{};
 		unsigned char m_FrameCounter{};
 

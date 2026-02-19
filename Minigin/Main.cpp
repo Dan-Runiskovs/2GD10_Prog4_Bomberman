@@ -31,8 +31,6 @@ static void load()
 
 	// --- Logo ---
 	go = std::make_unique<dae::GameObject>();
-	//go->SetTexture("logo.png");
-	//go->SetPosition(358, 180);
 	go->AddComponent<dae::RenderComponent>();
 	go->TryGetComponent<dae::RenderComponent>()->SetTexture("logo.png");
 	go->TryGetComponent<dae::TransformComponent>()->SetPosition(358.f, 180.f);
@@ -40,9 +38,6 @@ static void load()
 
 	// --- Title --- 
 	auto font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36);
-	//auto to = std::make_unique<dae::TextObject>("Programming 4 Assignment", font);
-	//to->SetColor({ 255, 255, 0, 255 });
-	//to->SetPosition(292, 20);
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::TextComponent>("Programming 4 Assignment", font);
 	go->TryGetComponent<dae::TextComponent>()->SetColor({ 255, 255, 0, 255 });

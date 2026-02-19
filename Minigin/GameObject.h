@@ -34,6 +34,7 @@ namespace dae
 			}
 			return nullptr;
 		}
+
 		template<dae::DerivedComponent ComponentType>
 		const ComponentType* TryGetComponent() const
 		{
@@ -60,7 +61,7 @@ namespace dae
 
 		std::optional<std::vector<std::unique_ptr<ComponentBase>>::iterator> HasComponent(ComponentBase::ComponentID id);
 
-		virtual ~GameObject() = default;
+		~GameObject() = default;
 		GameObject(const GameObject& other) = delete;
 		GameObject(GameObject&& other) = delete;
 		GameObject& operator=(const GameObject& other) = delete;

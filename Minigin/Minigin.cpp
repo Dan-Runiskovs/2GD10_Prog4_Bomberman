@@ -66,7 +66,7 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 	}
 
 	g_window = SDL_CreateWindow(
-		"Programming 4 assignment",
+		"Bomberman - Dan Runiskovs",
 		1024,
 		576,
 		SDL_WINDOW_OPENGL

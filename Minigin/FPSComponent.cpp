@@ -10,6 +10,7 @@ dae::FPSComponent::FPSComponent(GameObject& owner) noexcept
 	:ComponentBase(owner, ID)
 {
 	assert(owner.HasComponent(ComponentID::Text) && "Owner must have text component!");
+	m_pTextComponent = owner.TryGetComponent<TextComponent>();
 }
 
 void dae::FPSComponent::Update()
@@ -20,10 +21,10 @@ void dae::FPSComponent::Update()
 	const float margin{ 0.25f };
 	if (m_InternalTimer >= margin)
 	{
-		m_FPS = m_FrameCounter / m_InternalTimer;
-		m_FPS = std::round(m_FPS * 10) / 10;		// round to 1 decimal to avoid floating point errors
+		float fps = m_FrameCounter / m_InternalTimer;
+		fps = std::round(fps * 10) / 10;		// round to 1 decimal to avoid floating point errors
 		m_FrameCounter = 0;
 		m_InternalTimer -= margin;
-		m_Owner.TryGetComponent<TextComponent>()->SetText(std::format("{:.1f} FPS", m_FPS));
+		m_pTextComponent->SetText(std::format("{:.1f} FPS", fps));
 	}
 }

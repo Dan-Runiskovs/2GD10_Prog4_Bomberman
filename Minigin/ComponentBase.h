@@ -16,7 +16,7 @@ namespace dae
 			FPS = 255
 		};
 		ComponentID GetID() const { return m_ID; }
-		const bool HasSameID(ComponentID id) const { return m_ID == id; }
+		bool HasSameID(ComponentID id) const { return m_ID == id; }
 
 		virtual void Update() = 0;
 

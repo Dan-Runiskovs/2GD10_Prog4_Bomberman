@@ -24,7 +24,6 @@ static void load()
 
 	// --- Background ---
 	auto go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
 	go->AddComponent<dae::RenderComponent>();
 	go->GetComponent<dae::RenderComponent>().SetTexture("background.png");
 	go->GetComponent<dae::TransformComponent>().SetPosition(0.f, 0.f);
@@ -32,7 +31,6 @@ static void load()
 
 	// --- Logo ---
 	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
 	go->AddComponent<dae::RenderComponent>();
 	go->GetComponent<dae::RenderComponent>().SetTexture("logo.png");
 	go->GetComponent<dae::TransformComponent>().SetPosition(358.f, 180.f);
@@ -41,7 +39,6 @@ static void load()
 	// --- Title --- 
 	auto font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36);
 	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("Programming 4 Assignment", font);
 	go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 0, 255 });
@@ -51,7 +48,6 @@ static void load()
 	
 	// --- FPS ---
 	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("TEMP", font);
 	go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });

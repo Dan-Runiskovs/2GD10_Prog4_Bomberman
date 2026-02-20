@@ -13,7 +13,8 @@ namespace dae
 	class GameObject final
 	{
 	public:
-		GameObject() = default;
+		GameObject();
+		GameObject(GameObject* pParent);
 		void Update() const;
 		void MarkForDelete() { m_IsMarkedForDelete = true; }			//TODO: Mark children for deletion as well
 		bool IsMarkedForDelete() const { return m_IsMarkedForDelete; }
@@ -84,6 +85,9 @@ namespace dae
 		GameObject& operator=(GameObject&& other) = delete;
 	private:
 		std::vector<std::unique_ptr<ComponentBase>> m_pComponents{};
+		GameObject* m_pParent{ nullptr };
+		std::vector<GameObject*> m_pChildren{};
+
 		bool m_IsMarkedForDelete{ false };
 	};
 }

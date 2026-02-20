@@ -7,8 +7,6 @@ namespace dae
 	class FPSComponent final : public ComponentBase
 	{
 	public:
-		static constexpr ComponentID ID{ ComponentID::FPS };
-
 		FPSComponent(GameObject& owner) noexcept;
 		void Update() override;
 

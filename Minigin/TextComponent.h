@@ -12,8 +12,6 @@ namespace dae
 	class TextComponent final : public  ComponentBase
 	{
 	public:
-		static constexpr ComponentID ID{ ComponentID::Text };
-
 		TextComponent(GameObject& owner, const std::string& text, std::shared_ptr<Font> font);
 
 		void Update() override {}

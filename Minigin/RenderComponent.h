@@ -9,8 +9,6 @@ namespace dae
 	class RenderComponent final : public ComponentBase
 	{
 	public:
-		static constexpr ComponentID ID { ComponentID::Render };
-
 		RenderComponent(GameObject& owner) noexcept;
 		RenderComponent(GameObject& owner, std::shared_ptr<Texture2D> pTexture) noexcept;
 

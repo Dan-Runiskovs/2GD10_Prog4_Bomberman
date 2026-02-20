@@ -51,7 +51,6 @@ static void load()
 	go->TryGetComponent<dae::TextComponent>()->SetColor({ 255, 0, 0, 255 });
 	go->TryGetComponent<dae::TransformComponent>()->SetPosition(20.f, 20.f);
 	go->AddComponent<dae::FPSComponent>();
-	assert(go->HasComponent(dae::ComponentBase::ComponentID::FPS) && "No FPS component found");
 	scene.Add(std::move(go));
 }
 

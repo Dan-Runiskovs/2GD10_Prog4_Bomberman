@@ -7,8 +7,6 @@ namespace dae
 	class TransformComponent final : public ComponentBase
 	{
 	public:
-		static constexpr ComponentID ID{ ComponentID::Transform };
-
 		TransformComponent(GameObject& owner) noexcept;
 		TransformComponent(GameObject& owner, float x, float y, float z = 0) noexcept;
 		TransformComponent(GameObject& owner, glm::vec3 position) noexcept;

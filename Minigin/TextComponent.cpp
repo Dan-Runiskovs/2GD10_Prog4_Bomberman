@@ -9,7 +9,7 @@
 
 
 dae::TextComponent::TextComponent(GameObject& owner, const std::string& text, std::shared_ptr<Font> font)
-	: ComponentBase(owner, ID)
+	: ComponentBase(owner)
 	, m_Text{ text }
 	, m_pFont{std::move(font)}
 {

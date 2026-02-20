@@ -3,6 +3,8 @@
 #include <memory>
 #include <optional>
 #include <vector>
+#include <algorithm>
+#include <assert.h>
 #include "ComponentBase.h"
 
 namespace dae
@@ -19,20 +21,17 @@ namespace dae
 		template<dae::DerivedComponent ComponentType>
 		void TryRemoveComponent()
 		{
-			std::erase_if(m_pComponents,
-				[](const std::unique_ptr<ComponentBase>& component)
-				{
-					return component->GetID() == ComponentType::ID;
-				});
+			std::erase_if(m_pComponents,IsSameType<ComponentType>);
 		}
 		
 		template<dae::DerivedComponent ComponentType>
 		ComponentType* TryGetComponent()
 		{
-			for (auto& component : m_pComponents)
+			for (auto& pComponent : m_pComponents)
 			{
-				if (component->GetID() == ComponentType::ID)
-					return static_cast<ComponentType*>(component.get());
+				ComponentType* pDerived{ dynamic_cast<ComponentType*>(pComponent.get()) };
+				if (pDerived)
+					return pDerived;
 			}
 			return nullptr;
 		}
@@ -40,12 +39,23 @@ namespace dae
 		template<dae::DerivedComponent ComponentType>
 		const ComponentType* TryGetComponent() const
 		{
-			for (const auto& component : m_pComponents)
+			for (const auto& pComponent : m_pComponents)
 			{
-				if (component->GetID() == ComponentType::ID)
-					return static_cast<const ComponentType*>(component.get());
+				ComponentType* pDerived{ dynamic_cast<ComponentType*>(pComponent.get()) };
+				if (pDerived)
+					return pDerived;
 			}
 			return nullptr;
+		}
+
+		template<dae::DerivedComponent ComponentType>
+		static bool IsSameType(std::unique_ptr<ComponentBase> const& pComponent) noexcept {
+			return dynamic_cast<ComponentType*>(pComponent.get());
+		}
+
+		template<dae::DerivedComponent ComponentType>
+		bool HasComponent() const noexcept {
+			return std::ranges::any_of(m_pComponents, IsSameType<ComponentType>);
 		}
 
 		template<dae::DerivedComponent ComponentType, typename... Args>
@@ -60,8 +70,6 @@ namespace dae
 			m_pComponents.emplace_back(std::move(component));
 			return rawPtr;
 		}
-
-		std::optional<std::vector<std::unique_ptr<ComponentBase>>::iterator> HasComponent(ComponentBase::ComponentID id);
 
 		~GameObject() = default;
 		GameObject(const GameObject& other) = delete;

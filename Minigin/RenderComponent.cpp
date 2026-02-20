@@ -12,7 +12,7 @@ dae::RenderComponent::RenderComponent(GameObject& owner) noexcept
 }
 
 dae::RenderComponent::RenderComponent(GameObject& owner, std::shared_ptr<Texture2D> pTexture) noexcept
-	:ComponentBase( owner, ID )
+	:ComponentBase(owner)
 	, m_pTexture{std::move(pTexture)}
 {
 	m_pTransformComponent = owner.TryGetComponent<TransformComponent>();

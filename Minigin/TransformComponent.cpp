@@ -11,7 +11,7 @@ dae::TransformComponent::TransformComponent(GameObject& owner, float x, float y,
 }
 
 dae::TransformComponent::TransformComponent(GameObject& owner, glm::vec3 position) noexcept
-	: ComponentBase(owner, ID)
+	: ComponentBase(owner)
 	, m_Position{ position }
 {
 }

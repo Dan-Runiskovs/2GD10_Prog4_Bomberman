@@ -6,9 +6,9 @@
 #include "TextComponent.h"
 
 dae::FPSComponent::FPSComponent(GameObject& owner) noexcept
-	:ComponentBase(owner, ID)
+	:ComponentBase(owner)
 {
-	assert(owner.HasComponent(ComponentID::Text) && "Owner must have text component!");
+	assert(owner.HasComponent<TextComponent>() && "Owner must have text component!");
 	m_pTextComponent = owner.TryGetComponent<TextComponent>();
 }
 

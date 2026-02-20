@@ -1,8 +1,7 @@
 #include "ComponentBase.h"
 #include "GameObject.h"
 
-dae::ComponentBase::ComponentBase(GameObject& owner, ComponentID id)
+dae::ComponentBase::ComponentBase(GameObject& owner)
 	: m_Owner{ owner }
-	, m_ID{ id }
 {
 }

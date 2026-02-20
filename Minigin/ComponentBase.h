@@ -8,16 +8,6 @@ namespace dae
 	class ComponentBase
 	{
 	public:
-		enum class ComponentID : unsigned char
-		{
-			Transform = 0,
-			Render = 1,
-			Text = 2,
-			FPS = 255
-		};
-		ComponentID GetID() const { return m_ID; }
-		bool HasSameID(ComponentID id) const { return m_ID == id; }
-
 		virtual void Update() = 0;
 
 		virtual ~ComponentBase() noexcept = default;
@@ -27,9 +17,8 @@ namespace dae
 		ComponentBase& operator=(ComponentBase&& other) noexcept = delete;
 
 	protected:
-		ComponentBase(GameObject& owner, ComponentID id);
+		ComponentBase(GameObject& owner);
 		GameObject& m_Owner;
-		const ComponentID m_ID;
 	};
 
 	template<typename DerivedComponentType>

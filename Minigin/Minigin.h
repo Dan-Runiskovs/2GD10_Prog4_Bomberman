@@ -19,6 +19,5 @@ namespace dae
 		Minigin& operator=(Minigin&& other) = delete;
 	private:
 		bool m_Quit{};
-		float m_Lag{};
 	};
 }

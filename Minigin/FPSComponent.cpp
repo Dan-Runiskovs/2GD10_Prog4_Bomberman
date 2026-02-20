@@ -6,10 +6,9 @@
 #include "TextComponent.h"
 
 dae::FPSComponent::FPSComponent(GameObject& owner) noexcept
-	:ComponentBase(owner)
+	: ComponentBase(owner)
+	, m_TextComponent{ owner.GetComponent<TextComponent>() }
 {
-	assert(owner.HasComponent<TextComponent>() && "Owner must have text component!");
-	m_pTextComponent = owner.TryGetComponent<TextComponent>();
 }
 
 void dae::FPSComponent::Update()
@@ -17,7 +16,7 @@ void dae::FPSComponent::Update()
 	m_InternalTimer += Timer::GetInstance().GetElapsed();
 	++m_FrameCounter;
 
-	const float margin{ 0.25f };
+	const float margin{ 1.f };
 	if (m_InternalTimer >= margin)
 	{
 		float fps = m_FrameCounter / m_InternalTimer;
@@ -25,7 +24,7 @@ void dae::FPSComponent::Update()
 		m_FrameCounter = 0;
 		m_InternalTimer -= margin;
 		std::string message = std::to_string(fps);
-		message.resize(message.find('.') + 2);
-		m_pTextComponent->SetText(message + " FPS");
+		message.resize(4);
+		m_TextComponent.SetText(message + " FPS");
 	}
 }

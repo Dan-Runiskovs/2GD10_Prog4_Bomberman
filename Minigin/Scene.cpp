@@ -34,15 +34,12 @@ void Scene::Update()
 	{
 		object->Update();
 	}
+	CleanUpScene();
 }
 
 void Scene::CleanUpScene()
 {
-	for (auto& object : m_objects)
-	{
-		if (object->IsMarkedForDelete())
-			m_objectsToDelete.emplace_back(std::move(object));
-	}
+	std::erase_if(m_objects, [](const std::unique_ptr<GameObject>& obj) { return obj->IsMarkedForDelete(); });
 }
 
 void Scene::Render() const

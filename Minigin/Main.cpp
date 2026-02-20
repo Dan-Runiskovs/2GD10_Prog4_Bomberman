@@ -24,32 +24,38 @@ static void load()
 
 	// --- Background ---
 	auto go = std::make_unique<dae::GameObject>();
+	go->AddComponent<dae::TransformComponent>();
 	go->AddComponent<dae::RenderComponent>();
-	go->TryGetComponent<dae::RenderComponent>()->SetTexture("background.png");
-	go->TryGetComponent<dae::TransformComponent>()->SetPosition(0.f, 0.f);
+	go->GetComponent<dae::RenderComponent>().SetTexture("background.png");
+	go->GetComponent<dae::TransformComponent>().SetPosition(0.f, 0.f);
 	scene.Add(std::move(go));
 
 	// --- Logo ---
 	go = std::make_unique<dae::GameObject>();
+	go->AddComponent<dae::TransformComponent>();
 	go->AddComponent<dae::RenderComponent>();
-	go->TryGetComponent<dae::RenderComponent>()->SetTexture("logo.png");
-	go->TryGetComponent<dae::TransformComponent>()->SetPosition(358.f, 180.f);
+	go->GetComponent<dae::RenderComponent>().SetTexture("logo.png");
+	go->GetComponent<dae::TransformComponent>().SetPosition(358.f, 180.f);
 	scene.Add(std::move(go));
 
 	// --- Title --- 
 	auto font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36);
 	go = std::make_unique<dae::GameObject>();
+	go->AddComponent<dae::TransformComponent>();
+	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("Programming 4 Assignment", font);
-	go->TryGetComponent<dae::TextComponent>()->SetColor({ 255, 255, 0, 255 });
-	go->TryGetComponent<dae::TransformComponent>()->SetPosition(292.f, 20.f);
+	go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 0, 255 });
+	go->GetComponent<dae::TransformComponent>().SetPosition(292.f, 20.f);
 	scene.Add(std::move(go));
 
 	
 	// --- FPS ---
 	go = std::make_unique<dae::GameObject>();
+	go->AddComponent<dae::TransformComponent>();
+	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("TEMP", font);
-	go->TryGetComponent<dae::TextComponent>()->SetColor({ 255, 0, 0, 255 });
-	go->TryGetComponent<dae::TransformComponent>()->SetPosition(20.f, 20.f);
+	go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
+	go->GetComponent<dae::TransformComponent>().SetPosition(20.f, 20.f);
 	go->AddComponent<dae::FPSComponent>();
 	scene.Add(std::move(go));
 }

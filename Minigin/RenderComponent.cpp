@@ -14,12 +14,8 @@ dae::RenderComponent::RenderComponent(GameObject& owner) noexcept
 dae::RenderComponent::RenderComponent(GameObject& owner, std::shared_ptr<Texture2D> pTexture) noexcept
 	:ComponentBase(owner)
 	, m_pTexture{std::move(pTexture)}
+	, m_TransformComponent{ owner.GetComponent<TransformComponent>() }
 {
-	m_pTransformComponent = owner.TryGetComponent<TransformComponent>();
-	if(!m_pTransformComponent)
-	{
-		m_pTransformComponent = owner.AddComponent<TransformComponent>();
-	}
 }
 
 void dae::RenderComponent::SetTexture(const std::string& filename)
@@ -36,7 +32,7 @@ void dae::RenderComponent::Render() const
 {
 	assert(m_pTexture && "Texture is not set");
 
-	auto const& pos = m_pTransformComponent->GetPosition();
+	auto const& pos = m_TransformComponent.GetPosition();
 
 	Renderer::GetInstance().RenderTexture(
 		*m_pTexture, pos.x, pos.y);

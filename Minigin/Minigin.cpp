@@ -1,6 +1,8 @@
 ﻿#include <stdexcept>
 #include <sstream>
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 #if WIN32
 #define WIN32_LEAN_AND_MEAN 
@@ -78,7 +80,6 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 
 	Renderer::GetInstance().Init(g_window);
 	ResourceManager::GetInstance().Init(dataPath);
-	Timer::GetInstance().Start();
 }
 
 dae::Minigin::~Minigin()
@@ -93,8 +94,9 @@ dae::Minigin::~Minigin()
 void dae::Minigin::Run(const std::function<void()>& load)
 {
 	load();
+	Timer::GetInstance().Start();
 #ifndef __EMSCRIPTEN__
-	while (!m_quit)
+	while (!m_Quit)
 		RunOneFrame();
 #else
 	emscripten_set_main_loop_arg(&LoopCallback, this, 0, true);
@@ -103,8 +105,21 @@ void dae::Minigin::Run(const std::function<void()>& load)
 
 void dae::Minigin::RunOneFrame()
 {
+	const float targetFrameTime{ 1.0f / 60.0f };
+	auto frameStart{ std::chrono::steady_clock::now() };
+
 	Timer::GetInstance().Update();
-	m_quit = !InputManager::GetInstance().ProcessInput();
+	m_Quit = !InputManager::GetInstance().ProcessInput();
 	SceneManager::GetInstance().Update();
 	Renderer::GetInstance().Render();
+
+	auto frameEnd{ std::chrono::steady_clock::now() };
+	float frameDuration{ std::chrono::duration<float>(frameEnd - frameStart).count() };
+
+	float remainingTime{ targetFrameTime - frameDuration };
+
+	if (remainingTime > 0.0f)
+	{
+		std::this_thread::sleep_for(std::chrono::duration<float>(remainingTime));
+	}
 }

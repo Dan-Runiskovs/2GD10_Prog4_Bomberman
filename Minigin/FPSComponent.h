@@ -20,6 +20,6 @@ namespace dae
 		float m_InternalTimer{};
 		unsigned char m_FrameCounter{};
 
-		TextComponent* m_pTextComponent{ nullptr }; // Requires Text Component
+		TextComponent& m_TextComponent; // Requires Text Component
 	};
 }

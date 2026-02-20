@@ -48,6 +48,14 @@ namespace dae
 			return nullptr;
 		}
 
+		template<DerivedComponent ComponentType>
+		ComponentType& GetComponent()
+		{
+			auto* pComponent = TryGetComponent<ComponentType>();
+			assert(pComponent && "Required component missing");
+			return *pComponent;
+		}
+
 		template<dae::DerivedComponent ComponentType>
 		static bool IsSameType(std::unique_ptr<ComponentBase> const& pComponent) noexcept {
 			return dynamic_cast<ComponentType*>(pComponent.get());
@@ -58,17 +66,15 @@ namespace dae
 			return std::ranges::any_of(m_pComponents, IsSameType<ComponentType>);
 		}
 
-		template<dae::DerivedComponent ComponentType, typename... Args>
-		ComponentType* AddComponent(Args&&...args)
+		template<DerivedComponent ComponentType, typename... Args>
+		ComponentType& AddComponent(Args&&... args)
 		{
-			if (TryGetComponent<ComponentType>())
-				return nullptr;
+			assert(!HasComponent<ComponentType>() && "Component already exists");
 
 			auto component = std::make_unique<ComponentType>(*this, std::forward<Args>(args)...);
-			ComponentType* rawPtr = component.get();
-
+			ComponentType& ref = *component;
 			m_pComponents.emplace_back(std::move(component));
-			return rawPtr;
+			return ref;
 		}
 
 		~GameObject() = default;

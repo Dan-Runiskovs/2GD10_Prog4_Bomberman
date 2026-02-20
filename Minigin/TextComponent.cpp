@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <SDL3_ttf/SDL_ttf.h>
+#include <assert.h>
 #include "TextComponent.h"
 #include "RenderComponent.h"
 #include "GameObject.h"
@@ -12,12 +13,8 @@ dae::TextComponent::TextComponent(GameObject& owner, const std::string& text, st
 	: ComponentBase(owner)
 	, m_Text{ text }
 	, m_pFont{std::move(font)}
+	, m_RenderComponent{ owner.GetComponent<RenderComponent>() }
 {
-	m_pRenderComponent = owner.TryGetComponent<RenderComponent>();
-	if (!m_pRenderComponent)
-	{
-		m_pRenderComponent = owner.AddComponent<RenderComponent>();
-	}
 }
 
 void dae::TextComponent::UpdateText()
@@ -34,7 +31,7 @@ void dae::TextComponent::UpdateText()
 	}
 	SDL_DestroySurface(pSurface);
 	m_pTextTexture = std::make_shared<Texture2D>(pTexture);
-	m_pRenderComponent->SetTexture(m_pTextTexture);
+	m_RenderComponent.SetTexture(m_pTextTexture);
 }
 
 void dae::TextComponent::SetText(const std::string& text)

@@ -12,9 +12,9 @@ namespace dae
 
 		float GetElapsed() const;
 		float GetMsPerFrame() const { return m_MsPerFrame.count(); }
+		std::chrono::steady_clock::time_point GetTimeNow() const { return m_CurrentTime; }
 
-		void Update(); // to be replaced by Update Component?
-		// Add FPS component?
+		void Update();
 
 	private:
 		bool m_IsRunning{ false };
@@ -22,6 +22,6 @@ namespace dae
 
 		std::chrono::steady_clock::time_point m_PreviousTime;
 		std::chrono::steady_clock::time_point m_CurrentTime;
-		const std::chrono::duration<float> m_MsPerFrame{ 1000.f / m_DesiredFPS };
+		const std::chrono::duration<float> m_MsPerFrame{ 1.f / m_DesiredFPS };
 	};
 }

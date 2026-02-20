@@ -18,6 +18,7 @@ namespace dae
 		Minigin& operator=(const Minigin& other) = delete;
 		Minigin& operator=(Minigin&& other) = delete;
 	private:
-		bool m_quit{};
+		bool m_Quit{};
+		float m_Lag{};
 	};
 }

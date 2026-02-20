@@ -27,6 +27,6 @@ namespace dae
 	private:
 		std::shared_ptr<Texture2D> m_pTexture{ nullptr };
 
-		TransformComponent* m_pTransformComponent{ nullptr };
+		TransformComponent& m_TransformComponent;	// Requires Transform component
 	};
 }

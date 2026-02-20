@@ -35,6 +35,6 @@ namespace dae
 		std::shared_ptr<Font> m_pFont{ nullptr };
 		std::shared_ptr<Texture2D> m_pTextTexture{ nullptr };
 
-		RenderComponent* m_pRenderComponent{ nullptr }; // Requires RenderComponent 
+		RenderComponent& m_RenderComponent; // Requires RenderComponent 
 	};
 }

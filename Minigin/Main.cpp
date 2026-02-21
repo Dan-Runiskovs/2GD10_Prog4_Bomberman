@@ -26,14 +26,14 @@ static void load()
 	auto go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::RenderComponent>();
 	go->GetComponent<dae::RenderComponent>().SetTexture("background.png");
-	go->GetComponent<dae::TransformComponent>().SetPosition(0.f, 0.f);
+	go->GetComponent<dae::TransformComponent>().SetWorldPosition(0.f, 0.f);
 	scene.Add(std::move(go));
 
 	// --- Logo ---
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::RenderComponent>();
 	go->GetComponent<dae::RenderComponent>().SetTexture("logo.png");
-	go->GetComponent<dae::TransformComponent>().SetPosition(358.f, 180.f);
+	go->GetComponent<dae::TransformComponent>().SetWorldPosition(358.f, 180.f);
 	scene.Add(std::move(go));
 
 	// --- Title --- 
@@ -42,7 +42,7 @@ static void load()
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("Programming 4 Assignment", font);
 	go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 0, 255 });
-	go->GetComponent<dae::TransformComponent>().SetPosition(292.f, 20.f);
+	go->GetComponent<dae::TransformComponent>().SetWorldPosition(292.f, 20.f);
 	scene.Add(std::move(go));
 
 	
@@ -51,7 +51,7 @@ static void load()
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("TEMP", font);
 	go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
-	go->GetComponent<dae::TransformComponent>().SetPosition(20.f, 20.f);
+	go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 20.f);
 	go->AddComponent<dae::FPSComponent>();
 	scene.Add(std::move(go));
 }

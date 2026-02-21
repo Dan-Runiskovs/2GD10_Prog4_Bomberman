@@ -32,7 +32,7 @@ void dae::RenderComponent::Render() const
 {
 	assert(m_pTexture && "Texture is not set");
 
-	auto const& pos = m_TransformComponent.GetPosition();
+	auto const& pos = m_TransformComponent.GetWorldPosition();
 
 	Renderer::GetInstance().RenderTexture(
 		*m_pTexture, pos.x, pos.y);

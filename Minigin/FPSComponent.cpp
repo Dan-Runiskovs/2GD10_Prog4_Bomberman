@@ -16,7 +16,7 @@ void dae::FPSComponent::Update()
 	m_InternalTimer += Timer::GetInstance().GetElapsed();
 	++m_FrameCounter;
 
-	const float margin{ 1.f };
+	const float margin{ .5f };
 	if (m_InternalTimer >= margin)
 	{
 		float fps = m_FrameCounter / m_InternalTimer;

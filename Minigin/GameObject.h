@@ -18,7 +18,18 @@ namespace dae
 		void Update() const;
 		void MarkForDelete() { m_IsMarkedForDelete = true; }			//TODO: Mark children for deletion as well
 		bool IsMarkedForDelete() const { return m_IsMarkedForDelete; }
-		
+
+#pragma region ChildManipulation
+		bool IsChild(GameObject* parent) const;
+		void SetParent(GameObject* parent, bool keepWorldPosition);
+		GameObject* GetParent() { return m_pParent; }
+		const GameObject* GetParent() const { return m_pParent; }
+		const unsigned int GetChildCount() const;
+		GameObject* GetChildAt(unsigned int index) { return m_pChildren.at(index); }
+		const GameObject* GetChildAt(unsigned int index) const { return m_pChildren.at(index); }
+#pragma endregion ChildManipulation
+
+#pragma region ComponentManipulation
 		template<dae::DerivedComponent ComponentType>
 		void TryRemoveComponent()
 		{
@@ -57,6 +68,14 @@ namespace dae
 			return *pComponent;
 		}
 
+		template<DerivedComponent ComponentType>
+		const ComponentType& GetComponent() const
+		{
+			auto* pComponent = TryGetComponent<ComponentType>();
+			assert(pComponent && "Required component missing");
+			return *pComponent;
+		}
+
 		template<dae::DerivedComponent ComponentType>
 		static bool IsSameType(std::unique_ptr<ComponentBase> const& pComponent) noexcept {
 			return dynamic_cast<ComponentType*>(pComponent.get());
@@ -77,6 +96,7 @@ namespace dae
 			m_pComponents.emplace_back(std::move(component));
 			return ref;
 		}
+#pragma endregion ComponentManipulation
 
 		~GameObject() = default;
 		GameObject(const GameObject& other) = delete;
@@ -87,6 +107,9 @@ namespace dae
 		std::vector<std::unique_ptr<ComponentBase>> m_pComponents{};
 		GameObject* m_pParent{ nullptr };
 		std::vector<GameObject*> m_pChildren{};
+
+		void AddChild(GameObject* pChild);
+		void RemoveChild(GameObject* pChild);
 
 		bool m_IsMarkedForDelete{ false };
 	};

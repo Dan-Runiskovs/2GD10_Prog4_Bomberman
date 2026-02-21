@@ -13,9 +13,14 @@ namespace dae
 
 		void Update() override {}
 
-		const glm::vec3& GetPosition() const { return m_Position; }
-		void SetPosition(float x, float y, float z = 0);
-		void SetPosition(glm::vec3 position);
+		const glm::vec3& GetWorldPosition() const;
+		void SetWorldPosition(float x, float y, float z = 0);
+		void SetWorldPosition(const glm::vec3& newWorldPos);
+		const glm::vec3& GetLocalPosition() const { return m_LocalPosition; };
+		void SetLocalPosition(float x, float y, float z = 0);
+		void SetLocalPosition(const glm::vec3& newLocalPos);
+
+		void SetPositionDirty();
 		
 		virtual ~TransformComponent() = default;
 		TransformComponent(const TransformComponent& other) = delete;
@@ -23,6 +28,11 @@ namespace dae
 		TransformComponent& operator=(const TransformComponent& other) = delete;
 		TransformComponent& operator=(TransformComponent&& other) = delete;
 	private:
-		glm::vec3 m_Position; // Z will be used for drawing order high -> low ??
+		mutable glm::vec3 m_WorldPosition{ 0.f, 0.f, 0.f }; // Z will be used for drawing order high -> low ??
+		glm::vec3 m_LocalPosition{0.f, 0.f, 0.f};
+
+		mutable bool m_IsDirty{ true };
+
+		void UpdateWorldPosition() const;
 	};
 }

@@ -18,6 +18,9 @@ namespace dae
 
 	protected:
 		ComponentBase(GameObject& owner);
+		GameObject& GetOwner() { return m_Owner; }
+		const GameObject& GetOwner() const { return m_Owner; }
+	private:
 		GameObject& m_Owner;
 	};
 

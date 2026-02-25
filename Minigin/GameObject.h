@@ -24,7 +24,7 @@ namespace dae
 		void SetParent(GameObject* parent, bool keepWorldPosition = false);
 		GameObject* GetParent() { return m_pParent; }
 		const GameObject* GetParent() const { return m_pParent; }
-		const unsigned int GetChildCount() const;
+		unsigned int GetChildCount() const;
 		GameObject* GetChildAt(unsigned int index) { return m_pChildren.at(index); }
 		const GameObject* GetChildAt(unsigned int index) const { return m_pChildren.at(index); }
 #pragma endregion ChildManipulation

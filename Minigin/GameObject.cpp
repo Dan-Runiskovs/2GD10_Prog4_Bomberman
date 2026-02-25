@@ -58,7 +58,7 @@ void dae::GameObject::SetParent(GameObject* parent, bool keepWorldPosition)
 	if (m_pParent) m_pParent->AddChild(this);
 }
 
-const unsigned int dae::GameObject::GetChildCount() const
+unsigned int dae::GameObject::GetChildCount() const
 {
 	return static_cast<unsigned int>(m_pChildren.size());
 }

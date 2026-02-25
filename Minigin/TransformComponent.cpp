@@ -17,7 +17,7 @@ dae::TransformComponent::TransformComponent(GameObject& owner, glm::vec3 positio
 {
 }
 
-const glm::vec3& dae::TransformComponent::GetWorldPosition() const
+const glm::vec3& dae::TransformComponent::GetWorldPosition()
 {
 	if (m_IsDirty) UpdateWorldPosition();
 
@@ -26,26 +26,35 @@ const glm::vec3& dae::TransformComponent::GetWorldPosition() const
 
 void dae::TransformComponent::SetWorldPosition(float x, float y, float z)
 {
-	m_WorldPosition.x = x;
-	m_WorldPosition.y = y;
-	m_WorldPosition.z = z;
+	SetWorldPosition(glm::vec3{ x, y, z });
 }
 
 void dae::TransformComponent::SetWorldPosition(const glm::vec3& newWorldPos)
 {
-	m_WorldPosition = newWorldPos;
-}
+	if (auto* pParent = GetOwner().GetParent())
+	{
+		const auto& parentWorld = pParent->GetComponent<TransformComponent>().GetWorldPosition();
+		m_LocalPosition = newWorldPos - parentWorld;
+	}
+	else
+	{
+		m_LocalPosition = newWorldPos;
+	}
 
+	SetPositionDirty();
+}
 void dae::TransformComponent::SetLocalPosition(float x, float y, float z)
 {
 	m_LocalPosition.x = x;
 	m_LocalPosition.y = y;
 	m_LocalPosition.z = z;
+	SetPositionDirty();
 }
 
 void dae::TransformComponent::SetLocalPosition(const glm::vec3& newLocalPos)
 {
 	m_LocalPosition = newLocalPos;
+	SetPositionDirty();
 }
 
 void dae::TransformComponent::SetPositionDirty()
@@ -59,13 +68,13 @@ void dae::TransformComponent::SetPositionDirty()
 	}
 }
 
-void dae::TransformComponent::UpdateWorldPosition() const
+void dae::TransformComponent::UpdateWorldPosition()
 {
-	const GameObject* pParent{ GetOwner().GetParent() };
+	GameObject* pParent{ GetOwner().GetParent() };
 
 	if (pParent)
 	{
-		const auto& parentTransform{ pParent->GetComponent<TransformComponent>() };
+		auto& parentTransform{ pParent->GetComponent<TransformComponent>() };
 
 		m_WorldPosition = parentTransform.GetWorldPosition() + m_LocalPosition;
 	}

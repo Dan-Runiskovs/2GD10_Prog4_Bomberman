@@ -46,7 +46,9 @@ void Scene::Render() const
 {
 	for (const auto& object : m_objects)
 	{
-		object->TryGetComponent<dae::RenderComponent>()->Render();
+		auto* pRenderComponent = object->TryGetComponent<dae::RenderComponent>();
+		if (pRenderComponent) pRenderComponent->Render();
+		//object->TryGetComponent<dae::RenderComponent>()->Render();
 	}
 }
 

@@ -13,7 +13,7 @@ namespace dae
 
 		void Update() override {}
 
-		const glm::vec3& GetWorldPosition() const;
+		const glm::vec3& GetWorldPosition();
 		void SetWorldPosition(float x, float y, float z = 0);
 		void SetWorldPosition(const glm::vec3& newWorldPos);
 		const glm::vec3& GetLocalPosition() const { return m_LocalPosition; };
@@ -33,6 +33,6 @@ namespace dae
 
 		mutable bool m_IsDirty{ true };
 
-		void UpdateWorldPosition() const;
+		void UpdateWorldPosition();
 	};
 }

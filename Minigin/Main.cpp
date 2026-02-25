@@ -12,6 +12,7 @@
 #include "RenderComponent.h"
 #include "TransformComponent.h"
 #include "FPSComponent.h"
+#include "OrbitComponent.h"
 #include "Scene.h"
 #include <assert.h>
 
@@ -41,7 +42,7 @@ static void load()
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("Programming 4 Assignment", font);
-	go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 0, 255 });
+	go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
 	go->GetComponent<dae::TransformComponent>().SetWorldPosition(292.f, 20.f);
 	scene.Add(std::move(go));
 
@@ -54,6 +55,28 @@ static void load()
 	go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 20.f);
 	go->AddComponent<dae::FPSComponent>();
 	scene.Add(std::move(go));
+
+	// --- Empty --- 
+	auto empty = std::make_unique<dae::GameObject>(); 
+	empty->GetComponent<dae::TransformComponent>().SetWorldPosition(512.f, 288.f);	// centre of the screen 
+	// --- Sun ---
+	auto sun = std::make_unique<dae::GameObject>(); 
+	sun->AddComponent<dae::RenderComponent>();
+	sun->AddComponent<dae::TextComponent>("S", font);
+	sun->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 0, 255 });
+	sun->AddComponent<dae::OrbitComponent>(50.f, float(PI / 2));
+	sun->SetParent(empty.get(),false); 
+	// --- Planet --- 
+	auto planet = std::make_unique<dae::GameObject>(); 
+	planet->AddComponent<dae::RenderComponent>(); 
+	planet->AddComponent<dae::TextComponent>("P", font);
+	planet->GetComponent<dae::TextComponent>().SetColor({ 165, 42, 42, 255 });
+	planet->AddComponent<dae::OrbitComponent>(75.f, float(PI / 4));
+	planet->SetParent(sun.get(), false); 
+	// --- Move our solar system --- 
+	scene.Add(std::move(empty)); 
+	scene.Add(std::move(sun)); 
+	scene.Add(std::move(planet));
 }
 
 int main(int, char*[]) {

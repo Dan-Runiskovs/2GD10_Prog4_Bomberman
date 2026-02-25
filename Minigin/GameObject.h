@@ -21,7 +21,7 @@ namespace dae
 
 #pragma region ChildManipulation
 		bool IsChild(GameObject* parent) const;
-		void SetParent(GameObject* parent, bool keepWorldPosition);
+		void SetParent(GameObject* parent, bool keepWorldPosition = false);
 		GameObject* GetParent() { return m_pParent; }
 		const GameObject* GetParent() const { return m_pParent; }
 		const unsigned int GetChildCount() const;

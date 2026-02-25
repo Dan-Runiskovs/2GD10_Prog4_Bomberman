@@ -15,6 +15,7 @@ dae::TextComponent::TextComponent(GameObject& owner, const std::string& text, st
 	, m_pFont{std::move(font)}
 	, m_RenderComponent{ owner.GetComponent<RenderComponent>() }
 {
+	UpdateText();
 }
 
 void dae::TextComponent::UpdateText()

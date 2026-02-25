@@ -64,7 +64,7 @@ static void load()
 	sun->AddComponent<dae::RenderComponent>();
 	sun->AddComponent<dae::TextComponent>("S", font);
 	sun->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 0, 255 });
-	sun->AddComponent<dae::OrbitComponent>(50.f, float(PI / 2));
+	sun->AddComponent<dae::OrbitComponent>(50.f, float(PI));
 	sun->SetParent(empty.get(),false); 
 	// --- Planet --- 
 	auto planet = std::make_unique<dae::GameObject>(); 

@@ -28,10 +28,10 @@ namespace dae
 		TransformComponent& operator=(const TransformComponent& other) = delete;
 		TransformComponent& operator=(TransformComponent&& other) = delete;
 	private:
-		mutable glm::vec3 m_WorldPosition{ 0.f, 0.f, 0.f }; // Z will be used for drawing order high -> low ??
+		glm::vec3 m_WorldPosition{ 0.f, 0.f, 0.f }; // Z will be used for drawing order high -> low ??
 		glm::vec3 m_LocalPosition{0.f, 0.f, 0.f};
 
-		mutable bool m_IsDirty{ true };
+		bool m_IsDirty{ true };
 
 		void UpdateWorldPosition();
 	};

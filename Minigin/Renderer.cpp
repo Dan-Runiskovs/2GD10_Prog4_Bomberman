@@ -4,18 +4,19 @@
 #include "Renderer.h"
 #include "SceneManager.h"
 #include "Texture2D.h"
+//imgui
+#include <imgui.h>
+#include <backends/imgui_impl_sdl3.h>
+#include <backends/imgui_impl_sdlrenderer3.h>
 
-void dae::Renderer::Init(SDL_Window* window)
+void dae::Renderer::Init(SDL_Window* window, Game* game)
 {
 	m_window = window;
+	m_Game = game;
 
 	SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
 
-#if defined(__EMSCRIPTEN__)
 	m_renderer = SDL_CreateRenderer(window, nullptr);
-#else
-	m_renderer = SDL_CreateRenderer(window, nullptr);
-#endif
 
 	if (m_renderer == nullptr)
 	{
@@ -31,7 +32,7 @@ void dae::Renderer::Render() const
 	SDL_RenderClear(m_renderer);
 
 	SceneManager::GetInstance().Render();
-
+	m_Game->Render();
 	SDL_RenderPresent(m_renderer);
 }
 
@@ -62,5 +63,3 @@ void dae::Renderer::RenderTexture(const Texture2D& texture, const float x, const
 	dst.h = height;
 	SDL_RenderTexture(GetSDLRenderer(), texture.GetSDLTexture(), nullptr, &dst);
 }
-
-SDL_Renderer* dae::Renderer::GetSDLRenderer() const { return m_renderer; }

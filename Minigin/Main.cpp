@@ -14,11 +14,12 @@
 #include "FPSComponent.h"
 #include "OrbitComponent.h"
 #include "Scene.h"
+#include "ThrashTheCache.h"
 #include <assert.h>
 
 #include <filesystem>
 namespace fs = std::filesystem;
-
+/*
 static void load()
 {
 	auto& scene = dae::SceneManager::GetInstance().CreateScene();
@@ -78,7 +79,7 @@ static void load()
 	scene.Add(std::move(sun)); 
 	scene.Add(std::move(planet));
 }
-
+*/
 int main(int, char*[]) {
 #if __EMSCRIPTEN__
 	fs::path data_location = "";
@@ -87,7 +88,7 @@ int main(int, char*[]) {
 	if(!fs::exists(data_location))
 		data_location = "../Data/";
 #endif
-	dae::Minigin engine(data_location);
-	engine.Run(load);
+	dae::Minigin engine(data_location, std::make_unique<ThrashTheCache>());
+	engine.Run();
     return 0;
 }

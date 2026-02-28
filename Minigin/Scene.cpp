@@ -48,7 +48,6 @@ void Scene::Render() const
 	{
 		auto* pRenderComponent = object->TryGetComponent<dae::RenderComponent>();
 		if (pRenderComponent) pRenderComponent->Render();
-		//object->TryGetComponent<dae::RenderComponent>()->Render();
 	}
 }
 

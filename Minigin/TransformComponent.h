@@ -29,7 +29,7 @@ namespace dae
 		TransformComponent& operator=(TransformComponent&& other) = delete;
 	private:
 		glm::vec3 m_WorldPosition{ 0.f, 0.f, 0.f }; // Z will be used for drawing order high -> low ??
-		glm::vec3 m_LocalPosition{0.f, 0.f, 0.f};
+		glm::vec3 m_LocalPosition{ 0.f, 0.f, 0.f };
 
 		bool m_IsDirty{ true };
 

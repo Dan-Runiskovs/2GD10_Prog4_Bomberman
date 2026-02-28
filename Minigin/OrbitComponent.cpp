@@ -17,6 +17,7 @@ dae::OrbitComponent::OrbitComponent(GameObject& owner, float radius, float rotSp
 	: ComponentBase(owner)
 	, m_Radius{radius}
 	, m_RotationSpeed{rotSpeed}
+	, m_TransformComponent{ owner.GetComponent<TransformComponent>() }
 {
 }
 
@@ -33,8 +34,8 @@ void dae::OrbitComponent::Update()
 
 	//calculate current angle
 	constexpr float twoPi{ float(PI) * 2 };
-	const float delta = Timer::GetInstance().GetElapsed();
-	const float direction = m_IsRotatingClockwise ? -1.f : 1.f;
+	const float delta{ Timer::GetInstance().GetElapsed() };
+	const float direction{ m_IsRotatingClockwise ? -1.f : 1.f };
 
 	m_CurrentAngle += direction * m_RotationSpeed * delta;
 	m_CurrentAngle = fmod(m_CurrentAngle, twoPi);
@@ -45,6 +46,5 @@ void dae::OrbitComponent::Update()
 	const float newY{ sinf(m_CurrentAngle) * m_Radius };
 
 	//update local position
-	auto& transform{ this->GetOwner().GetComponent<TransformComponent>() };
-	transform.SetLocalPosition(newX, newY);
+	m_TransformComponent.SetLocalPosition(newX, newY);
 }

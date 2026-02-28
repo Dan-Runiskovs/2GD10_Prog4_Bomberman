@@ -26,7 +26,7 @@ namespace dae
 		RenderComponent& operator=(RenderComponent&& other) = delete;
 	private:
 		std::shared_ptr<Texture2D> m_pTexture{ nullptr };
-
+		
 		TransformComponent& m_TransformComponent;	// Requires Transform component
 	};
 }

@@ -19,9 +19,16 @@ dae::GameObject::GameObject(GameObject* pParent)
 
 void dae::GameObject::Update() const
 {
-	for (auto const& pComponent : m_pComponents)
+	for (auto const& pComponent : m_pComponents)  pComponent->Update(); 
+}
+
+void dae::GameObject::MarkForDelete()
+{
+	m_IsMarkedForDelete = true;
+
+	for (auto& pChild : m_pChildren)
 	{
-		pComponent->Update();
+		pChild->MarkForDelete();
 	}
 }
 
@@ -69,6 +76,7 @@ void dae::GameObject::AddChild(GameObject* pChild)
 
 	if (std::ranges::find(m_pChildren, pChild) == m_pChildren.end())
 	{
+		//TODO: Remove oneself from previous parent
 		m_pChildren.emplace_back(pChild);
 	}
 }

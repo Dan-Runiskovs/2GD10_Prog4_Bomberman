@@ -33,7 +33,7 @@ void dae::TransformComponent::SetWorldPosition(const glm::vec3& newWorldPos)
 {
 	if (auto* pParent = GetOwner().GetParent())
 	{
-		const auto& parentWorld = pParent->GetComponent<TransformComponent>().GetWorldPosition();
+		const auto& parentWorld{ pParent->GetComponent<TransformComponent>().GetWorldPosition() };
 		m_LocalPosition = newWorldPos - parentWorld;
 	}
 	else
@@ -63,7 +63,7 @@ void dae::TransformComponent::SetPositionDirty()
 
 	for (unsigned int childIdx{ 0 }; childIdx < GetOwner().GetChildCount(); ++childIdx)
 	{
-		auto* pChild = GetOwner().GetChildAt(childIdx);
+		auto* pChild{ GetOwner().GetChildAt(childIdx) };
 		pChild->GetComponent<TransformComponent>().SetPositionDirty();
 	}
 }

@@ -16,7 +16,7 @@ namespace dae
 		GameObject();
 		GameObject(GameObject* pParent);
 		void Update() const;
-		void MarkForDelete() { m_IsMarkedForDelete = true; }			//TODO: Mark children for deletion as well
+		void MarkForDelete();
 		bool IsMarkedForDelete() const { return m_IsMarkedForDelete; }
 
 #pragma region ChildManipulation

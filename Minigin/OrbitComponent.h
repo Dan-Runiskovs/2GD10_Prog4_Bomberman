@@ -6,6 +6,7 @@ constexpr double PI = 3.14159265358979323846;
 
 namespace dae
 {
+	class TransformComponent;
 	class OrbitComponent final : public ComponentBase
 	{
 	public :
@@ -21,9 +22,11 @@ namespace dae
 
 	private:
 		bool m_IsRotating{ true };
-		bool m_IsRotatingClockwise{ true };
+		bool m_IsRotatingClockwise{ true };	// Remove this -> negative speed duh
 		float m_Radius{};					// Radius at which we are located from parent object
 		float m_CurrentAngle{0.f};			// Current angle in Rad
 		float m_RotationSpeed{};
+
+		TransformComponent& m_TransformComponent;
 	};
 }

@@ -57,7 +57,8 @@ void PrintSDLVersion()
 	LogSDLVersion("Linked with SDL_ttf ", SDL_VERSIONNUM_MAJOR(version), SDL_VERSIONNUM_MINOR(version),	SDL_VERSIONNUM_MICRO(version));
 }
 
-dae::Minigin::Minigin(const std::filesystem::path& dataPath)
+dae::Minigin::Minigin(const std::filesystem::path& dataPath, std::unique_ptr<Game> game)
+	: m_Game{ std::move(game) }
 {
 	PrintSDLVersion();
 	
@@ -78,8 +79,9 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 		throw std::runtime_error(std::string("SDL_CreateWindow Error: ") + SDL_GetError());
 	}
 
-	Renderer::GetInstance().Init(g_window);
+	Renderer::GetInstance().Init(g_window, m_Game.get());
 	ResourceManager::GetInstance().Init(dataPath);
+	m_Game->Init();
 }
 
 dae::Minigin::~Minigin()
@@ -91,9 +93,9 @@ dae::Minigin::~Minigin()
 	SDL_Quit();
 }
 
-void dae::Minigin::Run(const std::function<void()>& load)
+void dae::Minigin::Run()
 {
-	load();
+
 	Timer::GetInstance().Start();
 #ifndef __EMSCRIPTEN__
 	while (!m_Quit)
@@ -110,6 +112,7 @@ void dae::Minigin::RunOneFrame()
 
 	Timer::GetInstance().Update();
 	m_Quit = !InputManager::GetInstance().ProcessInput();
+	m_Game->Update();
 	SceneManager::GetInstance().Update();
 	Renderer::GetInstance().Render();
 

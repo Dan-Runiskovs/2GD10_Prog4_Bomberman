@@ -33,10 +33,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Minigin/RenderComponent.cpp
   Minigin/OrbitComponent.cpp
   Minigin/Game.cpp
-  Minigin/Commands.cpp
   Game/ThrashTheCache.cpp
-  Game/CommandPimpl.cpp
-  Game/Bomberman.cpp
 )
 
 # enable c++20 features

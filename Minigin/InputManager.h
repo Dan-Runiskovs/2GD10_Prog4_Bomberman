@@ -1,5 +1,6 @@
 #pragma once
 #include "Singleton.h"
+#include <Xinput.h>
 
 namespace dae
 {
@@ -7,6 +8,10 @@ namespace dae
 	{
 	public:
 		bool ProcessInput();
+
+	private:
+		class InputManagerImpl;
+
 	};
 
 }

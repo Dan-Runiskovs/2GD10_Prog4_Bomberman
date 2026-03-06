@@ -4,6 +4,9 @@
 
 bool dae::InputManager::ProcessInput()
 {
+	// TODO: On events create new commands, push them back into a std::vector<unique_ptr>m_Commands;, after process input call execute on every single command, clear vector, repeat
+
+	// --- Keyboard ---
 	SDL_Event e;
 	while (SDL_PollEvent(&e)) {
 		if (e.type == SDL_EVENT_QUIT) {
@@ -21,6 +24,8 @@ bool dae::InputManager::ProcessInput()
 		ImGui_ImplSDL3_ProcessEvent(&e);
 
 	}
+	// --- Gamepad --- 
 
+	
 	return true;
 }

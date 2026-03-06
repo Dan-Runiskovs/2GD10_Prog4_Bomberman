@@ -18,7 +18,7 @@ bool dae::InputManager::ProcessInput()
 		// etc...
 
 		//process event for IMGUI
-		ImGui_ImplSDL3_ProcessEvent(&e);
+		//ImGui_ImplSDL3_ProcessEvent(&e);
 
 	}
 

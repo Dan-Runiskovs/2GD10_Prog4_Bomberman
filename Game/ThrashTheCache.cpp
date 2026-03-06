@@ -287,7 +287,7 @@ void ThrashTheCache::CalculateEx2v2(int nrOfSamples)
 	*m_Ex2v2PlotConfig = {};
 	struct GameObject 
 	{ 
-		transform* local; 
+		transform* local{};
 		int id{}; 
 	};
 

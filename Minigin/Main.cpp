@@ -19,6 +19,7 @@
 
 // --- Games --- 
 #include "ThrashTheCache.h"
+#include "InputTest.h"
 
 namespace fs = std::filesystem;
 
@@ -30,7 +31,7 @@ int main(int, char*[]) {
 	if(!fs::exists(data_location))
 		data_location = "../Data/";
 #endif
-	dae::Minigin engine(data_location, std::make_unique<ThrashTheCache>());
+	dae::Minigin engine(data_location, std::make_unique<InputTest>());
 	engine.Run();
     return 0;
 }

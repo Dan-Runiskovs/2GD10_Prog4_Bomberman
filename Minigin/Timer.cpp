@@ -4,6 +4,7 @@ void dae::Timer::Start()
 {
 	m_IsRunning = true;
 	m_CurrentTime = std::chrono::steady_clock::now();
+	m_PreviousTime = m_CurrentTime;
 }
 
 void dae::Timer::Stop()

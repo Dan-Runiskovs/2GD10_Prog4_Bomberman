@@ -22,7 +22,7 @@ namespace dae
 
 		void SetPositionDirty();
 		
-		virtual ~TransformComponent() = default;
+		~TransformComponent() = default;
 		TransformComponent(const TransformComponent& other) = delete;
 		TransformComponent(TransformComponent&& other) = delete;
 		TransformComponent& operator=(const TransformComponent& other) = delete;

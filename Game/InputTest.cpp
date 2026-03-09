@@ -86,8 +86,7 @@ void InputTest::Init()
 	go->AddComponent<dae::TextComponent>("M", font);
 	go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
 	go->GetComponent<dae::TransformComponent>().SetWorldPosition(200.f, 100.f);
-	go->AddComponent<dae::MovementComponent>(baseSpeed*2);
-	auto& ref = *go;
+	go->AddComponent<dae::MovementComponent>(baseSpeed * 2);
 	
 	scene.Add(std::move(go));
 }

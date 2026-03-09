@@ -19,6 +19,23 @@
 #include "ResourceManager.h"
 #include "Timer.h"
 
+#ifdef _DEBUG
+#include <fcntl.h>
+#include <io.h>
+#include <iostream>
+
+void CreateDebugConsole()
+{
+	AllocConsole();
+	FILE* fp;
+	freopen_s(&fp, "CONOUT$", "w", stdout);
+	freopen_s(&fp, "CONOUT$", "w", stderr);
+	freopen_s(&fp, "CONIN$", "r", stdin);
+
+	std::ios::sync_with_stdio();
+}
+#endif
+
 SDL_Window* g_window{};
 
 void LogSDLVersion(const std::string& message, int major, int minor, int patch)
@@ -79,6 +96,8 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath, std::unique_ptr<Gam
 		throw std::runtime_error(std::string("SDL_CreateWindow Error: ") + SDL_GetError());
 	}
 
+	CreateDebugConsole();
+
 	Renderer::GetInstance().Init(g_window, m_Game.get());
 	ResourceManager::GetInstance().Init(dataPath);
 	m_Game->Init();
@@ -107,9 +126,9 @@ void dae::Minigin::Run()
 
 void dae::Minigin::RunOneFrame()
 {
-	const float targetFrameTime{ 1.0f / 60.0f };
+	constexpr float targetFrameTime{ 1.0f / 60.0f };
 
-	const auto frameStart{ std::chrono::steady_clock::now() };
+	const auto frameStart{ std::chrono::high_resolution_clock::now() };
 
 	Timer::GetInstance().Update();
 
@@ -118,13 +137,16 @@ void dae::Minigin::RunOneFrame()
 	SceneManager::GetInstance().Update();
 	Renderer::GetInstance().Render();
 
-	const auto frameEnd{ std::chrono::steady_clock::now() };
-	const float frameDuration{ std::chrono::duration<float>(frameEnd - frameStart).count() };
+	const auto frameEnd{ std::chrono::high_resolution_clock::now() };
+	const auto frameDuration{ std::chrono::duration<float>(frameEnd - frameStart).count() };
 
-	const float remainingTime{ targetFrameTime - frameDuration };
-
+	const auto remainingTime{ targetFrameTime - frameDuration };
+	std::cout << "Frame Duration: " << frameDuration << "\n";
+	std::cout << "Remaining time: " << remainingTime << "\n";
+	std::cout << "Target time: " << remainingTime + frameDuration << "\n";
 	if (remainingTime > 0.0f)
 	{
+		std::cout << "Sleeping for: " << remainingTime << "\n";
 		std::this_thread::sleep_for(std::chrono::duration<float>(remainingTime));
 	}
 }

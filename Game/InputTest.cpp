@@ -87,6 +87,34 @@ void InputTest::Init()
 	go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
 	go->GetComponent<dae::TransformComponent>().SetWorldPosition(200.f, 100.f);
 	go->AddComponent<dae::MovementComponent>(baseSpeed * 2);
+	auto& bomberRef = *go;
+	auto& controllerRef = dae::InputManager::GetInstance().AddController(0);
+	/*
+	XINPUT_GAMEPAD_DPAD_UP		0x0001
+	XINPUT_GAMEPAD_DPAD_DOWN	0x0002
+	XINPUT_GAMEPAD_DPAD_LEFT	0x0004
+	XINPUT_GAMEPAD_DPAD_RIGHT	0x0008
+	*/
+	dae::InputManager::GetInstance().AddBinding(std::make_unique<dae::ControllerBinding>(
+																		controllerRef,
+																		0x0008,
+																		std::make_unique<dae::MoveCommand>(bomberRef, 1, 0),
+																		dae::CommandType::OnHold));
+	dae::InputManager::GetInstance().AddBinding(std::make_unique<dae::ControllerBinding>(
+																		controllerRef,
+																		0x0004,
+																		std::make_unique<dae::MoveCommand>(bomberRef, -1, 0),
+																		dae::CommandType::OnHold));
+	dae::InputManager::GetInstance().AddBinding(std::make_unique<dae::ControllerBinding>(
+																		controllerRef,
+																		0x0001,
+																		std::make_unique<dae::MoveCommand>(bomberRef, 0, -1),
+																		dae::CommandType::OnHold));
+	dae::InputManager::GetInstance().AddBinding(std::make_unique<dae::ControllerBinding>(
+																		controllerRef,
+																		0x0002,
+																		std::make_unique<dae::MoveCommand>(bomberRef, 0, 1),
+																		dae::CommandType::OnHold));
 	
 	scene.Add(std::move(go));
 }

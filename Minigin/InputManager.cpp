@@ -31,9 +31,12 @@ bool dae::InputManager::ProcessInput()
 	return true;
 }
 
-void dae::InputManager::AddController(uint8_t id)
+dae::Controller& dae::InputManager::AddController(uint8_t id)
 {
-	m_Controllers.emplace_back(std::make_unique<Controller>(id));
+	auto controller{ std::make_unique<Controller>(id) } ;
+	Controller& ref{ *controller };
+	m_Controllers.emplace_back(std::move(controller));
+	return ref;
 }
 
 void dae::InputManager::AddBinding(std::unique_ptr<Binding> binding)

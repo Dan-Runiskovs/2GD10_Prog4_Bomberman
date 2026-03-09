@@ -15,7 +15,7 @@ namespace dae
 		std::chrono::steady_clock::time_point GetTimeNow() const { return m_CurrentTime; }
 
 		void Update();
-
+		//void AdjustForLag(); <- add this one maybe?
 	private:
 		bool m_IsRunning{ false };
 		const short m_DesiredFPS{ 60 };

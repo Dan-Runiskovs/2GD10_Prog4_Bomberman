@@ -18,8 +18,10 @@ namespace dae
         bool IsButtonUpThisFrame(unsigned int button) const;
         bool IsButtonPressed(unsigned int button) const;
 
-        void Vibrate(uint16_t force = 65535);
+        void Vibrate(uint16_t force = UINT16_MAX);
         void StopVibration();
+
+        //TODO: static GetButtons() method
 
         Controller(const Controller& other) noexcept = delete;
         Controller(Controller&& other) noexcept = delete;

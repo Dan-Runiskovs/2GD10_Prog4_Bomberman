@@ -16,7 +16,7 @@ namespace dae
 
         bool ProcessInput();
 
-        void AddController(uint8_t id);
+        Controller& AddController(uint8_t id);
 
         void AddBinding(std::unique_ptr<Binding> binding);
 

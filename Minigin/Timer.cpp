@@ -3,7 +3,7 @@
 void dae::Timer::Start()
 {
 	m_IsRunning = true;
-	m_CurrentTime = std::chrono::steady_clock::now();
+	m_CurrentTime = std::chrono::high_resolution_clock::now();
 	m_PreviousTime = m_CurrentTime;
 }
 
@@ -24,5 +24,5 @@ void dae::Timer::Update()
 	if (!m_IsRunning) return;
 
 	m_PreviousTime = m_CurrentTime;
-	m_CurrentTime = std::chrono::steady_clock::now();
+	m_CurrentTime = std::chrono::high_resolution_clock::now();
 }

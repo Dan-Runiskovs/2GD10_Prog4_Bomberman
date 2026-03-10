@@ -20,9 +20,10 @@ class dae::Controller::Impl
 {
 public:
     Impl(uint8_t id)
-        : m_ID(id)
     {
-#if !_WIN32
+#if _WIN32
+        m_ID = id;
+#else
         m_pGamepad = SDL_OpenGamepad(id);
 #endif
     }
@@ -142,9 +143,10 @@ public:
 
 private:
 
+#if _WIN32
+
     uint8_t m_ID{};
 
-#if _WIN32
     XINPUT_STATE m_CurrentState{};
     XINPUT_STATE m_PreviousState{};
 #else

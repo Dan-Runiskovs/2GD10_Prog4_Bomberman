@@ -54,6 +54,7 @@ void InputTest::Init()
 #endif // _DEBUG
 
 	const auto baseSpeed{ 50.f };
+	auto& input = dae::InputManager::GetInstance();
 	// --- Balloom ---
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::RenderComponent>();
@@ -62,22 +63,22 @@ void InputTest::Init()
 	go->GetComponent<dae::TransformComponent>().SetWorldPosition(100.f, 100.f);
 	go->AddComponent<dae::MovementComponent>(baseSpeed);
 	auto& refBalloom = *go;
-	dae::InputManager::GetInstance().AddBinding(std::make_unique<dae::KeyboardBinding>(
-																				SDL_SCANCODE_D,
-																				std::make_unique<dae::MoveCommand>(refBalloom, 1, 0),
-																				dae::CommandType::OnHold));
-	dae::InputManager::GetInstance().AddBinding(std::make_unique<dae::KeyboardBinding>(
-																				SDL_SCANCODE_A,
-																				std::make_unique<dae::MoveCommand>(refBalloom, -1, 0),
-																				dae::CommandType::OnHold));
-	dae::InputManager::GetInstance().AddBinding(std::make_unique<dae::KeyboardBinding>(
-																				SDL_SCANCODE_W,
-																				std::make_unique<dae::MoveCommand>(refBalloom, 0, -1),
-																				dae::CommandType::OnHold));
-	dae::InputManager::GetInstance().AddBinding(std::make_unique<dae::KeyboardBinding>(
-																				SDL_SCANCODE_S,
-																				std::make_unique<dae::MoveCommand>(refBalloom, 0, 1),
-																				dae::CommandType::OnHold));
+	input.AddBinding(std::make_unique<dae::KeyboardBinding>(
+												SDL_SCANCODE_D,
+												std::make_unique<dae::MoveCommand>(refBalloom, 1, 0),
+												dae::CommandType::OnHold));
+	input.AddBinding(std::make_unique<dae::KeyboardBinding>(
+												SDL_SCANCODE_A,
+												std::make_unique<dae::MoveCommand>(refBalloom, -1, 0),
+												dae::CommandType::OnHold));
+	input.AddBinding(std::make_unique<dae::KeyboardBinding>(
+												SDL_SCANCODE_W,
+												std::make_unique<dae::MoveCommand>(refBalloom, 0, -1),
+												dae::CommandType::OnHold));
+	input.AddBinding(std::make_unique<dae::KeyboardBinding>(
+												SDL_SCANCODE_S,
+												std::make_unique<dae::MoveCommand>(refBalloom, 0, 1),
+												dae::CommandType::OnHold));
 	scene.Add(std::move(go));
 
 	// --- BomberMan ---
@@ -89,32 +90,27 @@ void InputTest::Init()
 	go->AddComponent<dae::MovementComponent>(baseSpeed * 2);
 	auto& bomberRef = *go;
 	auto& controllerRef = dae::InputManager::GetInstance().AddController(0);
-	/*
-	XINPUT_GAMEPAD_DPAD_UP		0x0001
-	XINPUT_GAMEPAD_DPAD_DOWN	0x0002
-	XINPUT_GAMEPAD_DPAD_LEFT	0x0004
-	XINPUT_GAMEPAD_DPAD_RIGHT	0x0008
-	*/
-	dae::InputManager::GetInstance().AddBinding(std::make_unique<dae::ControllerBinding>(
-																		controllerRef,
-																		0x0008,
-																		std::make_unique<dae::MoveCommand>(bomberRef, 1, 0),
-																		dae::CommandType::OnHold));
-	dae::InputManager::GetInstance().AddBinding(std::make_unique<dae::ControllerBinding>(
-																		controllerRef,
-																		0x0004,
-																		std::make_unique<dae::MoveCommand>(bomberRef, -1, 0),
-																		dae::CommandType::OnHold));
-	dae::InputManager::GetInstance().AddBinding(std::make_unique<dae::ControllerBinding>(
-																		controllerRef,
-																		0x0001,
-																		std::make_unique<dae::MoveCommand>(bomberRef, 0, -1),
-																		dae::CommandType::OnHold));
-	dae::InputManager::GetInstance().AddBinding(std::make_unique<dae::ControllerBinding>(
-																		controllerRef,
-																		0x0002,
-																		std::make_unique<dae::MoveCommand>(bomberRef, 0, 1),
-																		dae::CommandType::OnHold));
+
+	input.AddBinding(std::make_unique<dae::ControllerBinding>(
+												controllerRef,
+												dae::ControllerButton::GAMEPAD_DPAD_RIGHT,
+												std::make_unique<dae::MoveCommand>(bomberRef, 1, 0),
+												dae::CommandType::OnHold));
+	input.AddBinding(std::make_unique<dae::ControllerBinding>(
+												controllerRef,
+												dae::ControllerButton::GAMEPAD_DPAD_LEFT,
+												std::make_unique<dae::MoveCommand>(bomberRef, -1, 0),
+												dae::CommandType::OnHold));
+	input.AddBinding(std::make_unique<dae::ControllerBinding>(
+												controllerRef,
+												dae::ControllerButton::GAMEPAD_DPAD_UP,
+												std::make_unique<dae::MoveCommand>(bomberRef, 0, -1),
+												dae::CommandType::OnHold));
+	input.AddBinding(std::make_unique<dae::ControllerBinding>(
+												controllerRef,
+												dae::ControllerButton::GAMEPAD_DPAD_DOWN,
+												std::make_unique<dae::MoveCommand>(bomberRef, 0, 1),
+												dae::CommandType::OnHold));
 	
 	scene.Add(std::move(go));
 }

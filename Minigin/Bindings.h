@@ -15,6 +15,7 @@ namespace dae
 
     class Command;
     class Controller;
+    enum class ControllerButton : unsigned int;
     class Binding
     {
     public:
@@ -41,10 +42,10 @@ namespace dae
     class ControllerBinding final : public Binding
     {
     public:
-        ControllerBinding(Controller& controller, unsigned int button, std::unique_ptr<Command> command, CommandType type) noexcept;
+        ControllerBinding(Controller& controller, ControllerButton button, std::unique_ptr<Command> command, CommandType type) noexcept;
         void TryExecute() override;
     private:
         Controller& m_Controller;
-        unsigned int m_Button;
+        ControllerButton m_Button;
     };
 }

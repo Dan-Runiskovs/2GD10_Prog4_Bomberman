@@ -96,7 +96,9 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath, std::unique_ptr<Gam
 		throw std::runtime_error(std::string("SDL_CreateWindow Error: ") + SDL_GetError());
 	}
 
+#ifdef _DEBUG
 	CreateDebugConsole();
+#endif // _DEBUG
 
 	Renderer::GetInstance().Init(g_window, m_Game.get());
 	ResourceManager::GetInstance().Init(dataPath);
@@ -141,12 +143,8 @@ void dae::Minigin::RunOneFrame()
 	const auto frameDuration{ std::chrono::duration<float>(frameEnd - frameStart).count() };
 
 	const auto remainingTime{ targetFrameTime - frameDuration };
-	std::cout << "Frame Duration: " << frameDuration << "\n";
-	std::cout << "Remaining time: " << remainingTime << "\n";
-	std::cout << "Target time: " << remainingTime + frameDuration << "\n";
 	if (remainingTime > 0.0f)
 	{
-		std::cout << "Sleeping for: " << remainingTime << "\n";
 		std::this_thread::sleep_for(std::chrono::duration<float>(remainingTime));
 	}
 }

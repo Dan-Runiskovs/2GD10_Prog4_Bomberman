@@ -40,7 +40,7 @@ void dae::KeyboardBinding::TryExecute()
 }
 
 // --- Controller ---
-dae::ControllerBinding::ControllerBinding(Controller& controller, unsigned int button, std::unique_ptr<Command> command, CommandType type) noexcept
+dae::ControllerBinding::ControllerBinding(Controller& controller, dae::ControllerButton button, std::unique_ptr<Command> command, CommandType type) noexcept
 	: Binding(std::move(command), type)
 	, m_Controller(controller)
 	, m_Button(button)

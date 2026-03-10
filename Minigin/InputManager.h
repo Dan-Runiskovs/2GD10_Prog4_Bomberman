@@ -13,7 +13,6 @@ namespace dae
     class InputManager final : public Singleton<InputManager>
     {
     public:
-
         bool ProcessInput();
 
         Controller& AddController(uint8_t id);
@@ -21,7 +20,6 @@ namespace dae
         void AddBinding(std::unique_ptr<Binding> binding);
 
     private:
-
         std::vector<std::unique_ptr<Controller>> m_Controllers;
         std::vector<std::unique_ptr<Binding>> m_Bindings;
     };

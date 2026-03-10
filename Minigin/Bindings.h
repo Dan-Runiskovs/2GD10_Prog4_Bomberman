@@ -2,6 +2,7 @@
 #include <memory>
 #include <SDL3/SDL.h>
 #include <cstdint>
+#include "Commands.h"
 
 namespace dae
 {
@@ -13,7 +14,6 @@ namespace dae
         OnRelease = 2
     };
 
-    class Command;
     class Controller;
     enum class ControllerButton : unsigned int;
     class Binding

@@ -1,6 +1,5 @@
 #include "Bindings.h"
 #include "Controller.h"
-#include "Commands.h"
 
 // --- Base ---
 dae::Binding::Binding(std::unique_ptr<Command> command, CommandType type) noexcept

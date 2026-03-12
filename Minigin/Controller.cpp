@@ -2,9 +2,8 @@
 #include <algorithm>
 #include <memory>
 #include <iostream>
-#define SDLTESTING
 
-#ifndef SDLTESTING
+#if _WIN32
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -24,7 +23,7 @@ public:
     Impl(int id)
         :m_ID{id}
     {
-#ifdef SDLTESTING
+#if !_WIN32
         m_pGamepad = SDL_OpenGamepad(*SDL_GetGamepads(&m_ID));
         if (m_pGamepad)
         {
@@ -40,14 +39,14 @@ public:
 
     ~Impl()
     {
-#ifdef SDLTESTING
+#if !_WIN32
         if (m_pGamepad) SDL_CloseGamepad(m_pGamepad);
 #endif
     }
 
     bool IsConnected()
     {
-#ifndef SDLTESTING
+#if _WIN32
         XINPUT_STATE state{};
         return XInputGetState(m_ID, &state) == ERROR_SUCCESS;
 #else
@@ -58,7 +57,7 @@ public:
 
     void ProcessInput()
     {
-#ifndef SDLTESTING
+#if _WIN32
         CopyMemory(&m_PreviousState, &m_CurrentState, sizeof(XINPUT_STATE));
         ZeroMemory(&m_CurrentState, sizeof(XINPUT_STATE));
         XInputGetState(m_ID, &m_CurrentState);
@@ -126,7 +125,7 @@ public:
 
     void Vibrate(uint16_t force)
     {
-#ifndef SDLTESTING
+#if _WIN32
 
         const uint16_t maxForce{ UINT16_MAX };
         const auto vibrForce = std::clamp(force, static_cast<uint16_t>(0), maxForce);
@@ -160,7 +159,7 @@ private:
 
     int m_ID{};
 
-#ifndef SDLTESTING
+#if _WIN32
 
     XINPUT_STATE m_CurrentState{};
     XINPUT_STATE m_PreviousState{};

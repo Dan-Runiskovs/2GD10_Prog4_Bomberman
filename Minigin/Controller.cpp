@@ -1,8 +1,10 @@
 #include "Controller.h"
 #include <algorithm>
 #include <memory>
+#include <iostream>
+#define SDLTESTING
 
-#if _WIN32
+#ifndef SDLTESTING
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -19,24 +21,33 @@
 class dae::Controller::Impl
 {
 public:
-    Impl(uint8_t id)
+    Impl(int id)
         :m_ID{id}
     {
-#if !_WIN32
-        m_pGamepad = SDL_OpenGamepad(id);
+#ifdef SDLTESTING
+        m_pGamepad = SDL_OpenGamepad(*SDL_GetGamepads(&m_ID));
+        if (m_pGamepad)
+        {
+            std::cout << "Gamepad Found!\n";
+        }
+        else
+        {
+            std::cout << "Gamepad not found!\n";
+            std::cout << SDL_GetError();
+        }
 #endif
     }
 
     ~Impl()
     {
-#if !_WIN32
+#ifdef SDLTESTING
         if (m_pGamepad) SDL_CloseGamepad(m_pGamepad);
 #endif
     }
 
     bool IsConnected()
     {
-#if _WIN32
+#ifndef SDLTESTING
         XINPUT_STATE state{};
         return XInputGetState(m_ID, &state) == ERROR_SUCCESS;
 #else
@@ -47,7 +58,7 @@ public:
 
     void ProcessInput()
     {
-#if _WIN32
+#ifndef SDLTESTING
         CopyMemory(&m_PreviousState, &m_CurrentState, sizeof(XINPUT_STATE));
         ZeroMemory(&m_CurrentState, sizeof(XINPUT_STATE));
         XInputGetState(m_ID, &m_CurrentState);
@@ -61,7 +72,8 @@ public:
 
         if (!m_pGamepad)
         {
-            m_pGamepad = SDL_OpenGamepad(m_ID);
+            //std::cout << "No Gamepad found!\n";
+            m_pGamepad = SDL_OpenGamepad(*SDL_GetGamepads(&m_ID));
             return;
         }
 
@@ -105,7 +117,7 @@ public:
 
     bool IsButtonPressed(unsigned int button) const
     {
-#if _WIN32
+#ifndef SDLTESTING
         return m_CurrentState.Gamepad.wButtons & button;
 #else
         return m_CurrentButtons & button;
@@ -114,7 +126,7 @@ public:
 
     void Vibrate(uint16_t force)
     {
-#if _WIN32
+#ifndef SDLTESTING
 
         const uint16_t maxForce{ UINT16_MAX };
         const auto vibrForce = std::clamp(force, static_cast<uint16_t>(0), maxForce);
@@ -146,9 +158,9 @@ public:
 
 private:
 
-    uint8_t m_ID{};
+    int m_ID{};
 
-#if _WIN32
+#ifndef SDLTESTING
 
     XINPUT_STATE m_CurrentState{};
     XINPUT_STATE m_PreviousState{};
@@ -165,7 +177,7 @@ private:
     unsigned int m_buttonsReleasedThisFrame{};
 };
 
-dae::Controller::Controller(uint8_t id) noexcept
+dae::Controller::Controller(int id) noexcept
 {
     m_pImpl = std::make_unique<Impl>(id);
 }

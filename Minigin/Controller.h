@@ -25,7 +25,7 @@ namespace dae
     class Controller final
     {
     public:
-        Controller(uint8_t id) noexcept;
+        Controller(int id) noexcept;
         ~Controller() noexcept;
 
         bool IsConnected();

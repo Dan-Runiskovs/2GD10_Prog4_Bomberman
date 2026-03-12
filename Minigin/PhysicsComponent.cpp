@@ -1,4 +1,4 @@
-#include "MovementComponent.h"
+#include "PhysicsComponent.h"
 #include "GameObject.h"
 #include "TransformComponent.h"
 #include "Timer.h"

@@ -32,7 +32,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Minigin/FPSComponent.cpp
   Minigin/RenderComponent.cpp
   Minigin/OrbitComponent.cpp
-  Minigin/MovementComponent.cpp
+  Minigin/PhysicsComponent.cpp
   Minigin/Game.cpp
   Minigin/Controller.cpp
   Minigin/Commands.cpp

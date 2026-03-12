@@ -1,6 +1,6 @@
 #include "Commands.h"
 #include "GameObject.h"
-#include "MovementComponent.h"
+#include "PhysicsComponent.h"
 
 dae::GameObjectCommand::GameObjectCommand(GameObject& object) noexcept
 	:m_Object{ object }

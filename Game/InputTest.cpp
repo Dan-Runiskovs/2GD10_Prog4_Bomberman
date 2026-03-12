@@ -6,7 +6,7 @@
 #include "RenderComponent.h"
 #include "TextComponent.h"
 #include "TransformComponent.h"
-#include "MovementComponent.h"
+#include "PhysicsComponent.h"
 #include "Commands.h"
 
 // --- essential ---

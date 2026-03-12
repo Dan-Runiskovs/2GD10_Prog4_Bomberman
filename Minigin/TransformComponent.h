@@ -8,17 +8,17 @@ namespace dae
 	{
 	public:
 		TransformComponent(GameObject& owner) noexcept;
-		TransformComponent(GameObject& owner, float x, float y, float z = 0) noexcept;
-		TransformComponent(GameObject& owner, glm::vec3 position) noexcept;
+		TransformComponent(GameObject& owner, float x, float y) noexcept;
+		TransformComponent(GameObject& owner, glm::vec2 position) noexcept;
 
 		void Update() override {}
 
-		const glm::vec3& GetWorldPosition();
-		void SetWorldPosition(float x, float y, float z = 0);
-		void SetWorldPosition(const glm::vec3& newWorldPos);
-		const glm::vec3& GetLocalPosition() const { return m_LocalPosition; };
-		void SetLocalPosition(float x, float y, float z = 0);
-		void SetLocalPosition(const glm::vec3& newLocalPos);
+		const glm::vec2& GetWorldPosition();
+		void SetWorldPosition(float x, float y);
+		void SetWorldPosition(const glm::vec2& newWorldPos);
+		const glm::vec2& GetLocalPosition() const { return m_LocalPosition; };
+		void SetLocalPosition(float x, float y);
+		void SetLocalPosition(const glm::vec2& newLocalPos);
 
 		void SetPositionDirty();
 		
@@ -28,8 +28,8 @@ namespace dae
 		TransformComponent& operator=(const TransformComponent& other) = delete;
 		TransformComponent& operator=(TransformComponent&& other) = delete;
 	private:
-		glm::vec3 m_WorldPosition{ 0.f, 0.f, 0.f }; // Z will be used for drawing order high -> low ??
-		glm::vec3 m_LocalPosition{ 0.f, 0.f, 0.f };
+		glm::vec2 m_WorldPosition{ 0.f, 0.f };
+		glm::vec2 m_LocalPosition{ 0.f, 0.f };
 
 		bool m_IsDirty{ true };
 

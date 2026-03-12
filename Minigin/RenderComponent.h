@@ -11,9 +11,11 @@ namespace dae
 	public:
 		RenderComponent(GameObject& owner) noexcept;
 		RenderComponent(GameObject& owner, std::shared_ptr<Texture2D> pTexture) noexcept;
+		RenderComponent(GameObject& owner, std::shared_ptr<Texture2D> pTexture, float width, float height) noexcept;
 
 		void Update() override {};
 
+		void SetDimensions(float width, float height);
 		void SetTexture(const std::string& filename);
 		void SetTexture(std::shared_ptr<Texture2D> pTexture);
 
@@ -26,7 +28,9 @@ namespace dae
 		RenderComponent& operator=(RenderComponent&& other) = delete;
 	private:
 		std::shared_ptr<Texture2D> m_pTexture{ nullptr };
-		
 		TransformComponent& m_TransformComponent;	// Requires Transform component
+
+		float m_Width{};
+		float m_Heigth{};
 	};
 }

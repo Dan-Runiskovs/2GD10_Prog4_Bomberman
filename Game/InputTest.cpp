@@ -1,4 +1,5 @@
 #include "InputTest.h"
+#include <cstdint>
 
 // --- components ---
 #include "FPSComponent.h"
@@ -54,14 +55,17 @@ void InputTest::Init()
 #endif // _DEBUG
 
 	const auto baseSpeed{ 50.f };
+	const uint8_t baseSize{ 16 };
+	const uint8_t scale{ 3 };
+	const uint8_t size{ baseSize * scale };
+
 	auto& input = dae::InputManager::GetInstance();
 	// --- Balloom ---
 	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("B", font);
-	go->GetComponent<dae::TextComponent>().SetColor({ 255, 128, 0, 255 });
+	go->AddComponent<dae::RenderComponent>().SetTexture("Balloom.png");
+	go->GetComponent<dae::RenderComponent>().SetDimensions(static_cast<float>(size), static_cast<float>(size));
 	go->GetComponent<dae::TransformComponent>().SetWorldPosition(100.f, 100.f);
-	go->AddComponent<dae::MovementComponent>(baseSpeed);
+	go->AddComponent<dae::PhysicsComponent>(baseSpeed);
 	auto& refBalloom = *go;
 	input.AddBinding(std::make_unique<dae::KeyboardBinding>(
 												SDL_SCANCODE_D,
@@ -83,11 +87,10 @@ void InputTest::Init()
 
 	// --- BomberMan ---
 	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("M", font);
-	go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
+	go->AddComponent<dae::RenderComponent>().SetTexture("Bomberman.png");
+	go->GetComponent<dae::RenderComponent>().SetDimensions(static_cast<float>(size), static_cast<float>(size));
 	go->GetComponent<dae::TransformComponent>().SetWorldPosition(200.f, 100.f);
-	go->AddComponent<dae::MovementComponent>(baseSpeed * 2);
+	go->AddComponent<dae::PhysicsComponent>(baseSpeed * 2);
 	auto& bomberRef = *go;
 	auto& controllerRef = dae::InputManager::GetInstance().AddController(0);
 

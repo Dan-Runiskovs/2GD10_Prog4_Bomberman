@@ -9,7 +9,7 @@ dae::GameObjectCommand::GameObjectCommand(GameObject& object) noexcept
 
 dae::MoveCommand::MoveCommand(GameObject& object, int8_t x, int8_t y) noexcept
 	: GameObjectCommand(object)
-	, m_Movement{ object.GetComponent<MovementComponent>() }
+	, m_Movement{ object.GetComponent<PhysicsComponent>() }
 	, m_DirX{ x }
 	, m_DirY{ y }
 {

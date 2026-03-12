@@ -24,7 +24,7 @@ namespace dae
 	};
 
 	// --- Derived ---
-	class MovementComponent;
+	class PhysicsComponent;
 	class MoveCommand final : public GameObjectCommand
 	{
 	public:
@@ -32,7 +32,7 @@ namespace dae
 
 		void Execute() override;
 	private:
-		MovementComponent& m_Movement;
+		PhysicsComponent& m_Movement;
 		int8_t m_DirX{};
 		int8_t m_DirY{};
 		

@@ -3,14 +3,14 @@
 #include "TransformComponent.h"
 #include "Timer.h"
 
-dae::MovementComponent::MovementComponent(GameObject& owner, float speed) noexcept
+dae::PhysicsComponent::PhysicsComponent(GameObject& owner, float speed) noexcept
 	: ComponentBase(owner)
 	, m_Speed{ speed }
 	, m_Transform{ owner.GetComponent<TransformComponent>() }
 {
 }
 
-bool dae::MovementComponent::TryMove(int8_t x, int8_t y)
+bool dae::PhysicsComponent::TryMove(int8_t x, int8_t y)
 {
     const auto elapsedSec{ Timer::GetInstance().GetElapsed() };
 

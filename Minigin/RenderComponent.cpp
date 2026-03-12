@@ -5,6 +5,7 @@
 #include "Renderer.h"
 #include "TransformComponent.h"
 #include <assert.h>
+#include <SDL3/SDL.h>
 
 dae::RenderComponent::RenderComponent(GameObject& owner) noexcept
 	:RenderComponent(owner, nullptr)
@@ -12,10 +13,23 @@ dae::RenderComponent::RenderComponent(GameObject& owner) noexcept
 }
 
 dae::RenderComponent::RenderComponent(GameObject& owner, std::shared_ptr<Texture2D> pTexture) noexcept
-	:ComponentBase(owner)
-	, m_pTexture{std::move(pTexture)}
-	, m_TransformComponent{ owner.GetComponent<TransformComponent>() }
+	:RenderComponent(owner, std::move(pTexture), 0.f, 0.f)
 {
+}
+
+dae::RenderComponent::RenderComponent(GameObject& owner, std::shared_ptr<Texture2D> pTexture, float width, float height) noexcept
+	:ComponentBase(owner)
+	, m_pTexture{ std::move(pTexture) }
+	, m_TransformComponent{ owner.GetComponent<TransformComponent>() }
+	, m_Width{width}
+	, m_Heigth{height}
+{
+}
+
+void dae::RenderComponent::SetDimensions(float width, float height)
+{
+	m_Width = width;
+	m_Heigth = height;
 }
 
 void dae::RenderComponent::SetTexture(const std::string& filename)
@@ -34,6 +48,12 @@ void dae::RenderComponent::Render() const
 
 	auto const& pos = m_TransformComponent.GetWorldPosition();
 
-	Renderer::GetInstance().RenderTexture(
-		*m_pTexture, pos.x, pos.y);
+	if (m_Width && m_Heigth)
+	{
+		Renderer::GetInstance().RenderTexture(*m_pTexture, pos.x, pos.y, m_Width, m_Heigth);
+	}
+	else
+	{
+		Renderer::GetInstance().RenderTexture(*m_pTexture, pos.x, pos.y);
+	}
 }

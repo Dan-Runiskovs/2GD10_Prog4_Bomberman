@@ -35,5 +35,7 @@ namespace dae
 		MovementComponent& m_Movement;
 		int8_t m_DirX{};
 		int8_t m_DirY{};
+		
+		//direction is a vector
 	};
 }

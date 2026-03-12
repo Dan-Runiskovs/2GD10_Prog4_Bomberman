@@ -18,7 +18,7 @@ namespace dae
         Controller& AddController(uint8_t id);
 
         void AddBinding(std::unique_ptr<Binding> binding);
-
+        // remove binding? 0_0
     private:
         std::vector<std::unique_ptr<Controller>> m_Controllers;
         std::vector<std::unique_ptr<Binding>> m_Bindings;

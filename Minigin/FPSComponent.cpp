@@ -5,8 +5,6 @@
 #include <assert.h>
 #include "TextComponent.h"
 
-#include <iostream> // TODO: delete
-
 dae::FPSComponent::FPSComponent(GameObject& owner) noexcept
 	: ComponentBase(owner)
 	, m_TextComponent{ owner.GetComponent<TextComponent>() }

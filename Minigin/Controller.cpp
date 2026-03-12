@@ -116,7 +116,7 @@ public:
 
     bool IsButtonPressed(unsigned int button) const
     {
-#ifndef SDLTESTING
+#if _WIN32
         return m_CurrentState.Gamepad.wButtons & button;
 #else
         return m_CurrentButtons & button;

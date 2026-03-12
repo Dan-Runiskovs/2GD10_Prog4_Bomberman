@@ -20,10 +20,9 @@ class dae::Controller::Impl
 {
 public:
     Impl(uint8_t id)
+        :m_ID{id}
     {
-#if _WIN32
-        m_ID = id;
-#else
+#if !_WIN32
         m_pGamepad = SDL_OpenGamepad(id);
 #endif
     }
@@ -60,7 +59,11 @@ public:
         m_PreviousButtons = m_CurrentButtons;
         m_CurrentButtons = 0;
 
-        if (!m_pGamepad) return;
+        if (!m_pGamepad)
+        {
+            m_pGamepad = SDL_OpenGamepad(m_ID);
+            return;
+        }
 
         auto remapCheck = [&](SDL_GamepadButton button, unsigned int mask)
             {
@@ -143,9 +146,9 @@ public:
 
 private:
 
-#if _WIN32
-
     uint8_t m_ID{};
+
+#if _WIN32
 
     XINPUT_STATE m_CurrentState{};
     XINPUT_STATE m_PreviousState{};

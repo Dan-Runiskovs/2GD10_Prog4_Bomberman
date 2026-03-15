@@ -18,6 +18,7 @@
 #include "Scene.h"
 
 // --- Games --- 
+#include "Bomberman.h"
 #include "ThrashTheCache.h"
 #include "InputTest.h"
 
@@ -31,7 +32,7 @@ int main(int, char*[]) {
 	if(!fs::exists(data_location))
 		data_location = "../Data/";
 #endif
-	dae::Minigin engine(data_location, std::make_unique<InputTest>());
+	dae::Minigin engine(data_location, std::make_unique<dae::Bomberman>());
 	engine.Run();
     return 0;
 }

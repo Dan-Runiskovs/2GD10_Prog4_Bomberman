@@ -38,8 +38,12 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Minigin/Commands.cpp
   Minigin/Bindings.cpp
   Minigin/AnimationComponent.cpp
+  Game/HealthComponent.cpp
   Game/ThrashTheCache.cpp
   Game/InputTest.cpp
+  Game/Bomberman.cpp
+  Game/Subject.cpp
+  Game/ScoreManager.cpp
 )
 
 # enable c++20 features

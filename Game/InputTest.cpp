@@ -12,7 +12,7 @@
 // --- essential ---
 #include "ResourceManager.h"
 #include "SceneManager.h"
-#include "InputManager.h" // <--- i have this...
+#include "InputManager.h"
 #include "Renderer.h"
 
 void InputTest::Init()
@@ -115,6 +115,20 @@ void InputTest::Init()
 												std::make_unique<dae::MoveCommand>(bomberRef, 0, 1),
 												dae::CommandType::OnHold));
 	
+	scene.Add(std::move(go));
+
+	//helper text
+	go = std::make_unique<dae::GameObject>();
+	go->AddComponent<dae::RenderComponent>();
+	go->AddComponent<dae::TextComponent>("Move Balloom with WASD", font);
+	go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
+	go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 450.f);
+	scene.Add(std::move(go));
+	go = std::make_unique<dae::GameObject>();
+	go->AddComponent<dae::RenderComponent>();
+	go->AddComponent<dae::TextComponent>("Move Bomberman with DPad, loses life upon touching bloom", font);
+	go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
+	go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 500.f);
 	scene.Add(std::move(go));
 }
 

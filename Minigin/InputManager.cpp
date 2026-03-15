@@ -1,5 +1,6 @@
 #include "InputManager.h"
 #include <SDL3/SDL.h>
+#include <assert.h>
 
 bool dae::InputManager::ProcessInput()
 {
@@ -34,6 +35,13 @@ dae::Controller& dae::InputManager::AddController(uint8_t id)
 	auto controller{ std::make_unique<Controller>(id) } ;
 	Controller& ref{ *controller };
 	m_Controllers.emplace_back(std::move(controller));
+	return ref;
+}
+
+dae::Controller& dae::InputManager::GetController(uint8_t id)
+{
+	//assert(id <= m_Controllers.size());
+	Controller& ref{ *m_Controllers.at(id) };
 	return ref;
 }
 

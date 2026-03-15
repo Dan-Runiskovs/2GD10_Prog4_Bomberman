@@ -1,4 +1,6 @@
 #include "ScoreManager.h"
+#include <sstream>
+#include <iomanip>
 
 void dae::ScoreManager::AddScore(unsigned int amount)
 {
@@ -14,8 +16,7 @@ void dae::ScoreManager::SetScore(unsigned int amount)
 
 std::string dae::ScoreManager::GetFormatedScore() const
 {
-	char buffer[256];
-	sprintf_s(buffer, "%07d", m_Score);
-	std::string str(buffer);
-	return str;
+	std::ostringstream ss;
+	ss << std::setw(7) << std::setfill('0') << m_Score;
+	return ss.str();
 }

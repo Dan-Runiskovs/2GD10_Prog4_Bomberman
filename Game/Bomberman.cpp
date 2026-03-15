@@ -211,6 +211,8 @@ dae::TextComponent& dae::Bomberman::CreateHealthDisplay(Scene& scene, GameObject
 			case dae::Event::OnDeath:
 				textRef.SetText("Player Dead (kind of)");
 				break;
+			default:
+				break;
 			}
 
 		}

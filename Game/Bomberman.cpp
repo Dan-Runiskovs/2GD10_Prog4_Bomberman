@@ -28,6 +28,7 @@ void dae::Bomberman::Init()
 	CreateDisplay(scene);
 	auto& bomberman0 =			CreateBomberman(scene, 0, 200.f, 200.f);
 	auto& bomberman1 =			CreateBomberman(scene, 1, 300.f, 200.f);
+	/* auto& balloom = */		CreateBalloom(scene, 100.f, 200.f);
 
 	m_pAchievementManager = std::make_unique<AchievementManager>();
 
@@ -146,7 +147,7 @@ dae::GameObject& dae::Bomberman::CreateBomberman(Scene& scene, size_t index, flo
 	return bomberRef;
 }
 
-dae::GameObject& dae::Bomberman::CreateBalloom(Scene& scene)
+dae::GameObject& dae::Bomberman::CreateBalloom(Scene& scene, float x, float y)
 {
 	constexpr float BASE_SPEED{ 50.f };
 	constexpr int SPEED_SCALE{ 1 };
@@ -160,7 +161,7 @@ dae::GameObject& dae::Bomberman::CreateBalloom(Scene& scene)
 	auto go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::RenderComponent>().SetTexture("Balloom.png");
 	go->GetComponent<dae::RenderComponent>().SetDimensions(SIZE, SIZE);
-	go->GetComponent<dae::TransformComponent>().SetWorldPosition(100.f, 100.f);
+	go->GetComponent<dae::TransformComponent>().SetWorldPosition(x, y);
 	go->AddComponent<dae::PhysicsComponent>(SPEED);
 
 	auto& input = dae::InputManager::GetInstance();

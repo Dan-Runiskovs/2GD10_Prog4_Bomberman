@@ -23,7 +23,7 @@ namespace dae
     private:
         void CreateDisplay(Scene& scene);
         GameObject& CreateBomberman(Scene& scene, size_t index, float x, float y);
-        GameObject& CreateBalloom(Scene& scene);
+        GameObject& CreateBalloom(Scene& scene, float x, float y);
         TextComponent& CreateHealthDisplay(Scene& scene, GameObject& player, size_t index, float x, float y);
         TextComponent& CreateScoreDisplay(Scene& scene, ScoreManager& sm, float x, float y);
 

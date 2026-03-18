@@ -22,7 +22,7 @@ struct Achievement_t
 class CSteamAchievements
 {
 private:
-	int64 m_iAppID; // Our current AppID
+	[[maybe_unused]] uint64_t m_iAppID; // Our current AppID
 	Achievement_t* m_pAchievements; // Achievements data
 	int m_iNumAchievements; // The number of Achievements
 	bool m_bInitialized; // Are we ready to use the API?

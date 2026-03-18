@@ -56,7 +56,7 @@ bool CSteamAchievements::SetAchievement(const char* ID)
 void CSteamAchievements::OnUserStatsStored(UserStatsStored_t* pCallback)
 {
 	// we may get callbacks for other games' stats arriving, ignore them
-	if (m_iAppID == static_cast<int64>(pCallback->m_nGameID))
+	if (m_iAppID == pCallback->m_nGameID)
 	{
 		if (k_EResultOK == pCallback->m_eResult)
 		{
@@ -72,7 +72,7 @@ void CSteamAchievements::OnUserStatsStored(UserStatsStored_t* pCallback)
 void CSteamAchievements::OnAchievementStored(UserAchievementStored_t* pCallback)
 {
 	// we may get callbacks for other games' stats arriving, ignore them
-	if (m_iAppID == static_cast<int64>(pCallback->m_nGameID))
+	if (m_iAppID == pCallback->m_nGameID)
 	{
 		std::cout << "Stored Achievement for Steam\n";
 	}

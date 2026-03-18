@@ -38,7 +38,7 @@ bool CSteamAchievements::Initialize()
 	return true;
 }
 
-bool CSteamAchievements::SetAchievement(const char* ID)
+bool CSteamAchievements::SetAchievement([[maybe_unused]] const char* ID)
 {
 #if USE_STEAMWORKS
 	// Have we received a call back from Steam yet?

@@ -2,8 +2,17 @@
 #include <sstream>
 #include <iomanip>
 
+//TODO: Remove in production
+#include <iostream>
+
+dae::ScoreManager::ScoreManager(uint8_t playerIdx) noexcept
+	:m_playerIdx{playerIdx}
+{
+}
+
 void dae::ScoreManager::AddScore(unsigned int amount)
 {
+	std::cout << "Adding score to player " << m_playerIdx << "!\n";
 	m_Score += amount;
 	m_Subject.Notify(Event::OnScoreChanged);
 }

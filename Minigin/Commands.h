@@ -55,13 +55,16 @@ namespace dae
 
 	// TEMPORARY!!
 	// TODO: Remove in production, health can not be known in the engine!
+	class ScoreManager;
 	class IncreaseScoreCommand final : public Command
 	{
 	public:
-		IncreaseScoreCommand(uint8_t score) noexcept;
+		IncreaseScoreCommand(ScoreManager& sm, uint8_t score) noexcept;
 
 		void Execute() override;
 	private:
+		ScoreManager& m_ScoreManager;
+		
 		uint8_t m_Score;
 	};
 }

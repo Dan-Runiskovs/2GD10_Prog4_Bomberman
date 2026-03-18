@@ -16,30 +16,28 @@
 #include "InputManager.h"
 #include "Renderer.h"
 
+
+//TODO: Remove in production
+#include <iostream>
+
 void dae::Bomberman::Init()
 {
 	// --- Create scene ---
 	auto& scene{ dae::SceneManager::GetInstance().CreateScene() };
 
 	CreateDisplay(scene);
-	auto& bomberman =			CreateBomberman(scene);
-	/* auto& balloom =  */		CreateBalloom(scene);
-	/* auto& healthDisplay = */	CreateHealthDisplay(scene, bomberman);
-	/* auto& scoreDisplay = */	CreateScoreDisplay(scene);
+	auto& bomberman0 =			CreateBomberman(scene, 0, 200.f, 200.f);
+	auto& bomberman1 =			CreateBomberman(scene, 1, 300.f, 200.f);
 
+	m_pAchievementManager = std::make_unique<AchievementManager>();
+
+	/* auto& healthDisplay0 = */CreateHealthDisplay(scene, bomberman0, 0, 20.f, 300.f);
+	/* auto& scoreDisplay0 = */	CreateScoreDisplay(scene, m_Score0, 20.f, 330.f);
+
+	/* auto& healthDisplay1 = */CreateHealthDisplay(scene, bomberman1, 1, 20.f, 360.f);
+	/* auto& scoreDisplay1 = */	CreateScoreDisplay(scene, m_Score1, 20.f, 390.f);
 	
-
-	auto& controllerRef = dae::InputManager::GetInstance().GetController(0);
-	auto& input = dae::InputManager::GetInstance();
-	input.AddBinding(std::make_unique<dae::KeyboardBinding>(
-		SDL_SCANCODE_SPACE,
-		std::make_unique<dae::DamageCommand>(bomberman, 1),
-		dae::CommandType::OnRelease));
-	input.AddBinding(std::make_unique<dae::ControllerBinding>(
-		controllerRef,
-		dae::ControllerButton::GAMEPAD_A,
-		std::make_unique<dae::IncreaseScoreCommand>(200),
-		dae::CommandType::OnRelease));
+	
 }
 
 void dae::Bomberman::Update()
@@ -90,19 +88,19 @@ void dae::Bomberman::CreateDisplay(Scene& scene)
 	font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 20);
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("Move Balloom with WASD, press SPACE to deal 1 damage", font);
+	go->AddComponent<dae::TextComponent>("Move Balloom with WASD, even though he is useless. Connect 2 controllers and do following:", font);
 	go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
 	go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 450.f);
 	scene.Add(std::move(go));
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("Move Bomberman with DPad, press Gamepad_A to increase score", font);
+	go->AddComponent<dae::TextComponent>("Move your Bomberman with DPad, press Gamepad_A to increase score, Y to take damage", font);
 	go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
 	go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 500.f);
 	scene.Add(std::move(go));
 }
 
-dae::GameObject& dae::Bomberman::CreateBomberman(Scene& scene)
+dae::GameObject& dae::Bomberman::CreateBomberman(Scene& scene, size_t index, float x, float y)
 {
 	constexpr float BASE_SPEED{ 50.f };
 	constexpr int SPEED_SCALE{ 2 };
@@ -115,13 +113,13 @@ dae::GameObject& dae::Bomberman::CreateBomberman(Scene& scene)
 
 	// --- BomberMan ---
 	auto go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::RenderComponent>().SetTexture("Bomberman.png");
+	go->AddComponent<dae::RenderComponent>().SetTexture("Bomberman_" + std::to_string(index) + ".png");
 	go->GetComponent<dae::RenderComponent>().SetDimensions(SIZE, SIZE);
-	go->GetComponent<dae::TransformComponent>().SetWorldPosition(200.f, 100.f);
+	go->GetComponent<dae::TransformComponent>().SetWorldPosition(x, y);
 	go->AddComponent<dae::PhysicsComponent>(SPEED);
 	
 	auto& bomberRef = *go;
-	auto& controllerRef = dae::InputManager::GetInstance().AddController(0);
+	auto& controllerRef = dae::InputManager::GetInstance().AddController(static_cast<uint8_t>(index));
 	auto& input = dae::InputManager::GetInstance();
 	input.AddBinding(std::make_unique<dae::ControllerBinding>(
 		controllerRef,
@@ -187,14 +185,14 @@ dae::GameObject& dae::Bomberman::CreateBalloom(Scene& scene)
 	return refBalloom;
 }
 
-dae::TextComponent& dae::Bomberman::CreateHealthDisplay(Scene& scene, GameObject& player)
+dae::TextComponent& dae::Bomberman::CreateHealthDisplay(Scene& scene, GameObject& player, size_t index, float x, float y)
 {
 	auto font{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 20) };
 	auto go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("Health: ", font);
 	go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
-	go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 300.f);
+	go->GetComponent<dae::TransformComponent>().SetWorldPosition(x, y);
 	auto& textRef = go->GetComponent<TextComponent>();
 
 	const uint8_t maxHealth{ 3 };
@@ -218,33 +216,52 @@ dae::TextComponent& dae::Bomberman::CreateHealthDisplay(Scene& scene, GameObject
 		}
 	);
 
+	auto& controllerRef = dae::InputManager::GetInstance().GetController(static_cast<uint8_t>(index));
+	auto& input = dae::InputManager::GetInstance();
+
+	input.AddBinding(std::make_unique<dae::ControllerBinding>(
+		controllerRef,
+		dae::ControllerButton::GAMEPAD_Y,
+		std::make_unique<dae::DamageCommand>(player, 1),
+		dae::CommandType::OnRelease));
+
 	scene.Add(std::move(go));
 	return textRef;
 }
 
-dae::TextComponent& dae::Bomberman::CreateScoreDisplay(Scene& scene)
+dae::TextComponent& dae::Bomberman::CreateScoreDisplay(Scene& scene, ScoreManager& sm, float x, float y)
 {
 	auto font{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 20) };
 	auto go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("Health: ", font);
 	go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
-	go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 330.f);
+	go->GetComponent<dae::TransformComponent>().SetWorldPosition(x, y);
 	
 	auto& textRef = go->GetComponent<TextComponent>();
-	auto& scoreRef = ScoreManager::GetInstance();
-	textRef.SetText("Score: " + scoreRef.GetFormatedScore());
+	textRef.SetText("Score: " + sm.GetFormatedScore());
 
-	scoreRef.GetSubject().AddObserver
+	sm.GetSubject().AddObserver
 	(
 		[&](Event event)
 		{
 			if (event == Event::OnScoreChanged)
 			{
-				textRef.SetText("Score: " + scoreRef.GetFormatedScore());
+				textRef.SetText("Score: " + sm.GetFormatedScore());
+				m_pAchievementManager->CheckScoreForAchievement(sm);
 			}
 		}
 	);
+
+	auto& controllerRef = dae::InputManager::GetInstance().GetController(sm.GetAssignedPlayerIdx());
+	auto& input = dae::InputManager::GetInstance();
+
+	input.AddBinding(std::make_unique<dae::ControllerBinding>(
+		controllerRef,
+		dae::ControllerButton::GAMEPAD_A,
+		std::make_unique<dae::IncreaseScoreCommand>(sm, 200),
+		dae::CommandType::OnRelease));
+
 	scene.Add(std::move(go));
 	return textRef;
 }

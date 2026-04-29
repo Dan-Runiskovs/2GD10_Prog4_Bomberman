@@ -25,6 +25,8 @@
 #include "Renderer.h"
 #include "ResourceManager.h"
 #include "Timer.h"
+#include "SoundSystem.h"
+#include "ServiceLocator.h"
 
 #ifdef _DEBUG
 #include <fcntl.h>
@@ -110,6 +112,12 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath, std::unique_ptr<Gam
 
 #ifdef _DEBUG
 	CreateDebugConsole();
+#endif // _DEBUG
+
+#ifdef _DEBUG
+	ServiceLocator::RegisterSoundSystem(std::make_unique<dae::LoggingSoundSystem>(std::make_unique<dae::SinaiSoundSystem>(dataPath)));
+#else
+	ServiceLocator::RegisterSoundSystem(std::make_unique<dae::SinaiSoundSystem>());
 #endif // _DEBUG
 
 	Renderer::GetInstance().Init(g_window, m_Game.get());

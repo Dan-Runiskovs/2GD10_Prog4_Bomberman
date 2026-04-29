@@ -27,7 +27,7 @@ public:
 	using MixerPtr = std::unique_ptr<MIX_Mixer, MixerDeleter>;
 	using AudioPtr = std::unique_ptr<MIX_Audio, AudioDeleter>;
 
-	Impl()
+	Impl(const std::filesystem::path& dataPath) : m_DataPath(dataPath)
 	{
 		if (!MIX_Init())
 		{
@@ -63,12 +63,12 @@ public:
 	{
 		if (!m_SoundLib.contains(sfxId)) 
 		{
-			std::cout << "ERROR: Unknown SFX: " << sfxId << "!\n";
+			std::cerr << "ERROR: Unknown SFX: " << sfxId << "!\n";
 			return;
 		}
 
 		// --- Here the magic happens ---
-		m_EventQueue.Push([=] {
+		m_EventQueue.Push([=, this] {
 			// --- Find stuff ---
 			auto* audio = GetAutioPtr(sfxId);
 			if (!audio) return;
@@ -89,23 +89,26 @@ public:
 		auto promise{ std::make_shared<std::promise<uint8_t>>() };
 		auto future{ promise->get_future() };
 
+		const auto fullPath{ m_DataPath/sound.path };
+
 		// --- Wait until the value gets set ---
-		m_EventQueue.Push([id = sound.id, path = sound.fullPath, promise, this]
+		m_EventQueue.Push([id = sound.id, fullPath, promise, this]
 			{
 				if (m_SoundLib.contains(id))
 				{
-					std::cout << "ERROR: Provided ID already in use\n";
+					std::cerr << "ERROR: Provided ID already in use\n";
 					promise->set_value(id);
 					return;
 				}
 
 				// --- Not in the Librarty yet : Add this one ---
 				auto sfx = AudioPtr(
-					MIX_LoadAudio(m_pMixer.get(), path.data(), true)
+					MIX_LoadAudio(m_pMixer.get(), fullPath.string().c_str(), true)
 				);
 
 				// --- Safety check ---
-				if (sfx) std::cout << "Load success?!\n";
+				if (sfx) std::cout << "Load success!\n";
+				else std::cerr << "Error: load failed\n";
 
 				//--- Save and Set the flag ---
 				m_SoundLib.emplace(id, std::move(sfx));
@@ -149,6 +152,8 @@ private:
 
 		return it->second.get();
 	}
+
+	const std::filesystem::path m_DataPath;
 };
 #pragma endregion
 
@@ -169,9 +174,9 @@ void dae::SinaiSoundSystem::StopAll()
 	m_pImpl->StopAll();
 }
 
-dae::SinaiSoundSystem::SinaiSoundSystem() noexcept
+dae::SinaiSoundSystem::SinaiSoundSystem(const std::filesystem::path& dataPath) noexcept
 {
-	m_pImpl = std::make_unique<Impl>();
+	m_pImpl = std::make_unique<Impl>(dataPath);
 }
 
 // --- @DEV Dragged it over here, otherwise compiler complained ---
@@ -188,16 +193,16 @@ dae::LoggingSoundSystem::LoggingSoundSystem(std::unique_ptr<SoundSystem>&& ss)
 
 void dae::LoggingSoundSystem::PlaySFX(const uint8_t sfxId, const uint8_t volume)
 {
+	std::cout	<< "Playing SFX " << static_cast<int>(sfxId) << "\n"
+				<< "At Volume " << static_cast<int>(volume) << "\n";
 	m_RealSoundSystem->PlaySFX(sfxId, volume);
-	std::cout	<< "Playing SFX " << sfxId << "\n"
-				<< "At Volume " << volume << "\n";
 }
 
 uint8_t dae::LoggingSoundSystem::LoadSFX(const SoundData& sound)
 {
-	std::cout << "Loading Sound:\n"
-				<< "ID: " << sound.id << "\n"
-				<< "Path: " << sound.fullPath << "\n";
+	std::cout	<< "Loading Sound:\n"
+				<< "ID: " << static_cast<int>(sound.id) << "\n"
+				<< "Path: " << sound.path << "\n";
 	return m_RealSoundSystem->LoadSFX(sound);
 }
 

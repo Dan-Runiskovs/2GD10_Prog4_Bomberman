@@ -8,15 +8,18 @@
 #include <future>
 #include <string>
 #include <string_view>
+#include <filesystem>
 
 namespace dae
 {
+	namespace fs = std::filesystem;
+
 #pragma region Base Interface
 	// --- The Sound ---
 	struct SoundData
 	{
 		const uint8_t id;
-		const std::string_view fullPath;
+		const std::string_view path;
 	};
 
 	// --- Pure virtual base interface ---
@@ -64,7 +67,7 @@ namespace dae
 
 		void StopAll() override;
 
-		SinaiSoundSystem() noexcept;
+		SinaiSoundSystem(const std::filesystem::path& dataPath) noexcept;
 		~SinaiSoundSystem() noexcept;
 	private:
 		class Impl;

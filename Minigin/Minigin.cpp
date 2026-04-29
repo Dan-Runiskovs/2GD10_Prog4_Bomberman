@@ -117,7 +117,7 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath, std::unique_ptr<Gam
 #ifdef _DEBUG
 	ServiceLocator::RegisterSoundSystem(std::make_unique<dae::LoggingSoundSystem>(std::make_unique<dae::SinaiSoundSystem>(dataPath)));
 #else
-	ServiceLocator::RegisterSoundSystem(std::make_unique<dae::SinaiSoundSystem>());
+	ServiceLocator::RegisterSoundSystem(std::make_unique<dae::SinaiSoundSystem>(dataPath));
 #endif // _DEBUG
 
 	Renderer::GetInstance().Init(g_window, m_Game.get());

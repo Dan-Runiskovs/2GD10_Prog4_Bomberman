@@ -102,7 +102,7 @@ void dae::Bomberman::CreateDisplay(Scene& scene)
 	scene.Add(std::move(go));
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("Move your Bomberman with DPad, press Gamepad_A to increase score, Y to take damage", font);
+	go->AddComponent<dae::TextComponent>("Move your Bomberman with DPad, press Gamepad_A to increase score (and play sound), Y to take damage", font);
 	go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
 	go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 500.f);
 	scene.Add(std::move(go));

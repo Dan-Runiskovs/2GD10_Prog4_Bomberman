@@ -1,6 +1,6 @@
 #pragma once
 #include "Game.h"
-#include "imgui_plot.h"
+//#include "imgui_plot.h"
 
 #include <memory>
 #include <vector>
@@ -16,10 +16,10 @@ public:
 
 private:
     // --- Plot configs ---
-    std::unique_ptr<ImGui::PlotConfig> m_Ex1PlotConfig          { std::make_unique<ImGui::PlotConfig>() };
-    std::unique_ptr<ImGui::PlotConfig> m_Ex2PlotConfig          { std::make_unique<ImGui::PlotConfig>() };
-    std::unique_ptr<ImGui::PlotConfig> m_Ex2v2PlotConfig        { std::make_unique<ImGui::PlotConfig>() };
-    std::unique_ptr<ImGui::PlotConfig> m_Ex2CombinedPlotConfig  { std::make_unique<ImGui::PlotConfig>() };
+    //std::unique_ptr<ImGui::PlotConfig> m_Ex1PlotConfig          { std::make_unique<ImGui::PlotConfig>() };
+    //std::unique_ptr<ImGui::PlotConfig> m_Ex2PlotConfig          { std::make_unique<ImGui::PlotConfig>() };
+    //std::unique_ptr<ImGui::PlotConfig> m_Ex2v2PlotConfig        { std::make_unique<ImGui::PlotConfig>() };
+    //std::unique_ptr<ImGui::PlotConfig> m_Ex2CombinedPlotConfig  { std::make_unique<ImGui::PlotConfig>() };
 
     // --- Data storage ---
     std::vector<float> m_LoopInfoEx1;

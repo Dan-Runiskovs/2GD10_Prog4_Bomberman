@@ -86,3 +86,7 @@ This project is build with github actions.
 
 ```<iframe style="position: absolute; top: 0px; left: 0px; width: 1024px; height: 576px;" src="https://<username>.github.io/<repository>/" loading="lazy"></iframe>```
 
+# From Author -> Dan
+
+I know folder structure is a mess now, all due to the program being WIP,
+Please excuse the mess, it will be cleaned up later.

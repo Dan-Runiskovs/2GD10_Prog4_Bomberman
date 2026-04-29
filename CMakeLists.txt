@@ -6,7 +6,7 @@ project(Minigin)
 # ---------------------------
 if(EMSCRIPTEN)
   message("Using Emscripten!")
-  set(TARGET_NAME bomberman_web)
+  set(TARGET_NAME minigin_web)
   set(TARGET_PARAM "")
 else()
   set(TARGET_NAME bomberman)

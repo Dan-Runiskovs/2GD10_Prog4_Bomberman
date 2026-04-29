@@ -14,6 +14,8 @@
 #include "ResourceManager.h"
 #include "SceneManager.h"
 #include "InputManager.h"
+#include "SoundSystem.h"
+#include "ServiceLocator.h"
 #include "Renderer.h"
 
 
@@ -24,6 +26,16 @@ void dae::Bomberman::Init()
 {
 	// --- Create scene ---
 	auto& scene{ dae::SceneManager::GetInstance().CreateScene() };
+#ifdef _DEBUG
+	ServiceLocator::RegisterSoundSystem(std::make_unique<dae::LoggingSoundSystem>(std::make_unique<dae::SinaiSoundSystem>()));
+#else
+	ServiceLocator::RegisterSoundSystem(std::make_unique<dae::SinaiSoundSystem>());
+#endif // _DEBUG
+
+	//Load test SFX
+	SoundData sd{ 0, "Bruh.mp3" };
+	ServiceLocator::GetSoundSystem().LoadSFX(sd);
+	
 
 	CreateDisplay(scene);
 	auto& bomberman0 =			CreateBomberman(scene, 0, 200.f, 200.f);
@@ -206,6 +218,7 @@ dae::TextComponent& dae::Bomberman::CreateHealthDisplay(Scene& scene, GameObject
 			{
 			case dae::Event::OnHealthChanged:
 				textRef.SetText("Health: " + std::to_string(health.GetHealth()));
+				
 				break;
 			case dae::Event::OnDeath:
 				textRef.SetText("Player Dead (kind of)");

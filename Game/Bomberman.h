@@ -31,11 +31,5 @@ namespace dae
         ScoreManager m_Score1{ 1 };
 
         std::unique_ptr<AchievementManager> m_pAchievementManager{ nullptr };
-
-        //GameObject& CreateHealthDisplay(Scene& scene);
-        //GameObject& CreateScoreDisplay(Scene& scene);
-
-        //GameObject& m_Bomberman;
-        //GameObject& m_Balloom;
     };
 }

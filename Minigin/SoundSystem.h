@@ -101,46 +101,14 @@ namespace dae
 	{
 	public:
 		// --- Add sound to queue ---
-		void Push(SoundEvent e)
-		{
-			// --- Lock and push ---
-			{
-				std::lock_guard lock(m_Mutex);
-				m_SoundEvents.push(std::move(e));
-			}
-			// --- Wake up the worker thread ---
-			m_CV.notify_one();
-		}
+		void Push(SoundEvent e);
 
-		// Blocking pop
-		bool WaitAndPop(SoundEvent& outEvent)
-		{
-			std::unique_lock<std::mutex> lock(m_Mutex);
-
-			// --- Sleep till work arrives ---
-			m_CV.wait(lock, [this]
-				{
-					return !m_SoundEvents.empty() || !m_Running;
-				});
-
-			if (!m_Running && m_SoundEvents.empty()) return false;
-
-			// --- Not empty and running ? Get the sound out ---
-			outEvent = std::move(m_SoundEvents.front());
-			m_SoundEvents.pop();
-			return true;
-		}
-
-		void Stop()
-		{
-			// --- Lock the thread anbd stop running ---
-			{
-				std::lock_guard<std::mutex> lock(m_Mutex);
-				m_Running = false;
-			}
-			m_CV.notify_all();
-		}
-
+		// --- Blocking pop ---
+		bool WaitAndPop(SoundEvent& outEvent);
+		
+		// --- Stop SoundEventQueue ---
+		void Stop();
+		
 	private:
 		std::queue<SoundEvent> m_SoundEvents{};
 		std::mutex m_Mutex{};

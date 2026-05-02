@@ -8,14 +8,6 @@
 class dae::SinaiSoundSystem::Impl
 {
 public:
-	struct MixerDeleter
-	{
-		void operator()(MIX_Mixer* pMixer) const
-		{
-			if (pMixer) MIX_DestroyMixer(pMixer);
-		}
-	};
-
 	struct AudioDeleter
 	{
 		void operator()(MIX_Audio* pAudio) const
@@ -24,10 +16,11 @@ public:
 		}
 	};
 
-	using MixerPtr = std::unique_ptr<MIX_Mixer, MixerDeleter>;
 	using AudioPtr = std::unique_ptr<MIX_Audio, AudioDeleter>;
 
-	Impl(const std::filesystem::path& dataPath) : m_DataPath(dataPath)
+	Impl(const std::filesystem::path& dataPath) 
+		: m_pMixer(nullptr)
+		, m_DataPath(dataPath)
 	{
 		if (!MIX_Init())
 		{
@@ -36,9 +29,10 @@ public:
 			return;
 		}
 		
-		m_pMixer = MixerPtr(
-			MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL)
-		);
+		if (m_pMixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL); !m_pMixer)
+		{
+			std::cerr << "Failed to create mixer\n";
+		}
 
 		m_Worker = std::jthread([this]
 			{
@@ -55,24 +49,26 @@ public:
 	{
 		m_EventQueue.Stop();
 		m_Worker.join();
-		m_pMixer.reset();
-		MIX_Quit();
+		m_SoundLib.clear();
+
+		// --- Uncomment these following lines in order to crash on destroy ---
+		// if(m_pMixer) MIX_DestroyMixer(m_pMixer);
+		//MIX_Quit();
 	}
 
 	void PlaySFX(const uint8_t sfxId, const uint8_t volume)
 	{
-		if (!m_SoundLib.contains(sfxId)) 
-		{
-			std::cerr << "ERROR: Unknown SFX: " << sfxId << "!\n";
-			return;
-		}
-
 		// --- Here the magic happens ---
 		m_EventQueue.Push([=, this] {
 			// --- Find stuff ---
 			auto* audio = GetAutioPtr(sfxId);
-			if (!audio) return;
-			auto* pMixer = m_pMixer.get();
+			if (!audio)
+			{
+				std::cerr << "ERROR: Unknown SFX: " << static_cast<int>(sfxId) << "!\n";
+				return;
+			}
+
+			auto* pMixer = m_pMixer;
 
 			// --- Set correct volume --
 			MIX_SetMixerGain(pMixer, RemapToSDLVolume(volume));
@@ -103,7 +99,7 @@ public:
 
 				// --- Not in the Librarty yet : Add this one ---
 				auto sfx = AudioPtr(
-					MIX_LoadAudio(m_pMixer.get(), fullPath.string().c_str(), true)
+					MIX_LoadAudio(m_pMixer, fullPath.string().c_str(), true)
 				);
 
 				// --- Safety check ---
@@ -123,7 +119,7 @@ public:
 	{
 		m_EventQueue.Push([this] 
 			{
-			MIX_StopAllTracks(m_pMixer.get(), 0);
+			MIX_StopAllTracks(m_pMixer, 0);
 			}
 		);
 	}
@@ -131,7 +127,7 @@ private:
 	// --- Sound event queue ---
 	SoundEventQueue m_EventQueue;
 	std::jthread m_Worker; // My little soundboy :)
-	MixerPtr m_pMixer;
+	MIX_Mixer* m_pMixer;
 
 	// --- Music Library ---
 	std::unordered_map<uint8_t, AudioPtr> m_SoundLib;
@@ -212,3 +208,46 @@ void dae::LoggingSoundSystem::StopAll()
 	std::cout << "Stopping All\n";
 }
 #pragma endregion
+
+#pragma region SoundEventQueue
+
+#pragma endregion
+
+void dae::SoundEventQueue::Push(SoundEvent e)
+{
+	// --- Lock and push ---
+	{
+		std::lock_guard lock(m_Mutex);
+		m_SoundEvents.push(std::move(e));
+	}
+	// --- Wake up the worker thread ---
+	m_CV.notify_one();
+}
+
+bool dae::SoundEventQueue::WaitAndPop(SoundEvent& outEvent)
+{
+	std::unique_lock<std::mutex> lock(m_Mutex);
+
+	// --- Sleep till work arrives ---
+	m_CV.wait(lock, [this]
+		{
+			return !m_SoundEvents.empty() || !m_Running;
+		});
+
+	if (!m_Running && m_SoundEvents.empty()) return false;
+
+	// --- Not empty and running ? Get the sound out ---
+	outEvent = std::move(m_SoundEvents.front());
+	m_SoundEvents.pop();
+	return true;
+}
+
+void dae::SoundEventQueue::Stop()
+{
+	// --- Lock the thread anbd stop running ---
+	{
+		std::lock_guard<std::mutex> lock(m_Mutex);
+		m_Running = false;
+	}
+	m_CV.notify_all();
+}

@@ -24,6 +24,7 @@ namespace dae
 #pragma region GameStates
     class GameState : public State
     {
+    public:
         virtual ~GameState() = default;
 
         virtual void OnEnter() override {}

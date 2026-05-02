@@ -10,9 +10,6 @@ bool dae::InputManager::ProcessInput()
 		if (e.type == SDL_EVENT_QUIT) {
 			return false;
 		}
-		if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-			
-		}
 	}
 
 	// --- Controller process ---

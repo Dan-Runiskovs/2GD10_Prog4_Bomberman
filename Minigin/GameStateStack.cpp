@@ -18,20 +18,26 @@ void dae::GameStateStack::ChangeState(std::unique_ptr<GameState> state)
 
 void dae::GameStateStack::HandleInput()
 {
+    // --- @DEV this intricate structure to process states in reverse order ---
+    for (auto stateIt{ m_States.rbegin() }; stateIt != m_States.rend(); ++stateIt)
+    {
+        (*stateIt)->HandleInput();
+
+        // --- Stop handling input if blocks previous ---
+        if (!(*stateIt)->IsTranscendent()) break;
+    }
 }
 
 void dae::GameStateStack::Update()
 {
     // --- @DEV this intricate structure to process states in reverse order ---
-    for (auto stateIt = m_States.rbegin(); stateIt != m_States.rend(); ++stateIt)
+    for (auto stateIt{ m_States.rbegin() }; stateIt != m_States.rend(); ++stateIt)
     {
         (*stateIt)->Update();
 
         // --- Stop updating if blocks previous ---
         if (!(*stateIt)->IsTranscendent()) break;
     }
-
-    ProcessPendingChanges();
 }
 
 void dae::GameStateStack::Render() const
@@ -51,7 +57,7 @@ void dae::GameStateStack::Render() const
     // --- Continue rendering on top of each other ---
     for (size_t stateIndex{ start }; stateIndex < m_States.size(); ++stateIndex)
     {
-        m_States.at(stateIndex)->Render();
+        m_States[stateIndex]->Render();
     }
 }
 

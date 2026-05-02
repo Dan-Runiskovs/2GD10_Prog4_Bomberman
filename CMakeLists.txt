@@ -147,6 +147,9 @@ add_library(minigin_lib STATIC
   Minigin/Timer.cpp
   Minigin/TransformComponent.cpp
   Minigin/RenderComponent.cpp
+  Minigin/GameStateStack.cpp
+
+  #TODO: Move the following outside the engine
   Minigin/PhysicsComponent.cpp
   Minigin/HealthComponent.cpp
   Minigin/Subject.cpp

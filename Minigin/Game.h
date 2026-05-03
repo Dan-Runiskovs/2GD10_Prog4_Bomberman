@@ -1,13 +1,15 @@
 #pragma once
-#include "SceneManager.h"
-#include "Scene.h"
 
-class Game
+namespace dae
 {
-public:
-	Game();
-	virtual ~Game() = default;
-	virtual void Init();
-	virtual void Update();
-	virtual void Render();
-};
+    class Game
+    {
+    public:
+        virtual ~Game() = default;
+
+        virtual void Init() = 0;
+        virtual void HandleInput() = 0;
+        virtual void Update() = 0;
+        virtual void Render() = 0;
+    };
+}

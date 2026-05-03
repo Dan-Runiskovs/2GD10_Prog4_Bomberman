@@ -17,261 +17,235 @@
 #include "SoundSystem.h"
 #include "ServiceLocator.h"
 #include "Renderer.h"
-
+#include "CustomCommands.h"
 
 //TODO: Remove in production
 #include <iostream>
 
 void dae::Bomberman::Init()
 {
-	// --- Create scene ---
-	auto& scene{ dae::SceneManager::GetInstance().CreateScene() };
+	m_GameStateStack.PushState(std::make_unique<TitleState>(*this));
+	m_GameStateStack.ProcessPendingChanges();
+}
 
-	// --- Load test SFX ---
-	SoundData sd{ 0, "Bruh.mp3" };
-	ServiceLocator::GetSoundSystem().LoadSFX(sd);
-	
-
-	CreateDisplay(scene);
-	auto& bomberman0 =			CreateBomberman(scene, 0, 200.f, 200.f);
-	auto& bomberman1 =			CreateBomberman(scene, 1, 300.f, 200.f);
-	/* auto& balloom = */		CreateBalloom(scene, 100.f, 200.f);
-
-	m_pAchievementManager = std::make_unique<AchievementManager>();
-
-	/* auto& healthDisplay0 = */CreateHealthDisplay(scene, bomberman0, 0, 20.f, 300.f);
-	/* auto& scoreDisplay0 = */	CreateScoreDisplay(scene, m_Score0, 20.f, 330.f);
-
-	/* auto& healthDisplay1 = */CreateHealthDisplay(scene, bomberman1, 1, 20.f, 360.f);
-	/* auto& scoreDisplay1 = */	CreateScoreDisplay(scene, m_Score1, 20.f, 390.f);
-	
-	
+void dae::Bomberman::HandleInput()
+{
+	m_GameStateStack.HandleInput();
 }
 
 void dae::Bomberman::Update()
 {
+	m_GameStateStack.Update();
+
+	m_GameStateStack.ProcessPendingChanges();
 }
 
 void dae::Bomberman::Render()
 {
+
 }
 
-void dae::Bomberman::CreateDisplay(Scene& scene)
+void dae::Bomberman::CreateTitleScreen()
 {
-	// --- Background ---
-	auto go{ std::make_unique<dae::GameObject>() };
-	go->AddComponent<dae::RenderComponent>();
-	go->GetComponent<dae::RenderComponent>().SetTexture("background.png");
-	go->GetComponent<dae::TransformComponent>().SetWorldPosition(0.f, 0.f);
-	scene.Add(std::move(go));
+    auto& scene{ SceneManager::GetInstance().CreateScene() };
 
-	// --- Logo ---
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::RenderComponent>();
-	go->GetComponent<dae::RenderComponent>().SetTexture("logo.png");
-	go->GetComponent<dae::TransformComponent>().SetWorldPosition(358.f, 180.f);
-	scene.Add(std::move(go));
+    // --- Background ---
+    auto go{ std::make_unique<dae::GameObject>() };
+    go->AddComponent<dae::RenderComponent>();
+    go->GetComponent<dae::RenderComponent>().SetTexture("background.png");
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(0.f, 0.f);
+    scene.Add(std::move(go));
 
-	// --- Title --- 
-	auto font{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36) };
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("Observers", font);
-	go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
-	go->GetComponent<dae::TransformComponent>().SetWorldPosition(292.f, 20.f);
-	scene.Add(std::move(go));
+    // --- Logo ---
+    go = std::make_unique<dae::GameObject>();
+    go->AddComponent<dae::RenderComponent>();
+    go->GetComponent<dae::RenderComponent>().SetTexture("logo.png");
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(358.f, 180.f);
+    scene.Add(std::move(go));
+
+    // --- Title ---
+    auto font{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36) };
+    go = std::make_unique<dae::GameObject>();
+    go->AddComponent<dae::RenderComponent>();
+    go->AddComponent<dae::TextComponent>("Title Screen", font);
+    go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(292.f, 20.f);
+    scene.Add(std::move(go));
 
 #ifdef _DEBUG
-	// --- FPS ---
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("TEMP", font);
-	go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
-	go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 20.f);
-	go->AddComponent<dae::FPSComponent>();
-	scene.Add(std::move(go));
+    // --- FPS ---
+    go = std::make_unique<dae::GameObject>();
+    go->AddComponent<dae::RenderComponent>();
+    go->AddComponent<dae::TextComponent>("TEMP", font);
+    go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 20.f);
+    go->AddComponent<dae::FPSComponent>();
+    scene.Add(std::move(go));
 #endif // _DEBUG
 
-	//helper text
-	font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 20);
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("Move Balloom with WASD, even though he is useless. Connect 2 controllers and do following:", font);
-	go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
-	go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 450.f);
-	scene.Add(std::move(go));
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("Move your Bomberman with DPad, press Gamepad_A to increase score (and play sound), Y to take damage", font);
-	go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
-	go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 500.f);
-	scene.Add(std::move(go));
+    // --- Helper Text ---
+    font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 20);
+    go = std::make_unique<dae::GameObject>();
+    go->AddComponent<dae::RenderComponent>();
+    go->AddComponent<dae::TextComponent>("Press A to enter game", font);
+    go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 450.f);
+    scene.Add(std::move(go));
+
+    // --- Bindings ---
+    auto& controllerRef = dae::InputManager::GetInstance().AddController(static_cast<uint8_t>(0));
+
+    dae::InputManager::GetInstance().AddBinding(
+        std::make_unique<ControllerBinding>(
+            controllerRef, ControllerButton::GAMEPAD_A,
+
+            std::make_unique<dae::ChangeStateCommand>(
+                *this,
+                std::make_unique<dae::MainMenuState>(*this)
+            ),
+
+            CommandType::OnRelease
+        )
+    );
 }
 
-dae::GameObject& dae::Bomberman::CreateBomberman(Scene& scene, size_t index, float x, float y)
+void dae::Bomberman::CreateMainMenu()
 {
-	constexpr float BASE_SPEED{ 50.f };
-	constexpr int SPEED_SCALE{ 2 };
-	constexpr float SPEED{ BASE_SPEED * SPEED_SCALE };
+    auto& scene{ SceneManager::GetInstance().CreateScene() };
 
-	constexpr int SCALE{ 3 };
-	constexpr float BASE_SIZE{ 16.f };
-	constexpr float SIZE{ BASE_SIZE * SCALE };
+    // --- Background ---
+    auto go{ std::make_unique<dae::GameObject>() };
+    go->AddComponent<dae::RenderComponent>();
+    go->GetComponent<dae::RenderComponent>().SetTexture("background.png");
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(0.f, 0.f);
+    scene.Add(std::move(go));
 
+    // --- Logo ---
+    go = std::make_unique<dae::GameObject>();
+    go->AddComponent<dae::RenderComponent>();
+    go->GetComponent<dae::RenderComponent>().SetTexture("logo.png");
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(358.f, 180.f);
+    scene.Add(std::move(go));
 
-	// --- BomberMan ---
-	auto go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::RenderComponent>().SetTexture("Bomberman_" + std::to_string(index) + ".png");
-	go->GetComponent<dae::RenderComponent>().SetDimensions(SIZE, SIZE);
-	go->GetComponent<dae::TransformComponent>().SetWorldPosition(x, y);
-	go->AddComponent<dae::PhysicsComponent>(SPEED);
-	
-	auto& bomberRef = *go;
-	auto& controllerRef = dae::InputManager::GetInstance().AddController(static_cast<uint8_t>(index));
-	auto& input = dae::InputManager::GetInstance();
-	input.AddBinding(std::make_unique<dae::ControllerBinding>(
-		controllerRef,
-		dae::ControllerButton::GAMEPAD_DPAD_RIGHT,
-		std::make_unique<dae::MoveCommand>(bomberRef, 1, 0),
-		dae::CommandType::OnHold));
-	input.AddBinding(std::make_unique<dae::ControllerBinding>(
-		controllerRef,
-		dae::ControllerButton::GAMEPAD_DPAD_LEFT,
-		std::make_unique<dae::MoveCommand>(bomberRef, -1, 0),
-		dae::CommandType::OnHold));
-	input.AddBinding(std::make_unique<dae::ControllerBinding>(
-		controllerRef,
-		dae::ControllerButton::GAMEPAD_DPAD_UP,
-		std::make_unique<dae::MoveCommand>(bomberRef, 0, -1),
-		dae::CommandType::OnHold));
-	input.AddBinding(std::make_unique<dae::ControllerBinding>(
-		controllerRef,
-		dae::ControllerButton::GAMEPAD_DPAD_DOWN,
-		std::make_unique<dae::MoveCommand>(bomberRef, 0, 1),
-		dae::CommandType::OnHold));
+    // --- Title ---
+    auto font{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36) };
+    go = std::make_unique<dae::GameObject>();
+    go->AddComponent<dae::RenderComponent>();
+    go->AddComponent<dae::TextComponent>("Main Menu", font);
+    go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(292.f, 20.f);
+    scene.Add(std::move(go));
 
-	scene.Add(std::move(go));
-	return bomberRef;
+#ifdef _DEBUG
+    // --- FPS ---
+    go = std::make_unique<dae::GameObject>();
+    go->AddComponent<dae::RenderComponent>();
+    go->AddComponent<dae::TextComponent>("TEMP", font);
+    go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 20.f);
+    go->AddComponent<dae::FPSComponent>();
+    scene.Add(std::move(go));
+#endif // _DEBUG
+
+    // --- Buttons ---
+    // Clear any previous:
+    m_SceneButtons.clear();
+    // Add new :
+    m_SceneButtons.push_back(Button{ {60.f, 400.f}, "Play", scene });
+    m_SceneButtons.push_back(Button{ {60.f, 450.f}, "Leaderboard", scene });
+    m_SceneButtons.push_back(Button{ {60.f, 500.f}, "Quit", scene });
+    // Assign Callbacks:
+    m_SceneButtons[0].GetSubject().AddObserver(
+        [&](Event event)
+        {
+            switch (event)
+            {
+            case dae::Event::OnClick:
+                std::cout << "Bomberman: Opening gamemode selection!\n";
+                // TODO: Launch Select Gamemode
+                break;
+            }
+
+        }
+    );
+    m_SceneButtons[1].GetSubject().AddObserver(
+        [&](Event event)
+        {
+            switch (event)
+            {
+            case dae::Event::OnClick:
+                std::cout << "Bomberman: Opening Leaderboard!\n";
+                // TODO: Open Leaderboard
+                break;
+            }
+
+        }
+    );
+    m_SceneButtons[2].GetSubject().AddObserver(
+        [&](Event event)
+        {
+            switch (event)
+            {
+            case dae::Event::OnClick:
+                std::cout << "Bomberman: Exit Queued!\n";
+                InputManager::GetInstance().QueueExit();
+                break;
+            }
+
+        }
+    );
+    // Select Default:
+    m_SelectedButtonIndex = 0;
+    m_SceneButtons[m_SelectedButtonIndex].SetSelected(true);
+
+    // --- Bindings ---
+    auto& controllerRef = dae::InputManager::GetInstance().AddController(static_cast<uint8_t>(0));
+    auto& input = InputManager::GetInstance();
+    input.AddBinding(std::make_unique<dae::ControllerBinding>(
+        controllerRef, dae::ControllerButton::GAMEPAD_DPAD_DOWN,
+        std::make_unique<dae::ExecuteCallbackCommand>([this]() {
+            RotateButtonSelection(true);
+            }),
+        dae::CommandType::OnPress));
+    input.AddBinding(std::make_unique<dae::ControllerBinding>(
+        controllerRef, dae::ControllerButton::GAMEPAD_DPAD_UP,
+        std::make_unique<dae::ExecuteCallbackCommand>([this]() {
+            RotateButtonSelection(false);
+            }),
+        dae::CommandType::OnPress));
+    input.AddBinding(std::make_unique<dae::ControllerBinding>(
+        controllerRef, dae::ControllerButton::GAMEPAD_A,
+        std::make_unique<dae::ExecuteCallbackCommand>([this](){
+                m_SceneButtons[m_SelectedButtonIndex].Click();
+            }),
+        dae::CommandType::OnRelease));
 }
 
-dae::GameObject& dae::Bomberman::CreateBalloom(Scene& scene, float x, float y)
+void dae::Bomberman::RotateButtonSelection(bool isNext)
 {
-	constexpr float BASE_SPEED{ 50.f };
-	constexpr int SPEED_SCALE{ 1 };
-	constexpr float SPEED{ BASE_SPEED * SPEED_SCALE };
+    // --- Early return if there is only one button ---
+    if (m_SceneButtons.size() <= 1) return;
 
-	constexpr int SCALE{ 3 };
-	constexpr float BASE_SIZE{ 16.f };
-	constexpr float SIZE{ BASE_SIZE * SCALE };
+    // --- Deselect current one ---
+    m_SceneButtons[m_SelectedButtonIndex].SetSelected(false);
 
-	// --- Balloom ---
-	auto go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::RenderComponent>().SetTexture("Balloom.png");
-	go->GetComponent<dae::RenderComponent>().SetDimensions(SIZE, SIZE);
-	go->GetComponent<dae::TransformComponent>().SetWorldPosition(x, y);
-	go->AddComponent<dae::PhysicsComponent>(SPEED);
+    // --- Get Potential outcome ---
+    int potentialIdx = (isNext)
+        ? static_cast<int>(m_SelectedButtonIndex) + 1
+        : static_cast<int>(m_SelectedButtonIndex) - 1;
 
-	auto& input = dae::InputManager::GetInstance();
-	auto& refBalloom = *go;
-	input.AddBinding(std::make_unique<dae::KeyboardBinding>(
-		SDL_SCANCODE_D,
-		std::make_unique<dae::MoveCommand>(refBalloom, 1, 0),
-		dae::CommandType::OnHold));
-	input.AddBinding(std::make_unique<dae::KeyboardBinding>(
-		SDL_SCANCODE_A,
-		std::make_unique<dae::MoveCommand>(refBalloom, -1, 0),
-		dae::CommandType::OnHold));
-	input.AddBinding(std::make_unique<dae::KeyboardBinding>(
-		SDL_SCANCODE_W,
-		std::make_unique<dae::MoveCommand>(refBalloom, 0, -1),
-		dae::CommandType::OnHold));
-	input.AddBinding(std::make_unique<dae::KeyboardBinding>(
-		SDL_SCANCODE_S,
-		std::make_unique<dae::MoveCommand>(refBalloom, 0, 1),
-		dae::CommandType::OnHold));
-	scene.Add(std::move(go));
-	return refBalloom;
-}
+    // --- Bounds check ---
+    if (isNext)
+    {
+        if (potentialIdx >= static_cast<int>(m_SceneButtons.size())) potentialIdx = 0;
+    }
+    else
+    {
+        if (potentialIdx < 0) potentialIdx = m_SceneButtons.size() - 1;
+    }
 
-dae::TextComponent& dae::Bomberman::CreateHealthDisplay(Scene& scene, GameObject& player, size_t index, float x, float y)
-{
-	auto font{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 20) };
-	auto go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("Health: ", font);
-	go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
-	go->GetComponent<dae::TransformComponent>().SetWorldPosition(x, y);
-	auto& textRef = go->GetComponent<TextComponent>();
-
-	const uint8_t maxHealth{ 3 };
-	textRef.SetText("Health: " + std::to_string(maxHealth));
-	auto& health = player.AddComponent<HealthComponent>(maxHealth);
-	health.GetSubject().AddObserver(
-		[&](Event event)
-		{
-			switch (event)
-			{
-			case dae::Event::OnHealthChanged:
-				textRef.SetText("Health: " + std::to_string(health.GetHealth()));
-				break;
-			case dae::Event::OnDeath:
-				textRef.SetText("Player Dead (kind of)");
-				break;
-			default:
-				break;
-			}
-
-		}
-	);
-
-	auto& controllerRef = dae::InputManager::GetInstance().GetController(static_cast<uint8_t>(index));
-	auto& input = dae::InputManager::GetInstance();
-
-	input.AddBinding(std::make_unique<dae::ControllerBinding>(
-		controllerRef,
-		dae::ControllerButton::GAMEPAD_Y,
-		std::make_unique<dae::DamageCommand>(player, 1),
-		dae::CommandType::OnRelease));
-
-	scene.Add(std::move(go));
-	return textRef;
-}
-
-dae::TextComponent& dae::Bomberman::CreateScoreDisplay(Scene& scene, ScoreManager& sm, float x, float y)
-{
-	auto font{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 20) };
-	auto go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("Health: ", font);
-	go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
-	go->GetComponent<dae::TransformComponent>().SetWorldPosition(x, y);
-	
-	auto& textRef = go->GetComponent<TextComponent>();
-	textRef.SetText("Score: " + sm.GetFormatedScore());
-
-	sm.GetSubject().AddObserver
-	(
-		[&](Event event)
-		{
-			if (event == Event::OnScoreChanged)
-			{
-				textRef.SetText("Score: " + sm.GetFormatedScore());
-				m_pAchievementManager->CheckScoreForAchievement(sm);
-				ServiceLocator::GetSoundSystem().PlaySFX(0, 10);
-			}
-		}
-	);
-
-	auto& controllerRef = dae::InputManager::GetInstance().GetController(sm.GetAssignedPlayerIdx());
-	auto& input = dae::InputManager::GetInstance();
-
-	input.AddBinding(std::make_unique<dae::ControllerBinding>(
-		controllerRef,
-		dae::ControllerButton::GAMEPAD_A,
-		std::make_unique<dae::IncreaseScoreCommand>(sm, 200),
-		dae::CommandType::OnRelease));
-
-	scene.Add(std::move(go));
-	return textRef;
+    // --- Assign and Select
+    m_SelectedButtonIndex = static_cast<uint8_t>(potentialIdx);
+    m_SceneButtons[m_SelectedButtonIndex].SetSelected(true);
 }
 

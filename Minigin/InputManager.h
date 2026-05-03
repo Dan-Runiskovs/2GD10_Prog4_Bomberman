@@ -14,14 +14,17 @@ namespace dae
     {
     public:
         bool ProcessInput();
+        void QueueExit() { m_Exit = true; }
 
         Controller& AddController(uint8_t id);
         Controller& GetController(uint8_t id);
 
         void AddBinding(std::unique_ptr<Binding> binding);
-        // remove binding? 0_0
+        void ClearBindings();
     private:
         std::vector<std::unique_ptr<Controller>> m_Controllers;
         std::vector<std::unique_ptr<Binding>> m_Bindings;
+
+        bool m_Exit{ false };
     };
 }

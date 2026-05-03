@@ -1,12 +1,10 @@
 #pragma once
-
 #include <memory>
 #include <vector>
+#include "State.h"
 
 namespace dae
 {
-	class GameState;
-
 	class GameStateStack
 	{
     public:
@@ -20,6 +18,13 @@ namespace dae
         void Render() const;
 
         bool Empty() const;
+
+        GameStateStack() = default;
+        ~GameStateStack() = default;
+        GameStateStack(const GameStateStack& other) = delete;
+        GameStateStack(GameStateStack&& other) = delete;
+        GameStateStack& operator=(const GameStateStack& other) = delete;
+        GameStateStack& operator=(GameStateStack&& other) = delete;
 
     private:
 

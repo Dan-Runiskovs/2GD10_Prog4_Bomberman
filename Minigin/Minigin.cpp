@@ -162,6 +162,7 @@ void dae::Minigin::RunOneFrame()
 	Timer::GetInstance().Update();
 
 	m_Quit = !InputManager::GetInstance().ProcessInput();
+	m_Game->HandleInput();
 	m_Game->Update();
 	SceneManager::GetInstance().Update();
 	Renderer::GetInstance().Render();

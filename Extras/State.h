@@ -1,4 +1,5 @@
 #pragma once
+#include <concepts>
 
 namespace dae
 {
@@ -22,9 +23,11 @@ namespace dae
 #pragma endregion
 
 #pragma region GameStates
+    class Game;
     class GameState : public State
     {
     public:
+        explicit GameState(Game& game);
         virtual ~GameState() = default;
 
         virtual void OnEnter() override {}
@@ -41,5 +44,36 @@ namespace dae
         virtual bool IsTransparent() const { return false; }
         // --- Allow input to lower layers ---
         virtual bool IsTranscendent() const{ return false; }
+    
+    protected:
+        Game& m_Game;
     };
+
+    class TitleState final : public GameState
+    {
+    public:
+        explicit TitleState(Game& game);
+
+        void OnEnter() override;
+        void OnExit() override;
+
+        void HandleInput() override {};
+        void Update() override {};
+        void Render() const override {};
+    };
+
+    class MainMenuState final : public GameState
+    {
+    public:
+        explicit MainMenuState(Game& game);
+
+        void OnEnter() override;
+        void OnExit() override;
+
+        void HandleInput() override {};
+        void Update() override {};
+        void Render() const override {};
+    };
+
+#pragma endregion
 }

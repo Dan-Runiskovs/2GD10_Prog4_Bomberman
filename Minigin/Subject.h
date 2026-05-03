@@ -9,7 +9,8 @@ namespace dae
 	{
 		OnHealthChanged,
 		OnDeath,
-		OnScoreChanged
+		OnScoreChanged,
+		OnClick
 	};
 
 	class Subject

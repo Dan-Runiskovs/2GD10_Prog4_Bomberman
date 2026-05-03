@@ -1,5 +1,4 @@
 #include "GameStateStack.h"
-#include "State.h"
 
 void dae::GameStateStack::PushState(std::unique_ptr<GameState> state)
 {
@@ -46,7 +45,7 @@ void dae::GameStateStack::Render() const
     if (m_States.empty()) return;
 
     // --- Get reverse start index ---
-    size_t start{ static_cast<int>(m_States.size()) - 1 };
+    size_t start{ m_States.size() - 1 };
 
     // --- Find a non-transparent start state to render ---
     while (start > 0 && m_States.at(start)->IsTransparent())

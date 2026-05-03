@@ -4,6 +4,8 @@
 
 bool dae::InputManager::ProcessInput()
 {
+	if (m_Exit) return !m_Exit;
+
 	// --- Default events ---
 	SDL_Event e;
 	while (SDL_PollEvent(&e)) {
@@ -45,4 +47,9 @@ dae::Controller& dae::InputManager::GetController(uint8_t id)
 void dae::InputManager::AddBinding(std::unique_ptr<Binding> binding)
 {
 	m_Bindings.emplace_back(std::move(binding));
+}
+
+void dae::InputManager::ClearBindings()
+{
+	m_Bindings.clear();
 }

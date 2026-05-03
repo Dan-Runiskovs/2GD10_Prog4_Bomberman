@@ -16,6 +16,7 @@ endif()
 # ---------------------------
 # Dependencies
 # ---------------------------
+
 include(FetchContent)
 
 # glm
@@ -147,7 +148,6 @@ add_library(minigin_lib STATIC
   Minigin/Timer.cpp
   Minigin/TransformComponent.cpp
   Minigin/RenderComponent.cpp
-  Minigin/GameStateStack.cpp
 
   #TODO: Move the following outside the engine
   Minigin/PhysicsComponent.cpp
@@ -183,6 +183,10 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
 
   Extras/Achievements.cpp
   Extras/StatsAndAchievements.cpp
+  Extras/GameStateStack.cpp
+  Extras/State.cpp
+  Extras/CustomCommands.cpp
+  Extras/Button.cpp
   #Extras/ThrashTheCache.cpp
 )
 

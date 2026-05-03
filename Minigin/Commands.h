@@ -36,35 +36,6 @@ namespace dae
 		int8_t m_DirX{};
 		int8_t m_DirY{};
 		
-		//direction is a vector
-	};
-
-	// TEMPORARY!!
-	// TODO: Remove in production, health can not be known in the engine!
-	class HealthComponent;
-	class DamageCommand final : public GameObjectCommand
-	{
-	public:
-		DamageCommand(GameObject& object, uint8_t damage) noexcept;
-
-		void Execute() override;
-	private:
-		HealthComponent& m_Health;
-		uint8_t m_Damage;
-	};
-
-	// TEMPORARY!!
-	// TODO: Remove in production, health can not be known in the engine!
-	class ScoreManager;
-	class IncreaseScoreCommand final : public Command
-	{
-	public:
-		IncreaseScoreCommand(ScoreManager& sm, uint8_t score) noexcept;
-
-		void Execute() override;
-	private:
-		ScoreManager& m_ScoreManager;
-		
-		uint8_t m_Score;
+		// TODO: direction is a vector
 	};
 }

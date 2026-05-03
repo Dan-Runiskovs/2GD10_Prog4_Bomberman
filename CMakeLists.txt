@@ -78,15 +78,27 @@ if(NOT SDL3_ttf_FOUND)
       GIT_SHALLOW TRUE
       GIT_PROGRESS TRUE
     )
+
     set(SDL3TTF_INSTALL OFF)
+
     if(EMSCRIPTEN)
       list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/emscripten")
+
       set(SDL3TTF_USE_SYSTEM_FREETYPE ON)
       set(SDL3TTF_VENDORED OFF)
       set(SDLTTF_PLUTOSVG OFF)
-      add_compile_options(-sUSE_FREETYPE=1 -sUSE_HARFBUZZ=1)
-      add_link_options(-sUSE_FREETYPE=1 -sUSE_HARFBUZZ=1)
+
+      add_compile_options(
+        -sUSE_FREETYPE=1
+        -sUSE_HARFBUZZ=1
+      )
+
+      add_link_options(
+        -sUSE_FREETYPE=1
+        -sUSE_HARFBUZZ=1
+      )
     endif()
+
     FetchContent_MakeAvailable(SDL3_ttf)
   endif()
 endif()
@@ -113,6 +125,7 @@ if(NOT SDL3_mixer_FOUND)
       GIT_SHALLOW TRUE
       GIT_PROGRESS TRUE
     )
+
     set(SDL3MIXER_INSTALL OFF)
 
     if(EMSCRIPTEN)
@@ -201,17 +214,53 @@ target_include_directories(${TARGET_NAME} PRIVATE
 target_link_libraries(${TARGET_NAME} PRIVATE minigin_lib)
 
 # ---------------------------
+# Emscripten
+# ---------------------------
+if(EMSCRIPTEN)
+
+  # Generate HTML launcher
+  set(CMAKE_EXECUTABLE_SUFFIX ".html")
+
+  # Emscripten linker options
+  target_link_options(${TARGET_NAME} PRIVATE
+    -sUSE_SDL=3
+    -sUSE_FREETYPE=1
+    -sUSE_HARFBUZZ=1
+    -sALLOW_MEMORY_GROWTH
+    --preload-file "${CMAKE_SOURCE_DIR}/Data@/"
+    -g
+  )
+
+  # Copy optional web shell files
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/web")
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/web"
+        "$<TARGET_FILE_DIR:${TARGET_NAME}>/"
+    )
+  endif()
+
+endif()
+
+# ---------------------------
 # Windows DLL copy
 # ---------------------------
 if(WIN32)
-  set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${TARGET_NAME})
 
-  foreach(dllTarget SDL3::SDL3 SDL3_ttf::SDL3_ttf SDL3_mixer::SDL3_mixer)
+  set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    PROPERTY VS_STARTUP_PROJECT ${TARGET_NAME})
+
+  foreach(dllTarget
+    SDL3::SDL3
+    SDL3_ttf::SDL3_ttf
+    SDL3_mixer::SDL3_mixer)
+
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "$<TARGET_FILE:${dllTarget}>"
         "$<TARGET_FILE_DIR:${TARGET_NAME}>"
     )
+
   endforeach()
 
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
@@ -219,4 +268,5 @@ if(WIN32)
       "${CMAKE_SOURCE_DIR}/Data"
       "$<TARGET_FILE_DIR:${TARGET_NAME}>/Data"
   )
+
 endif()

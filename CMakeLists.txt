@@ -213,33 +213,32 @@ target_include_directories(${TARGET_NAME} PRIVATE
 
 target_link_libraries(${TARGET_NAME} PRIVATE minigin_lib)
 
+if(MSVC)
+  # compile at warning level 4 + treat warnings as errors
+  target_compile_options(${TARGET_NAME} PRIVATE /W4 /WX)
+else()
+  target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Werror)
+endif()
+
 # ---------------------------
 # Emscripten
 # ---------------------------
 if(EMSCRIPTEN)
+  set(EMSCRIPTEN_COMPILE_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -g")
+  set(EMSCRIPTEN_LINK_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -sUSE_SDL=3 -sUSE_FREETYPE=1 -sUSE_HARFBUZZ=1 -g -sALLOW_MEMORY_GROWTH --preload-file \"${CMAKE_SOURCE_DIR}/Data@/\"")
 
-  # Generate HTML launcher
-  set(CMAKE_EXECUTABLE_SUFFIX ".html")
-
-  # Emscripten linker options
-  target_link_options(${TARGET_NAME} PRIVATE
-    -sUSE_SDL=3
-    -sUSE_FREETYPE=1
-    -sUSE_HARFBUZZ=1
-    -sALLOW_MEMORY_GROWTH
-    --preload-file "${CMAKE_SOURCE_DIR}/Data@/"
-    -g
+  set_target_properties(${TARGET_NAME} PROPERTIES
+    COMPILE_FLAGS "${EMSCRIPTEN_COMPILE_FLAGS}"
+    LINK_FLAGS "${EMSCRIPTEN_LINK_FLAGS}"
   )
 
-  # Copy optional web shell files
-  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/web")
-    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/web"
-        "$<TARGET_FILE_DIR:${TARGET_NAME}>/"
-    )
-  endif()
+  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+      "${CMAKE_CURRENT_SOURCE_DIR}/web"
+      "$<TARGET_FILE_DIR:${TARGET_NAME}>/"
+  )
 
+  set(CMAKE_EXECUTABLE_SUFFIX ".html")
 endif()
 
 # ---------------------------

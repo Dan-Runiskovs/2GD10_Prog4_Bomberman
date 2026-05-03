@@ -241,7 +241,7 @@ void dae::Bomberman::RotateButtonSelection(bool isNext)
     }
     else
     {
-        if (potentialIdx < 0) potentialIdx = m_SceneButtons.size() - 1;
+        if (potentialIdx < 0) potentialIdx = static_cast<int>(m_SceneButtons.size() - 1);
     }
 
     // --- Assign and Select

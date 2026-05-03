@@ -164,6 +164,8 @@ void dae::Bomberman::CreateMainMenu()
                 std::cout << "Bomberman: Opening gamemode selection!\n";
                 // TODO: Launch Select Gamemode
                 break;
+            default:
+                break;
             }
 
         }
@@ -177,6 +179,8 @@ void dae::Bomberman::CreateMainMenu()
                 std::cout << "Bomberman: Opening Leaderboard!\n";
                 // TODO: Open Leaderboard
                 break;
+            default:
+                break;
             }
 
         }
@@ -189,6 +193,8 @@ void dae::Bomberman::CreateMainMenu()
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Exit Queued!\n";
                 InputManager::GetInstance().QueueExit();
+                break;
+            default:
                 break;
             }
 

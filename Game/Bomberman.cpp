@@ -24,6 +24,14 @@
 
 void dae::Bomberman::Init()
 {
+	// --- Load test SFX ---
+	SoundData click{ 0, "Click.mp3" };
+	ServiceLocator::GetSoundSystem().LoadSFX(click);
+
+	SoundData skip{ 1, "Skip.mp3" };
+	ServiceLocator::GetSoundSystem().LoadSFX(skip);
+
+
 	m_GameStateStack.PushState(std::make_unique<TitleState>(*this));
 	m_GameStateStack.ProcessPendingChanges();
 }

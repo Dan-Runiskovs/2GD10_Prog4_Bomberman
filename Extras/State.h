@@ -2,6 +2,7 @@
 #include "Button.h"
 #include "Game.h"
 #include <vector>
+#include <cstdint>
 
 namespace dae
 {
@@ -27,7 +28,18 @@ namespace dae
     class GameState : public State
     {
     public:
+        // --- Game Type Enum
+        enum class GameType : uint8_t
+        {
+            Solo = 1,
+            Pvp = 2,
+            Coop = 3,
+
+            None = 0
+        };
+
         explicit GameState(Game& game);
+        explicit GameState(Game& game, GameType gt);
         virtual ~GameState() = default;
 
         virtual void OnEnter() override {}
@@ -44,7 +56,7 @@ namespace dae
         virtual bool IsTransparent() const { return false; }
         // --- Allow input to lower layers ---
         virtual bool IsTranscendent() const{ return false; }
-    
+
     protected:
         Game& m_Game;
 
@@ -52,15 +64,20 @@ namespace dae
         std::vector<dae::Button>m_SceneButtons{};
         uint8_t m_SelectedButtonIndex{ 0 };
         void RotateButtonSelection(bool isNext);
+        void CreateMenuBindings();
+
+        // --- Game Type ---
+        GameType m_GameType{ GameType::None };
 
         // --- State Changer ---
-        template<typename StateType>
-        void ChangeState()
+        template<typename StateType, typename... Args>
+        void ChangeState(Args&&... args)
         {
             m_Game.GetGameStateStack().ChangeState(
-                std::make_unique<StateType>(m_Game)
+                std::make_unique<StateType>(m_Game, std::forward<Args>(args)...)
             );
         }
+
     };
 
     class TitleState final : public GameState
@@ -108,5 +125,34 @@ namespace dae
         void CreateGamemodeSelection();
     };
 
+    class InGameState final : public GameState
+    {
+    public:
+        explicit InGameState(Game& game, GameType gameType);
+
+        void OnEnter() override;
+        void OnExit() override;
+
+        void HandleInput() override {};
+        void Update() override {};
+        void Render() const override {};
+    private:
+        void CreateGame(GameType gameType);
+    };
+
+    class GameOverState final : public GameState
+    {
+    public:
+        explicit GameOverState(Game& game, GameType gameType);
+
+        void OnEnter() override;
+        void OnExit() override;
+
+        void HandleInput() override {};
+        void Update() override {};
+        void Render() const override {};
+    private:
+        void CreateGameOver();
+    };
 #pragma endregion
 }

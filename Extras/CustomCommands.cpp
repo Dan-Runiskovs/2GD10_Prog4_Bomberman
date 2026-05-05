@@ -3,6 +3,8 @@
 #include "HealthComponent.h"
 #include "ScoreManager.h"
 #include "Bomberman.h"
+#include "SoundSystem.h"
+#include "ServiceLocator.h"
 
 dae::DamageCommand::DamageCommand(GameObject& object, uint8_t damage) noexcept
 	: GameObjectCommand(object)
@@ -36,7 +38,7 @@ dae::ChangeStateCommand::ChangeStateCommand(Game& game, std::unique_ptr<GameStat
 void dae::ChangeStateCommand::Execute()
 {
 	auto& bomberman{ static_cast<dae::Bomberman&>(m_Game) };
-
+	ServiceLocator::GetSoundSystem().PlaySFX(0, 10);
 	bomberman.GetGameStateStack().ChangeState(
 		std::move(m_pState)
 	);

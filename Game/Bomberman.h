@@ -23,19 +23,10 @@ namespace dae
         void Render() override;
         void HandleInput() override;
 
-        // --- GameStates ---
-        void CreateTitleScreen();
-        void CreateMainMenu();
-
         // --- Getter for the Game State Stack ---
-        GameStateStack& GetGameStateStack() { return m_GameStateStack; }
+        GameStateStack& GetGameStateStack() override { return m_GameStateStack; }
     private:
         std::unique_ptr<AchievementManager> m_pAchievementManager{ nullptr };
         GameStateStack m_GameStateStack{};
-
-        // --- Buttons ---
-        std::vector<dae::Button>m_SceneButtons{};
-        uint8_t m_SelectedButtonIndex{ 0 };
-        void RotateButtonSelection(bool isNext);
     };
 }

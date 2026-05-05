@@ -1,5 +1,7 @@
 #pragma once
-#include <concepts>
+#include "Button.h"
+#include "Game.h"
+#include <vector>
 
 namespace dae
 {
@@ -16,14 +18,12 @@ namespace dae
         virtual void OnResume() {}
 
         virtual void HandleInput() = 0;
-        //--- Timer is still a singleton ---
         virtual void Update() = 0;
         virtual void Render() const = 0;
 	};
 #pragma endregion
 
 #pragma region GameStates
-    class Game;
     class GameState : public State
     {
     public:
@@ -47,6 +47,20 @@ namespace dae
     
     protected:
         Game& m_Game;
+
+        // --- Buttons ---
+        std::vector<dae::Button>m_SceneButtons{};
+        uint8_t m_SelectedButtonIndex{ 0 };
+        void RotateButtonSelection(bool isNext);
+
+        // --- State Changer ---
+        template<typename StateType>
+        void ChangeState()
+        {
+            m_Game.GetGameStateStack().ChangeState(
+                std::make_unique<StateType>(m_Game)
+            );
+        }
     };
 
     class TitleState final : public GameState
@@ -60,6 +74,8 @@ namespace dae
         void HandleInput() override {};
         void Update() override {};
         void Render() const override {};
+    private:
+        void CreateTitleScreen();
     };
 
     class MainMenuState final : public GameState
@@ -73,6 +89,23 @@ namespace dae
         void HandleInput() override {};
         void Update() override {};
         void Render() const override {};
+    private:
+        void CreateMainMenu();
+    };
+
+    class GamemodeSelectionMenuState final : public GameState
+    {
+    public:
+        explicit GamemodeSelectionMenuState(Game& game);
+
+        void OnEnter() override;
+        void OnExit() override;
+
+        void HandleInput() override {};
+        void Update() override {};
+        void Render() const override {};
+    private:
+        void CreateGamemodeSelection();
     };
 
 #pragma endregion

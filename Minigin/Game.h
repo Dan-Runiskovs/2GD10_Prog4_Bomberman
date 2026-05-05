@@ -2,6 +2,7 @@
 
 namespace dae
 {
+    class GameStateStack;
     class Game
     {
     public:
@@ -11,5 +12,7 @@ namespace dae
         virtual void HandleInput() = 0;
         virtual void Update() = 0;
         virtual void Render() = 0;
+
+        virtual GameStateStack& GetGameStateStack() = 0;
     };
 }

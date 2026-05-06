@@ -262,7 +262,7 @@ void dae::MainMenuState::CreateMainMenu()
         }
     );
     m_SceneButtons[1].GetSubject().AddObserver(
-        [this](Event event)
+        [](Event event)
         {
             switch (event)
             {
@@ -278,7 +278,7 @@ void dae::MainMenuState::CreateMainMenu()
         }
     );
     m_SceneButtons[2].GetSubject().AddObserver(
-        [this](Event event)
+        [](Event event)
         {
             switch (event)
             {
@@ -637,7 +637,7 @@ void dae::GameOverState::CreateGameOver()
         }
     );
     m_SceneButtons[2].GetSubject().AddObserver(
-        [this](Event event)
+        [](Event event)
         {
             switch (event)
             {

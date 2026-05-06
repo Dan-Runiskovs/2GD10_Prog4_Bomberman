@@ -93,6 +93,11 @@ void dae::GameState::CreateMenuBindings()
         dae::CommandType::OnRelease));
 }
 
+void dae::GameState::ChangeState(std::unique_ptr<GameState> newState)
+{
+    m_Game.GetGameStateStack().ChangeState(std::move(newState));
+}
+
 #pragma region Title
 dae::TitleState::TitleState(Game& game)
 	: GameState(game)
@@ -247,7 +252,8 @@ void dae::MainMenuState::CreateMainMenu()
             {
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Opening gamemode selection!\n";
-                ChangeState<dae::GamemodeSelectionMenuState>();
+                //ChangeState<dae::GamemodeSelectionMenuState>();
+                ChangeState(std::make_unique<dae::GamemodeSelectionMenuState>(m_Game));
                 break;
             default:
                 break;
@@ -363,7 +369,8 @@ void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
             {
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Lauching Solo Game!\n";
-                ChangeState<dae::InGameState>(GameType::Solo);
+                //ChangeState<dae::InGameState>(GameType::Solo);
+                ChangeState(std::make_unique<dae::InGameState>(m_Game, GameType::Solo));
                 break;
             default:
                 break;
@@ -378,7 +385,8 @@ void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
             {
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Launching PvP!\n";
-                ChangeState<dae::InGameState>(GameType::Pvp);
+                //ChangeState<dae::InGameState>(GameType::Pvp);
+                ChangeState(std::make_unique<dae::InGameState>(m_Game, GameType::Pvp));
                 break;
             default:
                 break;
@@ -393,7 +401,8 @@ void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
             {
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Launching Co-op!\n";
-                ChangeState<dae::InGameState>(GameType::Coop);
+                //ChangeState<dae::InGameState>(GameType::Coop);
+                ChangeState(std::make_unique<dae::InGameState>(m_Game, GameType::Coop));
                 break;
             default:
                 break;
@@ -602,7 +611,8 @@ void dae::GameOverState::CreateGameOver()
             {
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Restarting!\n";
-                ChangeState<dae::InGameState>(m_GameType);
+                //ChangeState<dae::InGameState>(m_GameType);
+                ChangeState(std::make_unique<dae::InGameState>(m_Game, m_GameType));
                 break;
             default:
                 break;
@@ -617,7 +627,8 @@ void dae::GameOverState::CreateGameOver()
             {
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Launching Main Menu!\n";
-                ChangeState<dae::MainMenuState>();
+                //ChangeState<dae::MainMenuState>();
+                ChangeState(std::make_unique<dae::MainMenuState>(m_Game));
                 break;
             default:
                 break;

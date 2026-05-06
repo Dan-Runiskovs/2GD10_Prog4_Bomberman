@@ -70,13 +70,7 @@ namespace dae
         GameType m_GameType{ GameType::None };
 
         // --- State Changer ---
-        template<typename StateType, typename... Args>
-        void ChangeState(Args&&... args)
-        {
-            m_Game.GetGameStateStack().ChangeState(
-                std::make_unique<StateType>(m_Game, std::forward<Args>(args)...)
-            );
-        }
+        void ChangeState(std::unique_ptr<GameState> newState);
 
     };
 

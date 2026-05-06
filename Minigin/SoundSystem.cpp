@@ -35,26 +35,24 @@ public:
 			std::cerr << "Failed to create mixer\n";
 		}
 
-		m_Worker = std::thread([this]
+#ifndef __EMSCRIPTEN__
+		m_Worker = std::jthread([this]
 			{
 				SoundEvent event;
 
-				while (!m_StopThread)
+				while (m_EventQueue.WaitAndPop(event))
 				{
-					if (m_EventQueue.WaitAndPop(event)) event();
+					event();
 				}
 			});
+#endif
 	}
 
 	~Impl()
 	{
-		m_StopThread = true;
+#ifndef __EMSCRIPTEN__
 		m_EventQueue.Stop();
-
-		if (m_Worker.joinable())
-		{
-			m_Worker.join();
-		}
+#endif
 		m_SoundLib.clear();
 
 		// --- Uncomment these following lines in order to crash on destroy ---
@@ -64,25 +62,39 @@ public:
 
 	void PlaySFX(const uint8_t sfxId, const uint8_t volume)
 	{
-		// --- Here the magic happens ---
-		m_EventQueue.Push([=, this] {
-			// --- Find stuff ---
-			auto* audio = GetAutioPtr(sfxId);
-			if (!audio)
+#ifdef __EMSCRIPTEN__
+
+		// --- Browser fallback: direct playback ---
+		auto* audio = GetAutioPtr(sfxId);
+
+		if (!audio)
+		{
+			std::cerr << "ERROR: Unknown SFX: "
+				<< static_cast<int>(sfxId) << "!\n";
+			return;
+		}
+
+		MIX_SetMixerGain(m_pMixer, RemapToSDLVolume(volume));
+		MIX_PlayAudio(m_pMixer, audio);
+
+#else
+
+		// --- Desktop threaded playback ---
+		m_EventQueue.Push([=, this]
 			{
-				std::cerr << "ERROR: Unknown SFX: " << static_cast<int>(sfxId) << "!\n";
-				return;
-			}
+				auto* audio = GetAutioPtr(sfxId);
 
-			auto* pMixer = m_pMixer;
+				if (!audio)
+				{
+					std::cerr << "ERROR: Unknown SFX: " << static_cast<int>(sfxId) << "!\n";
+					return;
+				}
 
-			// --- Set correct volume --
-			MIX_SetMixerGain(pMixer, RemapToSDLVolume(volume));
+				MIX_SetMixerGain(m_pMixer,RemapToSDLVolume(volume));
+				MIX_PlayAudio(m_pMixer, audio);
+			});
 
-			// --- Play the tune ---
-			MIX_PlayAudio(pMixer, audio);
-			}
-		);
+#endif
 	}
 
 	uint8_t LoadSFX(const SoundData& sound)
@@ -109,17 +121,22 @@ public:
 
 	void StopAll()
 	{
-		m_EventQueue.Push([this] 
+#ifdef __EMSCRIPTEN__
+		MIX_StopAllTracks(m_pMixer, 0);
+#else
+		m_EventQueue.Push([this]
 			{
-			MIX_StopAllTracks(m_pMixer, 0);
+				MIX_StopAllTracks(m_pMixer, 0);
 			}
 		);
+#endif	
 	}
 private:
 	// --- Sound event queue ---
 	SoundEventQueue m_EventQueue;
-	std::thread m_Worker;
-	std::atomic<bool> m_StopThread{ false };
+#ifndef __EMSCRIPTEN__
+	std::jthread m_Worker;
+#endif
 	MIX_Mixer* m_pMixer;
 
 	// --- Music Library ---

@@ -2,7 +2,6 @@
 #include <iostream>
 #include <SDL3_mixer/SDL_mixer.h>
 #include <unordered_map>
-#include <thread>
 #include "ServiceLocator.h"
 
 #pragma region pImpl

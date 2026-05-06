@@ -2,6 +2,7 @@
 #include <iostream>
 #include <SDL3_mixer/SDL_mixer.h>
 #include <unordered_map>
+#include <thread>
 #include "ServiceLocator.h"
 
 #pragma region pImpl
@@ -34,21 +35,26 @@ public:
 			std::cerr << "Failed to create mixer\n";
 		}
 
-		m_Worker = std::jthread([this]
+		m_Worker = std::thread([this]
 			{
 				SoundEvent event;
 
-				while (m_EventQueue.WaitAndPop(event))
+				while (!m_StopThread)
 				{
-					event();
+					if (m_EventQueue.WaitAndPop(event)) event();
 				}
 			});
 	}
 
 	~Impl()
 	{
+		m_StopThread = true;
 		m_EventQueue.Stop();
-		m_Worker.join();
+
+		if (m_Worker.joinable())
+		{
+			m_Worker.join();
+		}
 		m_SoundLib.clear();
 
 		// --- Uncomment these following lines in order to crash on destroy ---
@@ -81,38 +87,24 @@ public:
 
 	uint8_t LoadSFX(const SoundData& sound)
 	{
-		// --- Time to experiment, ladies and gentlemen ---
-		auto promise{ std::make_shared<std::promise<uint8_t>>() };
-		auto future{ promise->get_future() };
+		const auto fullPath{ m_DataPath / sound.path };
 
-		const auto fullPath{ m_DataPath/sound.path };
+		if (m_SoundLib.contains(sound.id))
+		{
+			std::cerr << "ERROR: Provided ID already in use\n";
+			return sound.id;
+		}
 
-		// --- Wait until the value gets set ---
-		m_EventQueue.Push([id = sound.id, fullPath, promise, this]
-			{
-				if (m_SoundLib.contains(id))
-				{
-					std::cerr << "ERROR: Provided ID already in use\n";
-					promise->set_value(id);
-					return;
-				}
+		auto sfx = AudioPtr(
+			MIX_LoadAudio(m_pMixer, fullPath.string().c_str(), true)
+		);
 
-				// --- Not in the Librarty yet : Add this one ---
-				auto sfx = AudioPtr(
-					MIX_LoadAudio(m_pMixer, fullPath.string().c_str(), true)
-				);
+		if (sfx) std::cout << "Load success!\n";
+		else std::cerr << "Error: load failed\n";
 
-				// --- Safety check ---
-				if (sfx) std::cout << "Load success!\n";
-				else std::cerr << "Error: load failed\n";
+		m_SoundLib.emplace(sound.id, std::move(sfx));
 
-				//--- Save and Set the flag ---
-				m_SoundLib.emplace(id, std::move(sfx));
-				promise->set_value(id);
-			});
-
-		// --- And now we wait ---
-		return future.get();
+		return sound.id;
 	}
 
 	void StopAll()
@@ -126,7 +118,8 @@ public:
 private:
 	// --- Sound event queue ---
 	SoundEventQueue m_EventQueue;
-	std::jthread m_Worker; // My little soundboy :)
+	std::thread m_Worker;
+	std::atomic<bool> m_StopThread{ false };
 	MIX_Mixer* m_pMixer;
 
 	// --- Music Library ---

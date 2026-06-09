@@ -23,6 +23,7 @@
 #include "Utils.h"
 
 #include <iostream>
+#include <cassert>
 
 // TEMP:
 #include <random>
@@ -658,6 +659,7 @@ void dae::GameOverState::OnExit()
 void dae::GameOverState::CreateGameOver()
 {
     auto& scene{ SceneManager::GetInstance().CreateScene() };
+    const auto& session{ static_cast<dae::Bomberman&>(m_Game).GetMatchSession() };
     const auto windowSize{ Renderer::GetInstance().GetWindowSize() };
     const auto windowCentre{ glm::vec2(windowSize.x / 2.f, windowSize.y / 2.f) };
 
@@ -665,24 +667,168 @@ void dae::GameOverState::CreateGameOver()
     auto mainFont{ dae::ResourceManager::GetInstance().LoadFont("MainFont.ttf", 150) };
     auto subFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 36) };
 
-    // --- Title Background ---
+    // --- Result ---
+#pragma region MODE_DEPENDANT
     auto go{ std::make_unique<dae::GameObject>() };
-    go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>("Game Over!", mainFont);
-    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::PALE_BROWN));
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x + 5.f, windowCentre.y * .5f + 5.f);
-    go->GetComponent<dae::RenderComponent>().SetCentered(true);
-    scene.Add(std::move(go));
 
-    // --- Title Foreground ---
-    go = std::make_unique<dae::GameObject>();
-    go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>("Game Over!", mainFont);
-    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::YELLOW));
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * .5f);
-    go->GetComponent<dae::RenderComponent>().SetCentered(true);
-    scene.Add(std::move(go));
+    switch (session.GetMode())
+    {
+    case dae::MatchSession::GameMode::Solo:
+    {
+        if (session.GetResult().isWin)
+        {
+            // --- Title Background ---
+            go = std::make_unique<dae::GameObject>();
+            go->AddComponent<dae::RenderComponent>();
+            go->AddComponent<dae::TextComponent>("You Win!", mainFont);
+            go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::DARK_GREEN));
+            go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x + 5.f, windowCentre.y * .5f + 5.f);
+            go->GetComponent<dae::RenderComponent>().SetCentered(true);
+            scene.Add(std::move(go));
 
+            // --- Title Foreground ---
+            go = std::make_unique<dae::GameObject>();
+            go->AddComponent<dae::RenderComponent>();
+            go->AddComponent<dae::TextComponent>("You Win!", mainFont);
+            go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::GREEN));
+            go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * .5f);
+            go->GetComponent<dae::RenderComponent>().SetCentered(true);
+            scene.Add(std::move(go));
+        }
+        else // LOSS
+        {
+            // --- Title Background ---
+            go = std::make_unique<dae::GameObject>();
+            go->AddComponent<dae::RenderComponent>();
+            go->AddComponent<dae::TextComponent>("Game Over!", mainFont);
+            go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::DARK_RED));
+            go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x + 5.f, windowCentre.y * .5f + 5.f);
+            go->GetComponent<dae::RenderComponent>().SetCentered(true);
+            scene.Add(std::move(go));
+
+            // --- Title Foreground ---
+            go = std::make_unique<dae::GameObject>();
+            go->AddComponent<dae::RenderComponent>();
+            go->AddComponent<dae::TextComponent>("Game Over!", mainFont);
+            go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::RED));
+            go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * .5f);
+            go->GetComponent<dae::RenderComponent>().SetCentered(true);
+            scene.Add(std::move(go));
+        }
+        break;
+    }
+    case dae::MatchSession::GameMode::Pvp:
+    {
+        // --- To pass on ---
+        std::string winnerColor{};
+        uint32_t color{};
+        uint32_t darkerColor{};
+
+        switch (session.GetResult().winnerIdx)
+        {
+        case 0:
+            winnerColor = "Red";
+            color = dae::Utils::Colors::RED;
+            darkerColor = dae::Utils::Colors::DARK_RED;
+            break;
+        case 1:
+            winnerColor = "Green";
+            color = dae::Utils::Colors::GREEN;
+            darkerColor = dae::Utils::Colors::DARK_GREEN;
+            break;
+        case 2:
+            winnerColor = "Blue";
+            color = dae::Utils::Colors::BLUE;
+            darkerColor = dae::Utils::Colors::DARK_BLUE;
+            break;
+        case 3:
+            winnerColor = "Yellow";
+            color = dae::Utils::Colors::YELLOW;
+            darkerColor = dae::Utils::Colors::PALE_BROWN;
+            break;
+        default:
+            winnerColor = "Magenta";
+            color = dae::Utils::Colors::MAGENTA;
+            darkerColor = dae::Utils::Colors::DARK_MAGENTA;
+            break;
+        }
+
+        const std::string text{ winnerColor + " wins!" };
+        // --- Title Background ---
+        go = std::make_unique<dae::GameObject>();
+        go->AddComponent<dae::RenderComponent>();
+        go->AddComponent<dae::TextComponent>(text, mainFont);
+        go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(darkerColor));
+        go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x + 5.f, windowCentre.y * .5f + 5.f);
+        go->GetComponent<dae::RenderComponent>().SetCentered(true);
+        scene.Add(std::move(go));
+
+        // --- Title Foreground ---
+        go = std::make_unique<dae::GameObject>();
+        go->AddComponent<dae::RenderComponent>();
+        go->AddComponent<dae::TextComponent>(text, mainFont);
+        go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(color));
+        go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * .5f);
+        go->GetComponent<dae::RenderComponent>().SetCentered(true);
+        scene.Add(std::move(go));
+
+        const auto deadCentre{ glm::vec2(windowCentre.x, windowCentre.y * .75f) };
+        CreateDeadPeopleScreen(scene, deadCentre, session);
+        break;
+    }
+    case dae::MatchSession::GameMode::Coop:
+    {
+        if (session.GetResult().isWin)
+        {
+            // --- Title Background ---
+            go = std::make_unique<dae::GameObject>();
+            go->AddComponent<dae::RenderComponent>();
+            go->AddComponent<dae::TextComponent>("You Win!", mainFont);
+            go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::DARK_GREEN));
+            go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x + 5.f, windowCentre.y * .5f + 5.f);
+            go->GetComponent<dae::RenderComponent>().SetCentered(true);
+            scene.Add(std::move(go));
+
+            // --- Title Foreground ---
+            go = std::make_unique<dae::GameObject>();
+            go->AddComponent<dae::RenderComponent>();
+            go->AddComponent<dae::TextComponent>("You Win!", mainFont);
+            go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::GREEN));
+            go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * .5f);
+            go->GetComponent<dae::RenderComponent>().SetCentered(true);
+            scene.Add(std::move(go));
+
+
+        }
+        else // LOSS
+        {
+            // --- Title Background ---
+            go = std::make_unique<dae::GameObject>();
+            go->AddComponent<dae::RenderComponent>();
+            go->AddComponent<dae::TextComponent>("Game Over!", mainFont);
+            go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::DARK_RED));
+            go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x + 5.f, windowCentre.y * .5f + 5.f);
+            go->GetComponent<dae::RenderComponent>().SetCentered(true);
+            scene.Add(std::move(go));
+
+            // --- Title Foreground ---
+            go = std::make_unique<dae::GameObject>();
+            go->AddComponent<dae::RenderComponent>();
+            go->AddComponent<dae::TextComponent>("Game Over!", mainFont);
+            go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::RED));
+            go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * .5f);
+            go->GetComponent<dae::RenderComponent>().SetCentered(true);
+            scene.Add(std::move(go));
+        }
+
+        CreateDeadPeopleScreen(scene, windowCentre, session);
+        break;
+    }
+    default:
+        break;
+    }
+#pragma endregion
+    
 #ifdef _DEBUG
     // --- FPS ---
     auto debugFont{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 30) };
@@ -750,4 +896,87 @@ void dae::GameOverState::CreateGameOver()
     );
     CreateMenuBindings();
 }
+
+void dae::GameOverState::CreateDeadPeopleScreen(Scene& scene, const glm::vec2& centerPos, const dae::MatchSession& session)
+{
+    assert(session.GetMode() == dae::MatchSession::GameMode::Coop);
+    
+    // --- Shortcuts ---
+    using PlayerColor = dae::Utils::PlayerColors;
+
+    // --- Refs ---
+    const auto playerN{ session.GetResult().playerAmount };
+    const auto aliveMask{ session.GetResult().aliveMask };
+    
+    // --- Let's create ---
+    auto go{ std::make_unique<dae::GameObject>() };
+    auto font{ dae::ResourceManager::GetInstance().LoadFont("Icons.ttf", 50) };
+    for (uint8_t playerIdx{ 0 }; playerIdx < playerN; ++playerIdx)
+    {
+        const auto& pos{ dae::Utils::PlayerPosition(playerIdx, centerPos, 100.f) };
+
+        // --- Get Player Color ---
+        uint32_t hexColor{};
+        uint32_t hexColorDarker{};
+        const auto playerColor{ static_cast<PlayerColor>(playerIdx) };
+        switch (playerColor)
+        {
+        case PlayerColor::Red:
+        {
+            hexColor = HCol::RED;
+            hexColorDarker = HCol::DARK_RED;
+            break;
+        }
+        case PlayerColor::Green:
+        {
+            hexColor = HCol::GREEN;
+            hexColorDarker = HCol::DARK_GREEN;
+            break;
+        }
+        case PlayerColor::Blue:
+        {
+            hexColor = HCol::BLUE;
+            hexColorDarker = HCol::DARK_BLUE;
+            break;
+        }
+        case PlayerColor::Yellow:
+        {
+            hexColor = HCol::YELLOW;
+            hexColorDarker = HCol::PALE_BROWN;
+            break;
+        }
+        default:
+        {
+            hexColor = HCol::MAGENTA;
+            hexColorDarker = HCol::DARK_MAGENTA;
+            break;
+        }
+        }
+
+        // --- Get Death Display ---
+        // B - Heart / r - Skull
+        const bool isAlive{ dae::Utils::IsPlayerAlive(aliveMask, playerIdx) };
+        const std::string text{ isAlive ? "B" : "r" };
+        // --- Status Background ---
+        go = std::make_unique<dae::GameObject>();
+        go->AddComponent<dae::RenderComponent>();
+        go->AddComponent<dae::TextComponent>(text, font);
+        go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::DARK_RED));
+        go->GetComponent<dae::TransformComponent>().SetWorldPosition(pos.x, pos.y + 5.f);
+        go->GetComponent<dae::RenderComponent>().SetCentered(true);
+        scene.Add(std::move(go));
+
+        // --- Status Foreground ---
+        go = std::make_unique<dae::GameObject>();
+        go->AddComponent<dae::RenderComponent>();
+        go->AddComponent<dae::TextComponent>(text, font);
+        go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::RED));
+        go->GetComponent<dae::TransformComponent>().SetWorldPosition(pos.x, pos.y);
+        go->GetComponent<dae::RenderComponent>().SetCentered(true);
+        scene.Add(std::move(go));
+    }
+    return;
+}
+
+
 #pragma endregion

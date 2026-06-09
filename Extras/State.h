@@ -122,6 +122,7 @@ namespace dae
         void FakeResults(dae::MatchSession::GameMode gamemode);
     };
 
+    class Scene;
     class GameOverState final : public GameState
     {
     public:
@@ -135,6 +136,8 @@ namespace dae
         void Render() const override {};
     private:
         void CreateGameOver();
+
+        void CreateDeadPeopleScreen(Scene& scene, const glm::vec2& centerPos, const dae::MatchSession& session);
     };
 #pragma endregion
 }

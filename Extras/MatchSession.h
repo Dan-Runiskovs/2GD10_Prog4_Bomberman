@@ -18,7 +18,7 @@ namespace dae
             bool isWin{};
             int score{};
             uint8_t aliveMask{};
-            uint32_t winnerColor{};
+            uint8_t winnerIdx{};
         };
 
         void SetMode(GameMode mode);

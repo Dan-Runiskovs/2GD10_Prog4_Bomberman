@@ -24,6 +24,10 @@
 
 #include <iostream>
 
+// TEMP:
+#include <random>
+
+
 using dae::Utils::HexToSDLColor;
 namespace HCol = dae::Utils::Colors;
 using dae::Utils::Sounds;
@@ -573,6 +577,61 @@ void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
 
     // --- Fake Results ---
     FakeResults(gamemode);
+}
+void dae::InGameState::FakeResults(dae::MatchSession::GameMode gamemode)
+{
+    static std::random_device rd;
+    static std::default_random_engine eng(rd());
+
+    MatchSession::MatchResult result{};
+
+    switch (gamemode)
+    {
+    case dae::MatchSession::GameMode::Solo:
+    {
+        // --- WIN? + SCORE ---
+        std::bernoulli_distribution winDist{ 0.5 };
+        std::uniform_int_distribution<int> scoreDist{ 0, 999'999 };
+
+        result.isWin = winDist(eng);
+        result.score = scoreDist(eng);
+        break;
+    }
+    case dae::MatchSession::GameMode::Pvp:
+    {
+        // --- WINNER COLOR ---
+        std::uniform_int_distribution<uint16_t> winnerDist{ 0, 3 };
+
+        result.winnerIdx = static_cast<uint8_t>(winnerDist(eng));
+        break;
+    }
+    case dae::MatchSession::GameMode::Coop:
+    {
+        // --- WIN? + SCORE + ALIVE MASK ---
+        std::bernoulli_distribution winDist{ 0.5 };
+        std::uniform_int_distribution<int> scoreDist{ 0, 999'999 };
+        std::uniform_int_distribution<uint16_t> maskDist{ 0, 15 }; // 0000xxxx
+
+        result.isWin = winDist(eng);
+        result.score = scoreDist(eng);
+
+        // --- Guarantee at least one alive player on win ---
+        if (result.isWin)
+        {
+            std::uniform_int_distribution<uint16_t> aliveDist{ 1, 15 };
+            result.aliveMask = static_cast<uint8_t>(aliveDist(eng));
+        }
+        else
+        {
+            result.aliveMask = 0;
+        }
+    }
+
+        break;
+    default:
+        break;
+    }
+    static_cast<dae::Bomberman&>(m_Game).GetMatchSession().SetResult(result);
 }
 #pragma endregion
 

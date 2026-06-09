@@ -1,6 +1,7 @@
 #pragma once
 #include "Button.h"
 #include "Game.h"
+#include "MatchSession.h"
 #include <vector>
 #include <cstdint>
 
@@ -28,18 +29,7 @@ namespace dae
     class GameState : public State
     {
     public:
-        // --- Game Type Enum
-        enum class GameType : uint8_t
-        {
-            Solo = 1,
-            Pvp = 2,
-            Coop = 3,
-
-            None = 0
-        };
-
         explicit GameState(Game& game);
-        explicit GameState(Game& game, GameType gt);
         virtual ~GameState() = default;
 
         virtual void OnEnter() override {}
@@ -65,9 +55,6 @@ namespace dae
         uint8_t m_SelectedButtonIndex{ 0 };
         void RotateButtonSelection(bool isNext);
         void CreateMenuBindings();
-
-        // --- Game Type ---
-        GameType m_GameType{ GameType::None };
 
         // --- State Changer ---
         void ChangeState(std::unique_ptr<GameState> newState);
@@ -122,7 +109,7 @@ namespace dae
     class InGameState final : public GameState
     {
     public:
-        explicit InGameState(Game& game, GameType gameType);
+        explicit InGameState(Game& game);
 
         void OnEnter() override;
         void OnExit() override;
@@ -131,13 +118,14 @@ namespace dae
         void Update() override {};
         void Render() const override {};
     private:
-        void CreateGame(GameType gameType);
+        void CreateGame(dae::MatchSession::GameMode gamemode);
+        void FakeResults(dae::MatchSession::GameMode gamemode);
     };
 
     class GameOverState final : public GameState
     {
     public:
-        explicit GameOverState(Game& game, GameType gameType);
+        explicit GameOverState(Game& game);
 
         void OnEnter() override;
         void OnExit() override;

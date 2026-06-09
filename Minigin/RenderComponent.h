@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <glm/glm.hpp>
 #include "ComponentBase.h"
 
 namespace dae
@@ -16,6 +17,8 @@ namespace dae
 		void Update() override {};
 
 		void SetDimensions(float width, float height);
+		const glm::vec2 GetDimensions() const;
+		void SetScale(float scale);
 		void SetTexture(const std::string& filename);
 		void SetTexture(std::shared_ptr<Texture2D> pTexture);
 		void SetCentered(bool drawCentered) { m_DrawCentered = drawCentered; }

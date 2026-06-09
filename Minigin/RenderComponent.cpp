@@ -32,6 +32,19 @@ void dae::RenderComponent::SetDimensions(float width, float height)
 	m_Heigth = height;
 }
 
+const glm::vec2 dae::RenderComponent::GetDimensions() const
+{
+	return glm::vec2(m_Width, m_Heigth);
+}
+
+void dae::RenderComponent::SetScale(float scale)
+{
+	const auto& texture{ *m_pTexture.get() };
+	const auto originalSize{ texture.GetSize() };
+	m_Width = originalSize.x * scale;
+	m_Heigth = originalSize.y * scale;
+}
+
 void dae::RenderComponent::SetTexture(const std::string& filename)
 {
 	m_pTexture = ResourceManager::GetInstance().LoadTexture(filename);

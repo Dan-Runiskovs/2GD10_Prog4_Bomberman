@@ -29,13 +29,7 @@ namespace HCol = dae::Utils::Colors;
 using dae::Utils::Sounds;
 
 dae::GameState::GameState(Game& game)
-	: GameState(game, GameType::None)
-{
-}
-
-dae::GameState::GameState(Game& game, GameType gt)
-    : m_Game(game)
-    , m_GameType(gt)
+	: m_Game(game)
 {
 }
 
@@ -137,6 +131,16 @@ void dae::TitleState::CreateTitleScreen()
 
     // --- Background ---
     auto go{ std::make_unique<dae::GameObject>() };
+
+    // --- Logo ---
+    go = std::make_unique<dae::GameObject>();
+    go->AddComponent<dae::RenderComponent>();
+    go->GetComponent<dae::RenderComponent>().SetTexture("logo.png");
+    go->GetComponent<dae::RenderComponent>().SetScale(0.7f);
+    const auto dimensions{ go->GetComponent<dae::RenderComponent>().GetDimensions() };
+
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowSize.x - dimensions.x - 20.f, windowSize.y - dimensions.y - 20.f);
+    scene.Add(std::move(go));
 
     // --- Title Background ---
     go = std::make_unique<dae::GameObject>();
@@ -388,6 +392,7 @@ void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
     m_SceneButtons.push_back(Button{ {windowCentre.x, 450.f}, "PvP", scene });
     m_SceneButtons.push_back(Button{ {windowCentre.x, 520.f}, "Co-op", scene });
     // Assign Callbacks:
+
     m_SceneButtons[0].GetSubject().AddObserver(
         [this](Event event)
         {
@@ -395,8 +400,8 @@ void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
             {
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Lauching Solo Game!\n";
-                //ChangeState<dae::InGameState>(GameType::Solo);
-                ChangeState(std::make_unique<dae::InGameState>(m_Game, GameType::Solo));
+                static_cast<dae::Bomberman&>(m_Game).GetMatchSession().SetMode(dae::MatchSession::GameMode::Solo);
+                ChangeState(std::make_unique<dae::InGameState>(m_Game));
                 break;
             default:
                 break;
@@ -411,8 +416,8 @@ void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
             {
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Launching PvP!\n";
-                //ChangeState<dae::InGameState>(GameType::Pvp);
-                ChangeState(std::make_unique<dae::InGameState>(m_Game, GameType::Pvp));
+                static_cast<dae::Bomberman&>(m_Game).GetMatchSession().SetMode(dae::MatchSession::GameMode::Pvp);
+                ChangeState(std::make_unique<dae::InGameState>(m_Game));
                 break;
             default:
                 break;
@@ -427,8 +432,8 @@ void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
             {
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Launching Co-op!\n";
-                //ChangeState<dae::InGameState>(GameType::Coop);
-                ChangeState(std::make_unique<dae::InGameState>(m_Game, GameType::Coop));
+                static_cast<dae::Bomberman&>(m_Game).GetMatchSession().SetMode(dae::MatchSession::GameMode::Coop);
+                ChangeState(std::make_unique<dae::InGameState>(m_Game));
                 break;
             default:
                 break;
@@ -441,32 +446,33 @@ void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
 #pragma endregion
 
 #pragma region In Game
-dae::InGameState::InGameState(Game& game, GameType gameType)
-    :GameState(game, gameType)
+dae::InGameState::InGameState(Game& game)
+    :GameState(game)
 {
 }
 
 void dae::InGameState::OnEnter()
 {
-    switch (m_GameType)
+    auto& session{ static_cast<Bomberman&>(m_Game).GetMatchSession() };
+    const auto gamemode{ session.GetMode() };    
+#ifdef _DEBUG
+    switch (gamemode)
     {
-    case dae::GameState::GameType::Solo:
+    case dae::MatchSession::GameMode::Solo:
         std::cout << "GameState: Solo Game Entered \n";
-        CreateGame(GameType::Solo);
-        return;
-    case dae::GameState::GameType::Pvp:
+        break;
+    case dae::MatchSession::GameMode::Pvp:
         std::cout << "GameState: PvP Game Entered \n";
-        CreateGame(GameType::Pvp);
-        return;
-    case dae::GameState::GameType::Coop:
+        break;
+    case dae::MatchSession::GameMode::Coop:
         std::cout << "GameState: CO-OP Game Entered \n";
-        CreateGame(GameType::Coop);
-        return;
-    case dae::GameState::GameType::None:
+        break;
     default:
-        std::cout << "GameState: ERROR: Should not be creating gamemode 'None'!\n";
-        return;
+        break;
     }
+    std::cout << "Creating game...\n";
+#endif // _DEBUG
+    CreateGame(gamemode);
 }
 
 void dae::InGameState::OnExit()
@@ -476,77 +482,80 @@ void dae::InGameState::OnExit()
     std::cout << "GameState: Game Simulation Exited\n";
 }
 
-void dae::InGameState::CreateGame(GameType gameType)
+void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
 {
-    // --- Safety Check ---
-    m_GameType = gameType;
-
+    std::cout << "Creating Game TEST\n";
     auto& scene{ SceneManager::GetInstance().CreateScene() };
+    const auto windowSize{ Renderer::GetInstance().GetWindowSize() };
+    const auto windowCentre{ glm::vec2(windowSize.x / 2.f, windowSize.y / 2.f) };
 
-    // --- Background ---
-    auto go{ std::make_unique<dae::GameObject>() };
-    go->AddComponent<dae::RenderComponent>();
-    go->GetComponent<dae::RenderComponent>().SetTexture("background.png");
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(0.f, 0.f);
-    scene.Add(std::move(go));
+    // --- Fonts ---
+    auto mainFont{ dae::ResourceManager::GetInstance().LoadFont("MainFont.ttf", 120) };
+    auto subFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 36) };
 
-    // --- Logo ---
-    go = std::make_unique<dae::GameObject>();
-    go->AddComponent<dae::RenderComponent>();
-    go->GetComponent<dae::RenderComponent>().SetTexture("logo.png");
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(358.f, 180.f);
-    scene.Add(std::move(go));
-
-    // --- Title ---
-    auto font{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36) };
-    go = std::make_unique<dae::GameObject>();
-    go->AddComponent<dae::RenderComponent>();
-
+    // --- TEMP: Title --- 
     std::string title{};
-    switch (gameType)
+    switch (gamemode)
     {
-    case GameType::Solo:
+    case dae::MatchSession::GameMode::Solo:
         title = "Solo Game Simulation";
         break;
-
-    case GameType::Pvp:
+    case dae::MatchSession::GameMode::Pvp:
         title = "PvP Game Simulation";
         break;
-
-    case GameType::Coop:
+    case dae::MatchSession::GameMode::Coop:
         title = "CO-OP Game Simulation";
         break;
-
     default:
-        title = "Unknown Simulation";
         break;
     }
-    go->AddComponent<dae::TextComponent>(title, font);
-    go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(292.f, 20.f);
+
+    // --- Title Background ---
+    auto go{ std::make_unique<dae::GameObject>() };
+    go->AddComponent<dae::RenderComponent>();
+    go->AddComponent<dae::TextComponent>(title, mainFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::PALE_BROWN));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x + 5.f, windowCentre.y * .3f + 5.f);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
+    scene.Add(std::move(go));
+
+    // --- Title Foreground ---
+    go = std::make_unique<dae::GameObject>();
+    go->AddComponent<dae::RenderComponent>();
+    go->AddComponent<dae::TextComponent>(title, mainFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::YELLOW));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * .3f);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
     scene.Add(std::move(go));
 
 #ifdef _DEBUG
     // --- FPS ---
+    auto debugFont{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 30) };
     go = std::make_unique<dae::GameObject>();
     go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>("TEMP", font);
-    go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
+    go->AddComponent<dae::TextComponent>("TEMP", debugFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::DEBUG_RED));
     go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 20.f);
     go->AddComponent<dae::FPSComponent>();
     scene.Add(std::move(go));
 #endif // _DEBUG
 
     // --- Helper Text ---
-    font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 20);
     go = std::make_unique<dae::GameObject>();
     go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>("Press A to exit simulation", font);
-    go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 450.f);
+    go->AddComponent<dae::TextComponent>("> Press A to exit simulation <", subFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::RED));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
     scene.Add(std::move(go));
 
     // --- Bindings ---
+    // SOLO:
+    
+    // PVP:
+
+    // CO-OP:
+
     auto& controllerRef = dae::InputManager::GetInstance().AddController(static_cast<uint8_t>(0));
 
     dae::InputManager::GetInstance().AddBinding(
@@ -555,18 +564,21 @@ void dae::InGameState::CreateGame(GameType gameType)
 
             std::make_unique<dae::ChangeStateCommand>(
                 m_Game,
-                std::make_unique<dae::GameOverState>(m_Game, m_GameType)
+                std::make_unique<dae::GameOverState>(m_Game)
             ),
 
             CommandType::OnRelease
         )
     );
+
+    // --- Fake Results ---
+    FakeResults(gamemode);
 }
 #pragma endregion
 
 #pragma region Game over
-dae::GameOverState::GameOverState(Game& game, GameType gameType)
-    :GameState(game, gameType)
+dae::GameOverState::GameOverState(Game& game)
+    :GameState(game)
 {
 }
 
@@ -587,36 +599,38 @@ void dae::GameOverState::OnExit()
 void dae::GameOverState::CreateGameOver()
 {
     auto& scene{ SceneManager::GetInstance().CreateScene() };
+    const auto windowSize{ Renderer::GetInstance().GetWindowSize() };
+    const auto windowCentre{ glm::vec2(windowSize.x / 2.f, windowSize.y / 2.f) };
 
-    // --- Background ---
+    // --- Fonts ---
+    auto mainFont{ dae::ResourceManager::GetInstance().LoadFont("MainFont.ttf", 150) };
+    auto subFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 36) };
+
+    // --- Title Background ---
     auto go{ std::make_unique<dae::GameObject>() };
     go->AddComponent<dae::RenderComponent>();
-    go->GetComponent<dae::RenderComponent>().SetTexture("background.png");
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(0.f, 0.f);
+    go->AddComponent<dae::TextComponent>("Game Over!", mainFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::PALE_BROWN));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x + 5.f, windowCentre.y * .5f + 5.f);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
     scene.Add(std::move(go));
 
-    // --- Logo ---
+    // --- Title Foreground ---
     go = std::make_unique<dae::GameObject>();
     go->AddComponent<dae::RenderComponent>();
-    go->GetComponent<dae::RenderComponent>().SetTexture("logo.png");
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(358.f, 180.f);
-    scene.Add(std::move(go));
-
-    // --- Title ---
-    auto font{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36) };
-    go = std::make_unique<dae::GameObject>();
-    go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>("Game Over!", font);
-    go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(292.f, 20.f);
+    go->AddComponent<dae::TextComponent>("Game Over!", mainFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::YELLOW));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * .5f);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
     scene.Add(std::move(go));
 
 #ifdef _DEBUG
     // --- FPS ---
+    auto debugFont{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 30) };
     go = std::make_unique<dae::GameObject>();
     go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>("TEMP", font);
-    go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
+    go->AddComponent<dae::TextComponent>("TEMP", debugFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::DEBUG_RED));
     go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 20.f);
     go->AddComponent<dae::FPSComponent>();
     scene.Add(std::move(go));
@@ -626,9 +640,9 @@ void dae::GameOverState::CreateGameOver()
     // Clear any previous:
     m_SceneButtons.clear();
     // Add new :
-    m_SceneButtons.push_back(Button{ {60.f, 400.f}, "Restart", scene });
-    m_SceneButtons.push_back(Button{ {60.f, 450.f}, "Main Menu", scene });
-    m_SceneButtons.push_back(Button{ {60.f, 500.f}, "Quit", scene });
+    m_SceneButtons.push_back(Button{ {windowCentre.x, 380.f}, "Restart", scene });
+    m_SceneButtons.push_back(Button{ {windowCentre.x, 450.f}, "Main Menu", scene });
+    m_SceneButtons.push_back(Button{ {windowCentre.x, 520.f}, "Quit", scene });
     // Assign Callbacks:
     m_SceneButtons[0].GetSubject().AddObserver(
         [this](Event event)
@@ -637,8 +651,7 @@ void dae::GameOverState::CreateGameOver()
             {
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Restarting!\n";
-                //ChangeState<dae::InGameState>(m_GameType);
-                ChangeState(std::make_unique<dae::InGameState>(m_Game, m_GameType));
+                ChangeState(std::make_unique<dae::InGameState>(m_Game));
                 break;
             default:
                 break;
@@ -653,7 +666,6 @@ void dae::GameOverState::CreateGameOver()
             {
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Launching Main Menu!\n";
-                //ChangeState<dae::MainMenuState>();
                 ChangeState(std::make_unique<dae::MainMenuState>(m_Game));
                 break;
             default:

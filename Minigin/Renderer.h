@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL3/SDL.h>
+#include <glm/glm.hpp>
 #include "Singleton.h"
 #include "Game.h"
 
@@ -23,6 +24,7 @@ namespace dae
 
 		SDL_Renderer* GetSDLRenderer() const { return m_renderer; }
 		SDL_Window* GetWindow() const { return m_window; }
+		const glm::vec2 GetWindowSize() const;
 
 		const SDL_Color& GetBackgroundColor() const { return m_clearColor; }
 		void SetBackgroundColor(const SDL_Color& color) { m_clearColor = color; }

@@ -24,7 +24,7 @@ namespace dae
 	private:
 		bool m_IsSelected{ false };
 		
-		//RenderComponent* m_RenderComponent;
+		std::string m_TextBase;
 		TextComponent* m_TextComponent;
 		Subject m_Subject{};
 	};

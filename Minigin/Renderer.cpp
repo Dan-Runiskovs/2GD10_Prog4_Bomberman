@@ -73,3 +73,12 @@ void dae::Renderer::RenderTexture(const Texture2D& texture, SDL_FRect srcRect, S
 {
 	SDL_RenderTextureRotated(GetSDLRenderer(), texture.GetSDLTexture(), &srcRect, &dstRect, static_cast<double>(rotation), nullptr, flipMode);
 }
+
+const glm::vec2 dae::Renderer::GetWindowSize() const
+{
+	int width{};
+	int height{};
+	SDL_GetWindowSizeInPixels(m_window, &width, &height);
+
+	return glm::vec2(width, height);
+}

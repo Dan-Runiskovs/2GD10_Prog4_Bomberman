@@ -96,8 +96,8 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath, std::unique_ptr<Gam
 
 	g_window = SDL_CreateWindow(
 		"Bomberman - Dan Runiskovs",
-		1024,
-		576,
+		1280,
+		720,
 		SDL_WINDOW_OPENGL
 	);
 	if (g_window == nullptr) 

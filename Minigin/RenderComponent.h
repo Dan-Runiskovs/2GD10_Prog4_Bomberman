@@ -18,6 +18,7 @@ namespace dae
 		void SetDimensions(float width, float height);
 		void SetTexture(const std::string& filename);
 		void SetTexture(std::shared_ptr<Texture2D> pTexture);
+		void SetCentered(bool drawCentered) { m_DrawCentered = drawCentered; }
 
 		void Render() const;
 
@@ -32,5 +33,7 @@ namespace dae
 
 		float m_Width{};
 		float m_Heigth{};
+
+		bool m_DrawCentered{ false };
 	};
 }

@@ -19,8 +19,14 @@
 #include "CustomCommands.h"
 #include "ServiceLocator.h"
 #include "SoundSystem.h"
+#include "Renderer.h"
+#include "Utils.h"
 
 #include <iostream>
+
+using dae::Utils::HexToSDLColor;
+namespace HCol = dae::Utils::Colors;
+using dae::Utils::Sounds;
 
 dae::GameState::GameState(Game& game)
 	: GameState(game, GameType::None)
@@ -33,6 +39,7 @@ dae::GameState::GameState(Game& game, GameType gt)
 {
 }
 
+#pragma region Helpers
 void dae::GameState::RotateButtonSelection(bool isNext)
 {
     // --- Early return if there is only one button ---
@@ -74,21 +81,21 @@ void dae::GameState::CreateMenuBindings()
         controllerRef, dae::ControllerButton::GAMEPAD_DPAD_DOWN,
         std::make_unique<dae::ExecuteCallbackCommand>([this]() {
             RotateButtonSelection(true);
-            ServiceLocator::GetSoundSystem().PlaySFX(1, 10);
+            ServiceLocator::GetSoundSystem().PlaySFX(uint8_t(Sounds::Skip), 10);
             }),
         dae::CommandType::OnPress));
     input.AddBinding(std::make_unique<dae::ControllerBinding>(
         controllerRef, dae::ControllerButton::GAMEPAD_DPAD_UP,
         std::make_unique<dae::ExecuteCallbackCommand>([this]() {
             RotateButtonSelection(false);
-            ServiceLocator::GetSoundSystem().PlaySFX(1, 10);
+            ServiceLocator::GetSoundSystem().PlaySFX(uint8_t(Sounds::Skip), 10);
             }),
         dae::CommandType::OnPress));
     input.AddBinding(std::make_unique<dae::ControllerBinding>(
         controllerRef, dae::ControllerButton::GAMEPAD_A,
         std::make_unique<dae::ExecuteCallbackCommand>([this]() {
             m_SceneButtons[m_SelectedButtonIndex].Click();
-            ServiceLocator::GetSoundSystem().PlaySFX(0, 10);
+            ServiceLocator::GetSoundSystem().PlaySFX(uint8_t(Sounds::Select), 10);
             }),
         dae::CommandType::OnRelease));
 }
@@ -97,6 +104,7 @@ void dae::GameState::ChangeState(std::unique_ptr<GameState> newState)
 {
     m_Game.GetGameStateStack().ChangeState(std::move(newState));
 }
+#pragma endregion
 
 #pragma region Title
 dae::TitleState::TitleState(Game& game)
@@ -120,48 +128,62 @@ void dae::TitleState::OnExit()
 void dae::TitleState::CreateTitleScreen()
 {
     auto& scene{ SceneManager::GetInstance().CreateScene() };
+    const auto windowSize{ Renderer::GetInstance().GetWindowSize() };
+    const auto windowCentre{ glm::vec2(windowSize.x / 2.f, windowSize.y / 2.f) };
+
+    // --- Fonts ---
+    auto mainFont{ dae::ResourceManager::GetInstance().LoadFont("MainFont.ttf", 200) };
+    auto subFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 36) };
 
     // --- Background ---
     auto go{ std::make_unique<dae::GameObject>() };
-    go->AddComponent<dae::RenderComponent>();
-    go->GetComponent<dae::RenderComponent>().SetTexture("background.png");
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(0.f, 0.f);
-    scene.Add(std::move(go));
 
-    // --- Logo ---
+    // --- Title Background ---
     go = std::make_unique<dae::GameObject>();
     go->AddComponent<dae::RenderComponent>();
-    go->GetComponent<dae::RenderComponent>().SetTexture("logo.png");
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(358.f, 180.f);
+    go->AddComponent<dae::TextComponent>("Bomberman", mainFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::PALE_BROWN));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x + 5.f, windowCentre.y / 2.f + 5.f);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
     scene.Add(std::move(go));
 
-    // --- Title ---
-    auto font{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36) };
+    // --- Title Foreground ---
     go = std::make_unique<dae::GameObject>();
     go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>("Title Screen", font);
-    go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(292.f, 20.f);
+    go->AddComponent<dae::TextComponent>("Bomberman", mainFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::YELLOW));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y/2.f);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
     scene.Add(std::move(go));
 
 #ifdef _DEBUG
     // --- FPS ---
+    auto debugFont{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 30) };
     go = std::make_unique<dae::GameObject>();
     go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>("TEMP", font);
-    go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
+    go->AddComponent<dae::TextComponent>("TEMP", debugFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::DEBUG_RED));
     go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 20.f);
     go->AddComponent<dae::FPSComponent>();
     scene.Add(std::move(go));
 #endif // _DEBUG
 
-    // --- Helper Text ---
-    font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 20);
+    // --- Enter Text ---
     go = std::make_unique<dae::GameObject>();
     go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>("Press A to enter game", font);
-    go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 450.f);
+    go->AddComponent<dae::TextComponent>("> Press A to enter <", subFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::RED));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * 1.3f);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
+    scene.Add(std::move(go));
+
+    // --- Subtitle Text ---
+    go = std::make_unique<dae::GameObject>();
+    go->AddComponent<dae::RenderComponent>();
+    go->AddComponent<dae::TextComponent>("Made by Dan Runiskovs", subFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::GREY));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * 1.9f);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
     scene.Add(std::move(go));
 
     // --- Bindings ---
@@ -201,37 +223,40 @@ void dae::MainMenuState::OnExit()
 
 void dae::MainMenuState::CreateMainMenu()
 {
+    // --- Data ---
     auto& scene{ SceneManager::GetInstance().CreateScene() };
+    const auto windowSize{ Renderer::GetInstance().GetWindowSize() };
+    const auto windowCentre{ glm::vec2(windowSize.x / 2.f, windowSize.y / 2.f) };
 
-    // --- Background ---
+    // --- Fonts ---
+    auto mainFont{ dae::ResourceManager::GetInstance().LoadFont("MainFont.ttf", 200) };
+    auto subFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 36) };
+
+    // --- Title Background ---
     auto go{ std::make_unique<dae::GameObject>() };
     go->AddComponent<dae::RenderComponent>();
-    go->GetComponent<dae::RenderComponent>().SetTexture("background.png");
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(0.f, 0.f);
+    go->AddComponent<dae::TextComponent>("Bomberman", mainFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::PALE_BROWN));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x + 5.f, windowCentre.y * .5f + 5.f);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
     scene.Add(std::move(go));
 
-    // --- Logo ---
+    // --- Title Foreground ---
     go = std::make_unique<dae::GameObject>();
     go->AddComponent<dae::RenderComponent>();
-    go->GetComponent<dae::RenderComponent>().SetTexture("logo.png");
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(358.f, 180.f);
-    scene.Add(std::move(go));
-
-    // --- Title ---
-    auto font{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36) };
-    go = std::make_unique<dae::GameObject>();
-    go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>("Main Menu", font);
-    go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(292.f, 20.f);
+    go->AddComponent<dae::TextComponent>("Bomberman", mainFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::YELLOW));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * .5f);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
     scene.Add(std::move(go));
 
 #ifdef _DEBUG
     // --- FPS ---
+    auto debugFont{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 30) };
     go = std::make_unique<dae::GameObject>();
     go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>("TEMP", font);
-    go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
+    go->AddComponent<dae::TextComponent>("TEMP", debugFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::DEBUG_RED));
     go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 20.f);
     go->AddComponent<dae::FPSComponent>();
     scene.Add(std::move(go));
@@ -241,9 +266,9 @@ void dae::MainMenuState::CreateMainMenu()
     // Clear any previous:
     m_SceneButtons.clear();
     // Add new :
-    m_SceneButtons.push_back(Button{ {60.f, 400.f}, "Play", scene });
-    m_SceneButtons.push_back(Button{ {60.f, 450.f}, "Leaderboard", scene });
-    m_SceneButtons.push_back(Button{ {60.f, 500.f}, "Quit", scene });
+    m_SceneButtons.push_back(Button{ {windowCentre.x, 380.f}, "Play", scene });
+    m_SceneButtons.push_back(Button{ {windowCentre.x, 450.f}, "Leaderboard", scene });
+    m_SceneButtons.push_back(Button{ {windowCentre.x, 520.f}, "Quit", scene });
     // Assign Callbacks:
     m_SceneButtons[0].GetSubject().AddObserver(
         [this](Event event)
@@ -252,7 +277,6 @@ void dae::MainMenuState::CreateMainMenu()
             {
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Opening gamemode selection!\n";
-                //ChangeState<dae::GamemodeSelectionMenuState>();
                 ChangeState(std::make_unique<dae::GamemodeSelectionMenuState>(m_Game));
                 break;
             default:
@@ -319,36 +343,38 @@ void dae::GamemodeSelectionMenuState::OnExit()
 void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
 {
     auto& scene{ SceneManager::GetInstance().CreateScene() };
+    const auto windowSize{ Renderer::GetInstance().GetWindowSize() };
+    const auto windowCentre{ glm::vec2(windowSize.x / 2.f, windowSize.y / 2.f) };
 
-    // --- Background ---
+    // --- Fonts ---
+    auto mainFont{ dae::ResourceManager::GetInstance().LoadFont("MainFont.ttf", 150) };
+    auto subFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 36) };
+
+    // --- Title Background ---
     auto go{ std::make_unique<dae::GameObject>() };
     go->AddComponent<dae::RenderComponent>();
-    go->GetComponent<dae::RenderComponent>().SetTexture("background.png");
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(0.f, 0.f);
+    go->AddComponent<dae::TextComponent>("Select Gamemode", mainFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::PALE_BROWN));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x + 5.f, windowCentre.y * .5f + 5.f);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
     scene.Add(std::move(go));
 
-    // --- Logo ---
+    // --- Title Foreground ---
     go = std::make_unique<dae::GameObject>();
     go->AddComponent<dae::RenderComponent>();
-    go->GetComponent<dae::RenderComponent>().SetTexture("logo.png");
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(358.f, 180.f);
-    scene.Add(std::move(go));
-
-    // --- Title ---
-    auto font{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36) };
-    go = std::make_unique<dae::GameObject>();
-    go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>("Gamemode selection menu", font);
-    go->GetComponent<dae::TextComponent>().SetColor({ 255, 255, 255, 255 });
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(292.f, 20.f);
+    go->AddComponent<dae::TextComponent>("Select Gamemode", mainFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::YELLOW));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * .5f);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
     scene.Add(std::move(go));
 
 #ifdef _DEBUG
     // --- FPS ---
+    auto debugFont{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 30) };
     go = std::make_unique<dae::GameObject>();
     go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>("TEMP", font);
-    go->GetComponent<dae::TextComponent>().SetColor({ 255, 0, 0, 255 });
+    go->AddComponent<dae::TextComponent>("TEMP", debugFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::DEBUG_RED));
     go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 20.f);
     go->AddComponent<dae::FPSComponent>();
     scene.Add(std::move(go));
@@ -358,9 +384,9 @@ void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
     // Clear any previous:
     m_SceneButtons.clear();
     // Add new :
-    m_SceneButtons.push_back(Button{ {60.f, 400.f}, "Solo", scene });
-    m_SceneButtons.push_back(Button{ {60.f, 450.f}, "PvP", scene });
-    m_SceneButtons.push_back(Button{ {60.f, 500.f}, "Co-op", scene });
+    m_SceneButtons.push_back(Button{ {windowCentre.x, 380.f}, "Solo", scene });
+    m_SceneButtons.push_back(Button{ {windowCentre.x, 450.f}, "PvP", scene });
+    m_SceneButtons.push_back(Button{ {windowCentre.x, 520.f}, "Co-op", scene });
     // Assign Callbacks:
     m_SceneButtons[0].GetSubject().AddObserver(
         [this](Event event)

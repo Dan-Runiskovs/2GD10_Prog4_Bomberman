@@ -1,5 +1,6 @@
 #include "MatchSession.h"
 #include <iostream>
+#include <cassert>
 
 void dae::MatchSession::SetMode(GameMode mode)
 {
@@ -21,6 +22,12 @@ void dae::MatchSession::SetMode(GameMode mode)
 	m_Mode = mode;
 }
 
+void dae::MatchSession::SetAmoundOfPlayers(uint8_t nPlayers)
+{
+	assert(nPlayers <= 4);
+	m_Result.playerAmount = nPlayers;
+}
+
 dae::MatchSession::GameMode dae::MatchSession::GetMode() const
 {
 	return m_Mode;
@@ -31,8 +38,9 @@ void dae::MatchSession::SetResult(const MatchResult& result)
 #ifdef _DEBUG
 	std::cout << "Game Over, new result set\n";
 #endif // _DEBUG
-
-	m_Result = result;
+	uint8_t nPlayers = m_Result.playerAmount;
+	m_Result = result; // player amount gets overriden
+	m_Result.playerAmount = nPlayers;
 }
 
 const dae::MatchSession::MatchResult& dae::MatchSession::GetResult() const

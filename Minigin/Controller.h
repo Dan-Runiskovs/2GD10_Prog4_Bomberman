@@ -29,7 +29,7 @@ namespace dae
         ~Controller() noexcept;
 
         bool IsConnected();
-
+        uint8_t GetID() const;
         void ProcessInput();
 
         bool IsButtonDownThisFrame(ControllerButton button) const;

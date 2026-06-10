@@ -23,6 +23,7 @@ namespace dae
         };
 
         void SetMode(GameMode mode);
+        void SetAmoundOfPlayers(uint8_t nPlayers);
         GameMode GetMode() const;
 
         void SetResult(const MatchResult& result);

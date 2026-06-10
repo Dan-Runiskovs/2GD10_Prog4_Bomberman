@@ -24,11 +24,12 @@ bool dae::Utils::IsPlayerAlive(uint8_t mask, uint8_t index)
     return mask & (1u << index);
 }
 
-const glm::vec2 dae::Utils::PlayerPosition(uint8_t playerIdx, const glm::vec2& centre, float horizontalMargin)
+const glm::vec2 dae::Utils::PlayerPosition(uint8_t playerIdx, uint8_t playerCount, const glm::vec2& centre, float horizontalMargin)
 {
-    assert(playerIdx < 4);
+    assert(playerCount > 0 && playerCount <= 4);
+    assert(playerIdx < playerCount);
 
-    const float totalWidth{ (playerIdx - 1) * horizontalMargin };
+    const float totalWidth{ (playerCount - 1) * horizontalMargin };
 
     const float startX{ centre.x - totalWidth * 0.5f };
 

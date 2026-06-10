@@ -389,7 +389,18 @@ void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
     scene.Add(std::move(go));
 #endif // _DEBUG
 
+    // --- Subtitle Text ---
+    go = std::make_unique<dae::GameObject>();
+    go->AddComponent<dae::RenderComponent>();
+    go->AddComponent<dae::TextComponent>("Only SOLO counts for leaderboard", subFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::GREY));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * 1.9f);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
+    scene.Add(std::move(go));
+
     // --- Buttons ---
+    std::cout << "Connected controller amout: " <<
+        static_cast<int>(dae::InputManager::GetInstance().GetControllerAmount()) << "\n";
     // Clear any previous:
     m_SceneButtons.clear();
     // Add new :
@@ -406,6 +417,7 @@ void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Lauching Solo Game!\n";
                 static_cast<dae::Bomberman&>(m_Game).GetMatchSession().SetMode(dae::MatchSession::GameMode::Solo);
+                static_cast<dae::Bomberman&>(m_Game).GetMatchSession().SetAmoundOfPlayers(1u);
                 ChangeState(std::make_unique<dae::InGameState>(m_Game));
                 break;
             default:
@@ -438,6 +450,7 @@ void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Launching Co-op!\n";
                 static_cast<dae::Bomberman&>(m_Game).GetMatchSession().SetMode(dae::MatchSession::GameMode::Coop);
+                static_cast<dae::Bomberman&>(m_Game).GetMatchSession().SetAmoundOfPlayers(4u);  // TODO: Temp
                 ChangeState(std::make_unique<dae::InGameState>(m_Game));
                 break;
             default:
@@ -771,9 +784,6 @@ void dae::GameOverState::CreateGameOver()
         go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * .5f);
         go->GetComponent<dae::RenderComponent>().SetCentered(true);
         scene.Add(std::move(go));
-
-        const auto deadCentre{ glm::vec2(windowCentre.x, windowCentre.y * .75f) };
-        CreateDeadPeopleScreen(scene, deadCentre, session);
         break;
     }
     case dae::MatchSession::GameMode::Coop:
@@ -821,7 +831,8 @@ void dae::GameOverState::CreateGameOver()
             scene.Add(std::move(go));
         }
 
-        CreateDeadPeopleScreen(scene, windowCentre, session);
+        const glm::vec2 deadCentre{ windowCentre.x, windowCentre.y * 0.8f };
+        CreateDeadPeopleScreen(scene, deadCentre, session);
         break;
     }
     default:
@@ -891,7 +902,6 @@ void dae::GameOverState::CreateGameOver()
             default:
                 break;
             }
-
         }
     );
     CreateMenuBindings();
@@ -913,7 +923,7 @@ void dae::GameOverState::CreateDeadPeopleScreen(Scene& scene, const glm::vec2& c
     auto font{ dae::ResourceManager::GetInstance().LoadFont("Icons.ttf", 50) };
     for (uint8_t playerIdx{ 0 }; playerIdx < playerN; ++playerIdx)
     {
-        const auto& pos{ dae::Utils::PlayerPosition(playerIdx, centerPos, 100.f) };
+        const auto& pos{ dae::Utils::PlayerPosition(playerIdx, playerN, centerPos, 150.f) };
 
         // --- Get Player Color ---
         uint32_t hexColor{};
@@ -961,7 +971,7 @@ void dae::GameOverState::CreateDeadPeopleScreen(Scene& scene, const glm::vec2& c
         go = std::make_unique<dae::GameObject>();
         go->AddComponent<dae::RenderComponent>();
         go->AddComponent<dae::TextComponent>(text, font);
-        go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::DARK_RED));
+        go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(hexColorDarker));
         go->GetComponent<dae::TransformComponent>().SetWorldPosition(pos.x, pos.y + 5.f);
         go->GetComponent<dae::RenderComponent>().SetCentered(true);
         scene.Add(std::move(go));
@@ -970,7 +980,7 @@ void dae::GameOverState::CreateDeadPeopleScreen(Scene& scene, const glm::vec2& c
         go = std::make_unique<dae::GameObject>();
         go->AddComponent<dae::RenderComponent>();
         go->AddComponent<dae::TextComponent>(text, font);
-        go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::RED));
+        go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(hexColor));
         go->GetComponent<dae::TransformComponent>().SetWorldPosition(pos.x, pos.y);
         go->GetComponent<dae::RenderComponent>().SetCentered(true);
         scene.Add(std::move(go));

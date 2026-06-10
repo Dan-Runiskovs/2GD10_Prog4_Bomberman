@@ -18,6 +18,7 @@ namespace dae
 
         Controller& AddController(uint8_t id);
         Controller& GetController(uint8_t id);
+        uint8_t GetControllerAmount();
 
         void AddBinding(std::unique_ptr<Binding> binding);
         void ClearBindings();

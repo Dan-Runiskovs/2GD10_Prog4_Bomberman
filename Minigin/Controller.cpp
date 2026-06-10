@@ -123,6 +123,11 @@ public:
 #endif
     }
 
+    uint8_t GetID() const
+    {
+        return static_cast<uint8_t>(m_ID);
+    }
+
     void Vibrate(uint16_t force)
     {
 #if _WIN32
@@ -188,6 +193,11 @@ dae::Controller::~Controller() noexcept = default;
 bool dae::Controller::IsConnected()
 {
     return m_pImpl->IsConnected();
+}
+
+uint8_t dae::Controller::GetID() const
+{
+    return m_pImpl->GetID();
 }
 
 void dae::Controller::ProcessInput()

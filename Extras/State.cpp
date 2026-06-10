@@ -67,7 +67,7 @@ void dae::GameState::RotateButtonSelection(bool isNext)
     m_SceneButtons[m_SelectedButtonIndex].SetSelected(true);
 }
 
-void dae::GameState::CreateMenuBindings()
+void dae::GameState::CreateMenuBindings(bool isVertical)
 {
     // --- Select Default ---
     m_SelectedButtonIndex = 0;
@@ -77,14 +77,14 @@ void dae::GameState::CreateMenuBindings()
     auto& controllerRef = dae::InputManager::GetInstance().AddController(static_cast<uint8_t>(0));
     auto& input = InputManager::GetInstance();
     input.AddBinding(std::make_unique<dae::ControllerBinding>(
-        controllerRef, dae::ControllerButton::GAMEPAD_DPAD_DOWN,
+        controllerRef, (isVertical) ? dae::ControllerButton::GAMEPAD_DPAD_DOWN : dae::ControllerButton::GAMEPAD_DPAD_RIGHT,
         std::make_unique<dae::ExecuteCallbackCommand>([this]() {
             RotateButtonSelection(true);
             ServiceLocator::GetSoundSystem().PlaySFX(uint8_t(Sounds::Skip), 10);
             }),
         dae::CommandType::OnPress));
     input.AddBinding(std::make_unique<dae::ControllerBinding>(
-        controllerRef, dae::ControllerButton::GAMEPAD_DPAD_UP,
+        controllerRef, (isVertical) ? dae::ControllerButton::GAMEPAD_DPAD_UP : dae::ControllerButton::GAMEPAD_DPAD_LEFT,
         std::make_unique<dae::ExecuteCallbackCommand>([this]() {
             RotateButtonSelection(false);
             ServiceLocator::GetSoundSystem().PlaySFX(uint8_t(Sounds::Skip), 10);
@@ -325,7 +325,7 @@ void dae::MainMenuState::CreateMainMenu()
 
         }
     );
-    CreateMenuBindings();
+    CreateMenuBindings(true);
 }
 #pragma endregion
 
@@ -459,7 +459,7 @@ void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
 
         }
     );
-    CreateMenuBindings();
+    CreateMenuBindings(true);
 }
 #pragma endregion
 
@@ -605,7 +605,7 @@ void dae::InGameState::FakeResults(dae::MatchSession::GameMode gamemode)
     {
         // --- WIN? + SCORE ---
         std::bernoulli_distribution winDist{ 0.5 };
-        std::uniform_int_distribution<int> scoreDist{ 0, 999'999 };
+        std::uniform_int_distribution<uint16_t> scoreDist{ 0, UINT16_MAX };
 
         result.isWin = winDist(eng);
         result.score = scoreDist(eng);
@@ -623,8 +623,7 @@ void dae::InGameState::FakeResults(dae::MatchSession::GameMode gamemode)
     {
         // --- WIN? + SCORE + ALIVE MASK ---
         std::bernoulli_distribution winDist{ 0.5 };
-        std::uniform_int_distribution<int> scoreDist{ 0, 999'999 };
-        std::uniform_int_distribution<uint16_t> maskDist{ 0, 15 }; // 0000xxxx
+        std::uniform_int_distribution<uint16_t> scoreDist{ 0, UINT16_MAX };
 
         result.isWin = winDist(eng);
         result.score = scoreDist(eng);
@@ -728,6 +727,7 @@ void dae::GameOverState::CreateGameOver()
             go->GetComponent<dae::RenderComponent>().SetCentered(true);
             scene.Add(std::move(go));
         }
+        CreateMenuButtons(scene, false, windowCentre);
         break;
     }
     case dae::MatchSession::GameMode::Pvp:
@@ -784,6 +784,8 @@ void dae::GameOverState::CreateGameOver()
         go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * .5f);
         go->GetComponent<dae::RenderComponent>().SetCentered(true);
         scene.Add(std::move(go));
+
+        CreateMenuButtons(scene, true, windowCentre);
         break;
     }
     case dae::MatchSession::GameMode::Coop:
@@ -833,6 +835,7 @@ void dae::GameOverState::CreateGameOver()
 
         const glm::vec2 deadCentre{ windowCentre.x, windowCentre.y * 0.8f };
         CreateDeadPeopleScreen(scene, deadCentre, session);
+        CreateMenuButtons(scene, true, windowCentre);
         break;
     }
     default:
@@ -851,60 +854,6 @@ void dae::GameOverState::CreateGameOver()
     go->AddComponent<dae::FPSComponent>();
     scene.Add(std::move(go));
 #endif // _DEBUG
-
-    // --- Buttons ---
-    // Clear any previous:
-    m_SceneButtons.clear();
-    // Add new :
-    m_SceneButtons.push_back(Button{ {windowCentre.x, 380.f}, "Restart", scene });
-    m_SceneButtons.push_back(Button{ {windowCentre.x, 450.f}, "Main Menu", scene });
-    m_SceneButtons.push_back(Button{ {windowCentre.x, 520.f}, "Quit", scene });
-    // Assign Callbacks:
-    m_SceneButtons[0].GetSubject().AddObserver(
-        [this](Event event)
-        {
-            switch (event)
-            {
-            case dae::Event::OnClick:
-                std::cout << "Bomberman: Restarting!\n";
-                ChangeState(std::make_unique<dae::InGameState>(m_Game));
-                break;
-            default:
-                break;
-            }
-
-        }
-    );
-    m_SceneButtons[1].GetSubject().AddObserver(
-        [this](Event event)
-        {
-            switch (event)
-            {
-            case dae::Event::OnClick:
-                std::cout << "Bomberman: Launching Main Menu!\n";
-                ChangeState(std::make_unique<dae::MainMenuState>(m_Game));
-                break;
-            default:
-                break;
-            }
-
-        }
-    );
-    m_SceneButtons[2].GetSubject().AddObserver(
-        [](Event event)
-        {
-            switch (event)
-            {
-            case dae::Event::OnClick:
-                std::cout << "Bomberman: Quit!\n";
-                InputManager::GetInstance().QueueExit();
-                break;
-            default:
-                break;
-            }
-        }
-    );
-    CreateMenuBindings();
 }
 
 void dae::GameOverState::CreateDeadPeopleScreen(Scene& scene, const glm::vec2& centerPos, const dae::MatchSession& session)
@@ -986,6 +935,72 @@ void dae::GameOverState::CreateDeadPeopleScreen(Scene& scene, const glm::vec2& c
         scene.Add(std::move(go));
     }
     return;
+}
+
+void dae::GameOverState::CreateMenuButtons(Scene& scene, bool isVertical, const glm::vec2& centre)
+{
+    // --- Buttons ---
+    // Clear any previous:
+    m_SceneButtons.clear();
+    // Add new :
+    if (isVertical)
+    {
+        m_SceneButtons.push_back(Button{ {centre.x, 380.f}, "Restart", scene });
+        m_SceneButtons.push_back(Button{ {centre.x, 450.f}, "Main Menu", scene });
+        m_SceneButtons.push_back(Button{ {centre.x, 520.f}, "Quit", scene });
+    }
+    else
+    {
+        m_SceneButtons.push_back(Button{ {centre.x * 0.3f, centre.y * 1.7f}, "Restart", scene });
+        m_SceneButtons.push_back(Button{ {centre.x, centre.y * 1.7f}, "Main Menu", scene });
+        m_SceneButtons.push_back(Button{ {centre.x * 1.7f, centre.y * 1.7f}, "Quit", scene });
+    }
+    CreateMenuBindings(isVertical);
+    // Assign Callbacks:
+    m_SceneButtons[0].GetSubject().AddObserver(
+        [this](Event event)
+        {
+            switch (event)
+            {
+            case dae::Event::OnClick:
+                std::cout << "Bomberman: Restarting!\n";
+                ChangeState(std::make_unique<dae::InGameState>(m_Game));
+                break;
+            default:
+                break;
+            }
+
+        }
+    );
+    m_SceneButtons[1].GetSubject().AddObserver(
+        [this](Event event)
+        {
+            switch (event)
+            {
+            case dae::Event::OnClick:
+                std::cout << "Bomberman: Launching Main Menu!\n";
+                ChangeState(std::make_unique<dae::MainMenuState>(m_Game));
+                break;
+            default:
+                break;
+            }
+
+        }
+    );
+    m_SceneButtons[2].GetSubject().AddObserver(
+        [](Event event)
+        {
+            switch (event)
+            {
+            case dae::Event::OnClick:
+                std::cout << "Bomberman: Quit!\n";
+                InputManager::GetInstance().QueueExit();
+                break;
+            default:
+                break;
+            }
+        }
+    );
 }
 
 

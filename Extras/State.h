@@ -54,7 +54,7 @@ namespace dae
         std::vector<dae::Button>m_SceneButtons{};
         uint8_t m_SelectedButtonIndex{ 0 };
         void RotateButtonSelection(bool isNext);
-        void CreateMenuBindings();
+        void CreateMenuBindings(bool isVertical);
 
         // --- State Changer ---
         void ChangeState(std::unique_ptr<GameState> newState);
@@ -120,6 +120,7 @@ namespace dae
     private:
         void CreateGame(dae::MatchSession::GameMode gamemode);
         void FakeResults(dae::MatchSession::GameMode gamemode);
+        
     };
 
     class Scene;
@@ -138,6 +139,7 @@ namespace dae
         void CreateGameOver();
 
         void CreateDeadPeopleScreen(Scene& scene, const glm::vec2& centerPos, const dae::MatchSession& session);
+        void CreateMenuButtons(Scene& scene, bool isVertical, const glm::vec2& centre);
     };
 #pragma endregion
 }

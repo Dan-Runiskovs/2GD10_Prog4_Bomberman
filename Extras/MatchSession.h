@@ -19,7 +19,7 @@ namespace dae
             uint8_t aliveMask{};
             uint8_t winnerIdx{};
             uint8_t playerAmount{};
-            int score{};
+            uint16_t score{};
         };
 
         void SetMode(GameMode mode);

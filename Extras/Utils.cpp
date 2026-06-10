@@ -13,7 +13,7 @@ const SDL_Color dae::Utils::HexToSDLColor(uint32_t hex, uint8_t alpha)
     };
 }
 
-const dae::Utils::PlayerColors dae::Utils::MaskToPlayerAlive(uint8_t mask)
+dae::Utils::PlayerColors dae::Utils::MaskToPlayerAlive(uint8_t mask)
 {
     return static_cast<PlayerColors>(std::countr_zero(mask));
 }

@@ -13,6 +13,7 @@ namespace dae
 	{
 	public:
 		TextComponent(GameObject& owner, const std::string& text, std::shared_ptr<Font> font);
+		TextComponent(GameObject& owner, char character, std::shared_ptr<Font> font);
 
 		void Update() override {}
 		void UpdateText();

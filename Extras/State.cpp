@@ -25,9 +25,17 @@
 #include <iostream>
 #include <cassert>
 
-// TEMP:
+// TODO: Temp:
 #include <random>
 
+// TODO: Idea:
+/*
+MAKE 2 different game scenes
+PVP vs Regular
+Where regular get's an argument of players present
+-> (active controllers) and creates player's and accordingly;
+-> Preset positions 1/2/3/4 are serialized in the level;
+*/
 
 using dae::Utils::HexToSDLColor;
 namespace HCol = dae::Utils::Colors;
@@ -728,6 +736,8 @@ void dae::GameOverState::CreateGameOver()
             scene.Add(std::move(go));
         }
         CreateMenuButtons(scene, false, windowCentre);
+        CreateScoreDisplay(scene, windowCentre, session.GetResult().isWin);
+        VisualiseSubtext(scene, windowCentre, session.GetResult().isWin);
         break;
     }
     case dae::MatchSession::GameMode::Pvp:
@@ -956,6 +966,7 @@ void dae::GameOverState::CreateMenuButtons(Scene& scene, bool isVertical, const 
         m_SceneButtons.push_back(Button{ {centre.x * 1.7f, centre.y * 1.7f}, "Quit", scene });
     }
     CreateMenuBindings(isVertical);
+
     // Assign Callbacks:
     m_SceneButtons[0].GetSubject().AddObserver(
         [this](Event event)
@@ -1000,6 +1011,244 @@ void dae::GameOverState::CreateMenuButtons(Scene& scene, bool isVertical, const 
                 break;
             }
         }
+    );
+}
+
+void dae::GameOverState::CreateScoreDisplay(Scene& scene, const glm::vec2& centerPos, bool isWin)
+{
+    if (isWin)
+    {
+        SetMenuButtonsLock(true);
+        const auto interLetterOffset{ 50.f };
+        auto globalLetterOffset{ 75.f };
+        auto letterFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 50) };
+
+        // --- Make Letter Selector ---
+        m_LetterSelectors.push_back(LetterSelector{ {centerPos.x - globalLetterOffset - interLetterOffset, centerPos.y - interLetterOffset}, scene });
+        m_LetterSelectors.push_back(LetterSelector{ {centerPos.x - globalLetterOffset, centerPos.y - interLetterOffset}, scene });
+        m_LetterSelectors.push_back(LetterSelector{ {centerPos.x - globalLetterOffset + interLetterOffset, centerPos.y - interLetterOffset}, scene });
+
+        // --- Wow ---
+        VisualiseScore(scene, centerPos);
+
+        // --- Pretext ---
+        globalLetterOffset*=2;
+        auto go{ std::make_unique<dae::GameObject>() };
+        go->AddComponent<dae::RenderComponent>();
+        go->GetComponent<dae::RenderComponent>().SetCentered(true);
+        go->AddComponent<dae::TextComponent>("Record for:", letterFont);
+        go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::WHITE));
+        go->GetComponent<dae::TransformComponent>().SetWorldPosition(centerPos.x * .5f, centerPos.y - interLetterOffset);
+        scene.Add(std::move(go));
+        
+        // TODO: later make CreateScoreBindings + disable all other buttons)
+        m_LetterSelectors[0].SetSelected(true);
+        CreateScoreBoardBindings();
+    }
+    else
+    {
+        // TODO: Implement display score for loss case
+    }
+}
+
+void dae::GameOverState::VisualiseScore(Scene& scene, const glm::vec2& centerPos)
+{
+    const int scoreHundreds{ static_cast<int>(static_cast<dae::Bomberman&>(m_Game).GetMatchSession().GetResult().score) };
+    auto text{ std::to_string(scoreHundreds) };
+    text += "00";
+    const size_t digitN{ text.length() };
+
+    // --- Insert missing amount of leading 0 ---
+    for (size_t digitsDesired{ 7 }; digitsDesired < digitN; ++digitsDesired)
+    {
+        text = "0" + text; // Add a leading 0
+    }
+
+    // --- Quick and brutal format ---
+    const std::string newText =
+        std::string(1, text[0]) +
+        "\'" +
+        text[1] +
+        text[2] +
+        text[3] +
+        "\'" +
+        text[4] +
+        text[5] +
+        text[6];
+
+    // --- Lo and Behold: texture ---
+    const auto interLetterOffset{ 50.f };
+    auto letterFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 50) };
+    auto go{ std::make_unique<dae::GameObject>() };
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(centerPos.x * 1.3f, centerPos.y - interLetterOffset);
+    go->AddComponent<dae::RenderComponent>();
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
+    go->AddComponent<dae::TextComponent>(newText, letterFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::RED));
+    scene.Add(std::move(go));
+
+    go = std::make_unique<dae::GameObject>();
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(centerPos.x, centerPos.y - interLetterOffset);
+    go->AddComponent<dae::RenderComponent>();
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
+    go->AddComponent<dae::TextComponent>(':', letterFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::YELLOW));
+    scene.Add(std::move(go));
+
+    go = std::make_unique<dae::GameObject>();
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(centerPos.x * 1.7f, centerPos.y - interLetterOffset);
+    go->AddComponent<dae::RenderComponent>();
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
+    go->AddComponent<dae::TextComponent>("Points!", letterFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::YELLOW));
+    scene.Add(std::move(go));
+
+}
+
+void dae::GameOverState::VisualiseSubtext(Scene& scene, const glm::vec2& centerPos, bool isWin)
+{
+    //const uint16_t scoreHundreds{ static_cast<dae::Bomberman&>(m_Game).GetMatchSession().GetResult().score };
+    //const int placement{ Leaderboard::GetInstance().GetPotentialPlacement(scoreHundreds) };
+    auto letterFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 50) };
+    std::string subtext{};
+    uint32_t hexColor{ HCol::GREY };
+    if (isWin)
+    {
+        const int placement{ 2 };
+        switch (placement)
+        {
+        case 1:
+            hexColor = HCol::YELLOW;
+            break;
+        case 2:
+            hexColor = HCol::SILVER;
+            break;
+        case 3:
+            hexColor = HCol::BRONZE;
+            break;
+        default:
+            break;
+        }
+        subtext = "congratualtions! You are top " + std::to_string(placement);
+    }
+    else
+    {
+        subtext = "You Lost!";
+    }
+
+    auto go{ std::make_unique<dae::GameObject>() };
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(centerPos.x, centerPos.y * 1.2f);
+    go->AddComponent<dae::RenderComponent>();
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
+    go->AddComponent<dae::TextComponent>(subtext, letterFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(hexColor));
+    scene.Add(std::move(go));
+}
+
+void dae::GameOverState::SetMenuButtonsLock(bool newLock)
+{
+    for (auto& button : m_SceneButtons)
+    {
+        button.SetLock(newLock);
+    }
+}
+
+void dae::GameOverState::SetLetterSelectorsLock(bool newLock)
+{
+    for (auto& letter : m_LetterSelectors)
+    {
+        letter.SetLock(newLock);
+    }
+}
+
+void dae::GameOverState::CreateScoreBoardBindings()
+{
+    // --- Bindings ---
+    // --- Letter UP/DOWN ---
+    auto& controllerRef = dae::InputManager::GetInstance().AddController(static_cast<uint8_t>(0));
+    auto& input = InputManager::GetInstance();
+    input.AddBinding(std::make_unique<dae::ControllerBinding>(
+        controllerRef, dae::ControllerButton::GAMEPAD_DPAD_UP,
+        std::make_unique<dae::ExecuteCallbackCommand>([this]() {
+            m_LetterSelectors[m_SelectedLetterIdx].RotateLetter(false);
+            ServiceLocator::GetSoundSystem().PlaySFX(uint8_t(Sounds::Skip), 10);
+            }),
+        dae::CommandType::OnPress));
+    input.AddBinding(std::make_unique<dae::ControllerBinding>(
+        controllerRef, dae::ControllerButton::GAMEPAD_DPAD_DOWN,
+        std::make_unique<dae::ExecuteCallbackCommand>([this]() {
+            m_LetterSelectors[m_SelectedLetterIdx].RotateLetter(true);
+            ServiceLocator::GetSoundSystem().PlaySFX(uint8_t(Sounds::Skip), 10);
+            }),
+        dae::CommandType::OnPress));
+    // --- Select NEXT/PREV ---
+    input.AddBinding(std::make_unique<dae::ControllerBinding>(
+        controllerRef, dae::ControllerButton::GAMEPAD_A,
+        std::make_unique<dae::ExecuteCallbackCommand>([this]() {
+            // Select next (confirm current/all)
+            char char0{};
+            char char1{};
+            char char2{};
+            std::string text{};
+
+            switch (m_SelectedLetterIdx)
+            {
+            case 0:
+                m_LetterSelectors[m_SelectedLetterIdx].SetSelected(false);
+                ++m_SelectedLetterIdx;
+                m_LetterSelectors[m_SelectedLetterIdx].SetSelected(true);
+                break;
+            case 1:
+                m_LetterSelectors[m_SelectedLetterIdx].SetSelected(false);
+                ++m_SelectedLetterIdx;
+                m_LetterSelectors[m_SelectedLetterIdx].SetSelected(true);
+                break;
+            case 2:
+                m_LetterSelectors[m_SelectedLetterIdx].SetSelected(false);
+                ++m_SelectedLetterIdx;
+                // --- TEMP: Print out initials
+                char0 = m_LetterSelectors[0].GetLetter();
+                char1 = m_LetterSelectors[1].GetLetter();
+                char2 = m_LetterSelectors[2].GetLetter();
+
+                std::cout << "Record for: " << std::string(1, char0) 
+                                            << std::string(1, char1) 
+                                            << std::string(1, char2) << "!\n";
+
+                SetLetterSelectorsLock(true);
+                SetMenuButtonsLock(false);
+                break;
+            default:
+                break;
+            }
+            }),
+        dae::CommandType::OnRelease)
+    );
+    input.AddBinding(std::make_unique<dae::ControllerBinding>(
+        controllerRef, dae::ControllerButton::GAMEPAD_B,
+        std::make_unique<dae::ExecuteCallbackCommand>([this]() {
+            // Go back to prev
+            switch (m_SelectedLetterIdx)
+            {
+            case 0:
+                break;
+            case 1:
+                m_LetterSelectors[m_SelectedLetterIdx].SetSelected(false);
+                --m_SelectedLetterIdx;
+                m_LetterSelectors[m_SelectedLetterIdx].SetSelected(true);
+                break;
+            case 2:
+                // --- TEMP: Print out initials
+                m_LetterSelectors[m_SelectedLetterIdx].SetSelected(false);
+                --m_SelectedLetterIdx;
+                m_LetterSelectors[m_SelectedLetterIdx].SetSelected(true);
+                break;
+            default:
+                break;
+            }
+            ServiceLocator::GetSoundSystem().PlaySFX(uint8_t(Sounds::Select), 10);
+            }),
+        dae::CommandType::OnRelease)
     );
 }
 

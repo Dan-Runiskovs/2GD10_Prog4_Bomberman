@@ -20,11 +20,10 @@ dae::Button::Button(const glm::vec2& position, const std::string& text, dae::Sce
     go->GetComponent<dae::TransformComponent>().SetWorldPosition(position);
     go->AddComponent<dae::RenderComponent>();
     go->GetComponent<dae::RenderComponent>().SetCentered(true);
-    //m_RenderComponent = &go->GetComponent<dae::RenderComponent>();
 
     auto font{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 50) };
     m_TextComponent = &go->AddComponent<dae::TextComponent>(text, font);
-    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::WHITE)); // red
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::WHITE));
 
     scene.Add(std::move(go));
 }
@@ -32,7 +31,7 @@ dae::Button::Button(const glm::vec2& position, const std::string& text, dae::Sce
 void dae::Button::Click()
 {
     // --- No clicking if not selected ---
-    if (!m_IsSelected) return;
+    if (!m_IsSelected || m_IsLocked) return;
 
     // --- Change the color to Yellow ---
     m_TextComponent->SetColor(HexToSDLColor(HCol::YELLOW));
@@ -51,11 +50,26 @@ void dae::Button::SetSelected(bool isSelected)
         const std::string newText{ "> " + m_TextBase + " <" };
 
         m_TextComponent->SetText(newText);
-        m_TextComponent->SetColor(HexToSDLColor(HCol::RED));
+        m_TextComponent->SetColor(HexToSDLColor((m_IsLocked) ? HCol::GREY : HCol::RED));
     }
     else
     {
         m_TextComponent->SetText(m_TextBase);
-        m_TextComponent->SetColor(HexToSDLColor(HCol::WHITE));
+        m_TextComponent->SetColor(HexToSDLColor((m_IsLocked) ? HCol::GREY : HCol::WHITE));
     }
+}
+
+void dae::Button::SetLock(bool newLock)
+{
+    m_IsLocked = newLock;
+
+    if (m_IsLocked)
+    {
+        m_TextComponent->SetColor(HexToSDLColor(HCol::GREY));
+    }
+    else
+    {
+        m_TextComponent->SetColor(HexToSDLColor((m_IsSelected) ? HCol::RED : HCol::WHITE));
+    }
+    
 }

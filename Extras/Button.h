@@ -9,7 +9,6 @@
 namespace dae
 {
 	class GameObject;
-	class RenderComponent;
 	class TextComponent;
 	// TODO: TEMP implementation, will later be changed for textures
 	class Button final
@@ -19,10 +18,12 @@ namespace dae
 		
 		void Click();
 		void SetSelected(bool isSelected);
+		void SetLock(bool newLock);
 
 		Subject& GetSubject() { return m_Subject; }
 	private:
 		bool m_IsSelected{ false };
+		bool m_IsLocked{ false };
 		
 		std::string m_TextBase;
 		TextComponent* m_TextComponent;

@@ -22,6 +22,7 @@ namespace dae
 		void SetTexture(const std::string& filename);
 		void SetTexture(std::shared_ptr<Texture2D> pTexture);
 		void SetCentered(bool drawCentered) { m_DrawCentered = drawCentered; }
+		void SetRotation(float newRotation) { m_Rotation = newRotation; }
 
 		void Render() const;
 
@@ -38,5 +39,6 @@ namespace dae
 		float m_Heigth{};
 
 		bool m_DrawCentered{ false };
+		float m_Rotation{ 0.f };
 	};
 }

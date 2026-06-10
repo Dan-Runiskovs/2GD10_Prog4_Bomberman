@@ -18,6 +18,11 @@ dae::TextComponent::TextComponent(GameObject& owner, const std::string& text, st
 	UpdateText();
 }
 
+dae::TextComponent::TextComponent(GameObject& owner, char character, std::shared_ptr<Font> font)
+	: TextComponent(owner, std::string(1, character), std::move(font))
+{
+}
+
 void dae::TextComponent::UpdateText()
 {
 	const auto pSurface = TTF_RenderText_Blended(m_pFont->GetFont(), m_Text.c_str(), m_Text.length(), m_Color);

@@ -23,6 +23,9 @@ namespace dae
 			constexpr uint32_t DARK_BLUE{ 0x2e3f9e };
 			constexpr uint32_t MAGENTA{ 0xd51ae3 };
 			constexpr uint32_t DARK_MAGENTA{ 0x962e9e };
+			constexpr uint32_t BLACK{ 0x000000 };
+			constexpr uint32_t SILVER{ 0xcfcec9 };
+			constexpr uint32_t BRONZE{ 0xb07616 };
 		}
 		enum class PlayerColors : uint8_t
 		{

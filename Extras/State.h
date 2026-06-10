@@ -1,5 +1,6 @@
 #pragma once
 #include "Button.h"
+#include "LetterSelector.h"
 #include "Game.h"
 #include "MatchSession.h"
 #include <vector>
@@ -140,6 +141,15 @@ namespace dae
 
         void CreateDeadPeopleScreen(Scene& scene, const glm::vec2& centerPos, const dae::MatchSession& session);
         void CreateMenuButtons(Scene& scene, bool isVertical, const glm::vec2& centre);
+        void CreateScoreDisplay(Scene& scene, const glm::vec2& centerPos, bool isWin);
+        void VisualiseScore(Scene& scene, const glm::vec2& centerPos);
+        void VisualiseSubtext(Scene& scene, const glm::vec2& centerPos, bool isWin);
+        void SetMenuButtonsLock(bool newLock);
+        void SetLetterSelectorsLock(bool newLock);
+        void CreateScoreBoardBindings(); // Only called in case of WIN
+
+        size_t m_SelectedLetterIdx{ 0 };
+        std::vector<dae::LetterSelector> m_LetterSelectors{};
     };
 #pragma endregion
 }

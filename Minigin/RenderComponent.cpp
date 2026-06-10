@@ -34,7 +34,8 @@ void dae::RenderComponent::SetDimensions(float width, float height)
 
 const glm::vec2 dae::RenderComponent::GetDimensions() const
 {
-	return glm::vec2(m_Width, m_Heigth);
+	const auto& texture = *m_pTexture.get();
+	return texture.GetSize();
 }
 
 void dae::RenderComponent::SetScale(float scale)

@@ -57,3 +57,5 @@ uint32_t dae::Utils::PlayerIdxToHexColor(uint8_t index)
        return Colors::MAGENTA;
     }
 }
+
+

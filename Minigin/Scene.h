@@ -6,6 +6,7 @@
 
 namespace dae
 {
+	class PhysicsComponent;
 	class Scene final
 	{
 	public:
@@ -17,6 +18,8 @@ namespace dae
 		void Render() const;
 		void CleanUpScene();
 
+		std::vector<PhysicsComponent*>& GetPhysicalObjects();
+
 		~Scene() = default;
 		Scene(const Scene& other) = delete;
 		Scene(Scene&& other) = delete;
@@ -27,8 +30,9 @@ namespace dae
 		friend class SceneManager;
 		explicit Scene() = default;
 
-		std::vector < std::unique_ptr<GameObject>> m_objects{};
+		std::vector <std::unique_ptr<GameObject>> m_objects{};
 		std::vector <std::unique_ptr<GameObject>> m_objectsToDelete{};
+		std::vector <PhysicsComponent*> m_PhysicalObjects;
 	};
 
 }

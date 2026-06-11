@@ -17,7 +17,11 @@ dae::MoveCommand::MoveCommand(GameObject& object, int8_t x, int8_t y) noexcept
 
 void dae::MoveCommand::Execute()
 {
-	m_Movement.TryMove(m_DirX, m_DirY);
+	m_Movement.TryMove(
+		glm::vec2(
+			static_cast<float>(m_DirX),
+			static_cast<float>(m_DirY)
+		));
 }
 
 

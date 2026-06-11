@@ -787,7 +787,7 @@ void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
 {
     auto& scene{ SceneManager::GetInstance().CreateScene() };
     const auto windowSize{ Renderer::GetInstance().GetWindowSize() };
-    const auto windowCentre{ glm::vec2(windowSize.x / 2.f, windowSize.y / 2.f) };
+    //const auto windowCentre{ glm::vec2(windowSize.x / 2.f, windowSize.y / 2.f) };
     // Optional: Set background to Grey
     //Renderer::GetInstance().SetBackgroundColor(HexToSDLColor(HCol::GREY));
 

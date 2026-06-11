@@ -215,6 +215,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Extras/MatchSession.cpp
   Extras/Leaderboard.cpp
   Extras/LetterSelector.cpp
+  Extras/LevelGrid.cpp
 )
 
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)

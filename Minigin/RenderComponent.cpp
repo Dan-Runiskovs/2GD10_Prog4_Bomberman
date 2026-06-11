@@ -60,14 +60,14 @@ void dae::RenderComponent::Render() const
 {
 	assert(m_pTexture && "Texture is not set");
 
-	const auto& texture = *m_pTexture.get();
-	auto pos = m_TransformComponent.GetWorldPosition();
+	const auto& texture{ *m_pTexture.get() };
+	auto pos{ m_TransformComponent.GetWorldPosition() };
 
 	if (m_Width && m_Heigth)
 	{
 		if (m_DrawCentered)
 		{
-			Renderer::GetInstance().RenderTexture(texture, pos.x - (m_Width / 2.f), pos.y - (m_Width / 2.f), m_Width, m_Heigth);
+			Renderer::GetInstance().RenderTexture(texture, pos.x - (m_Width * .5f), pos.y - (m_Width * .5f), m_Width, m_Heigth);
 			return;
 		}
 		Renderer::GetInstance().RenderTexture(texture, pos.x, pos.y, m_Width, m_Heigth);

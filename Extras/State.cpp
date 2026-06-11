@@ -26,6 +26,8 @@
 #include <iostream>
 #include <cassert>
 #include <cmath>
+#include <filesystem>
+
 
 // TODO: Temp:
 #include <random>
@@ -426,7 +428,6 @@ void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Lauching Solo Game!\n";
                 static_cast<dae::Bomberman&>(m_Game).GetMatchSession().SetMode(dae::MatchSession::GameMode::Solo);
-                static_cast<dae::Bomberman&>(m_Game).GetMatchSession().SetAmoundOfPlayers(1u);
                 ChangeState(std::make_unique<dae::PreGameState>(m_Game, true));
                 break;
             default:
@@ -459,7 +460,6 @@ void dae::GamemodeSelectionMenuState::CreateGamemodeSelection()
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Launching Co-op!\n";
                 static_cast<dae::Bomberman&>(m_Game).GetMatchSession().SetMode(dae::MatchSession::GameMode::Coop);
-                static_cast<dae::Bomberman&>(m_Game).GetMatchSession().SetAmoundOfPlayers(4u);  // TODO: Temp
                 ChangeState(std::make_unique<dae::PreGameState>(m_Game, false));
                 break;
             default:
@@ -779,54 +779,19 @@ void dae::InGameState::OnExit()
 {
     InputManager::GetInstance().ClearBindings();
     SceneManager::GetInstance().DestroyAllScenes();
+    Renderer::GetInstance().SetBackgroundColor(HexToSDLColor(HCol::BLACK));
     std::cout << "GameState: Game Simulation Exited\n";
 }
 
 void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
 {
-    std::cout << "Creating Game TEST\n";
     auto& scene{ SceneManager::GetInstance().CreateScene() };
     const auto windowSize{ Renderer::GetInstance().GetWindowSize() };
     const auto windowCentre{ glm::vec2(windowSize.x / 2.f, windowSize.y / 2.f) };
+    // Optional: Set background to Grey
+    //Renderer::GetInstance().SetBackgroundColor(HexToSDLColor(HCol::GREY));
 
-    // --- Fonts ---
-    auto mainFont{ dae::ResourceManager::GetInstance().LoadFont("MainFont.ttf", 120) };
-    auto subFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 36) };
-
-    // --- TEMP: Title --- 
-    std::string title{};
-    switch (gamemode)
-    {
-    case dae::MatchSession::GameMode::Solo:
-        title = "Solo Game Simulation";
-        break;
-    case dae::MatchSession::GameMode::Pvp:
-        title = "PvP Game Simulation";
-        break;
-    case dae::MatchSession::GameMode::Coop:
-        title = "CO-OP Game Simulation";
-        break;
-    default:
-        break;
-    }
-
-    // --- Title Background ---
     auto go{ std::make_unique<dae::GameObject>() };
-    go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>(title, mainFont);
-    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::PALE_BROWN));
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x + 5.f, windowCentre.y * .3f + 5.f);
-    go->GetComponent<dae::RenderComponent>().SetCentered(true);
-    scene.Add(std::move(go));
-
-    // --- Title Foreground ---
-    go = std::make_unique<dae::GameObject>();
-    go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>(title, mainFont);
-    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::YELLOW));
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y * .3f);
-    go->GetComponent<dae::RenderComponent>().SetCentered(true);
-    scene.Add(std::move(go));
 
 #ifdef _DEBUG
     // --- FPS ---
@@ -840,21 +805,14 @@ void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
     scene.Add(std::move(go));
 #endif // _DEBUG
 
-    // --- Helper Text ---
-    go = std::make_unique<dae::GameObject>();
-    go->AddComponent<dae::RenderComponent>();
-    go->AddComponent<dae::TextComponent>("> Press A to exit simulation <", subFont);
-    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::RED));
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, windowCentre.y);
-    go->GetComponent<dae::RenderComponent>().SetCentered(true);
-    scene.Add(std::move(go));
-
-    // --- Bindings ---
-    // SOLO:
-    
-    // PVP:
-
-    // CO-OP:
+    if (gamemode == dae::MatchSession::GameMode::Pvp)
+    {
+        CreatePvpLevel(scene, windowSize);
+    }
+    else
+    {
+        //CreateNormaLevel(scene, windowSize);
+    }
 
     auto& controllerRef = dae::InputManager::GetInstance().AddController(static_cast<uint8_t>(0));
 
@@ -874,6 +832,41 @@ void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
     // --- Fake Results ---
     FakeResults(gamemode);
 }
+void dae::InGameState::CreatePvpLevel(Scene& scene, const glm::vec2& windowSize)
+{
+    // --- Path ---
+    auto& rm{ ResourceManager::GetInstance() };
+    std::filesystem::path path = rm.GetDataPath();
+    path.append("Level/level_pvp.csv");
+
+    // --- Cell Size ---
+    const int cellSize{ 54 };
+    // --- TopLeft ---
+    const glm::vec2 topLeft{
+        windowSize.x * 0.35f,
+        (windowSize.y - (cellSize * 13.f)) / 2.f
+    };
+    // --- Load and Init
+    m_Level.InitLevelGrid(path, topLeft, cellSize);
+    // --- Visualise Base ---
+    m_Level.VisualiseBaseGrid(scene);
+    // --- Populate Level ---
+    dae::LevelGrid::PropAmount pa{
+        70, 10, 10, 5
+    };
+    m_Level.VisualiseProps(pa);
+}
+
+
+/*
+void dae::InGameState::CreateNormaLevel(Scene& scene, const glm::vec2& windowCentre)
+{
+    const auto& c{ windowCentre };
+    const auto& ref{ scene };
+}
+*/
+
+
 void dae::InGameState::FakeResults(dae::MatchSession::GameMode gamemode)
 {
     static std::random_device rd;

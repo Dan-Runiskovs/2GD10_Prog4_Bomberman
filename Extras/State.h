@@ -3,8 +3,10 @@
 #include "LetterSelector.h"
 #include "Game.h"
 #include "MatchSession.h"
+#include "LevelGrid.h"
 #include <vector>
 #include <cstdint>
+
 
 namespace dae
 {
@@ -107,24 +109,6 @@ namespace dae
         void CreateGamemodeSelection();
     };
 
-    class InGameState final : public GameState
-    {
-    public:
-        explicit InGameState(Game& game);
-
-        void OnEnter() override;
-        void OnExit() override;
-
-        void HandleInput() override {};
-        void Update() override {};
-        void Render() const override {};
-    private:
-        void CreateGame(dae::MatchSession::GameMode gamemode);
-        void FakeResults(dae::MatchSession::GameMode gamemode);
-        
-    };
-
-
     class Scene;
     class TextComponent;
     class PreGameState final : public GameState
@@ -144,7 +128,7 @@ namespace dae
         void HandleInput() override {};
         void Update() override;
         void Render() const override {};
-    private: 
+    private:
         bool m_IsSoloGame{ false };
         bool m_AllAreReady{ false };
         float m_TimeTillStart{ 2.f };
@@ -158,6 +142,26 @@ namespace dae
         void StartGame(int playerAmount);
     };
 
+    class InGameState final : public GameState
+    {
+    public:
+        explicit InGameState(Game& game);
+
+        void OnEnter() override;
+        void OnExit() override;
+
+        void HandleInput() override {};
+        void Update() override {};
+        void Render() const override {};
+    private:
+        void CreateGame(dae::MatchSession::GameMode gamemode);
+        void CreatePvpLevel(Scene& scene, const glm::vec2& windowCentre);
+        //void CreateNormaLevel(Scene& scene, const glm::vec2& windowCentre);
+
+        void FakeResults(dae::MatchSession::GameMode gamemode);
+
+        LevelGrid m_Level{};
+    };
     
     class GameOverState final : public GameState
     {

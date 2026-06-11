@@ -52,7 +52,6 @@ dae::Controller& dae::InputManager::AddController(uint8_t id)
 
 dae::Controller& dae::InputManager::GetController(uint8_t id)
 {
-	//assert(id <= m_Controllers.size());
 	Controller& ref{ *m_Controllers.at(id) };
 	return ref;
 }

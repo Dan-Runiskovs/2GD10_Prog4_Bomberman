@@ -28,6 +28,15 @@ void dae::MatchSession::SetAmoundOfPlayers(uint8_t nPlayers)
 	m_Result.playerAmount = nPlayers;
 }
 
+void dae::MatchSession::FillAliveMask(int playerAmount)
+{
+	// --- Fills alive mask 0b0000xxxx based on player amount
+	assert(playerAmount > 0);
+	assert(playerAmount <= 4);
+
+	m_Result.aliveMask = static_cast<uint8_t>((1u << playerAmount) - 1);
+}
+
 dae::MatchSession::GameMode dae::MatchSession::GetMode() const
 {
 	return m_Mode;
@@ -44,6 +53,11 @@ void dae::MatchSession::SetResult(const MatchResult& result)
 }
 
 const dae::MatchSession::MatchResult& dae::MatchSession::GetResult() const
+{
+	return m_Result;
+}
+
+dae::MatchSession::MatchResult& dae::MatchSession::GetResult()
 {
 	return m_Result;
 }

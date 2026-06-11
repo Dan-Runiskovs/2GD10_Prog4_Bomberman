@@ -39,3 +39,21 @@ const glm::vec2 dae::Utils::PlayerPosition(uint8_t playerIdx, uint8_t playerCoun
         centre.y
     };
 }
+
+uint32_t dae::Utils::PlayerIdxToHexColor(uint8_t index)
+{
+    const auto playerCol{ static_cast<PlayerColors>(index) };
+    switch (playerCol)
+    {
+    case PlayerColors::Red:
+        return Colors::RED;
+    case PlayerColors::Green:
+        return Colors::GREEN;
+    case PlayerColors::Blue:
+        return Colors::BLUE;
+    case PlayerColors::Yellow:
+        return Colors::YELLOW;
+    default:
+       return Colors::MAGENTA;
+    }
+}

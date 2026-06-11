@@ -47,5 +47,6 @@ namespace dae
 		PlayerColors MaskToPlayerAlive(uint8_t mask);
 		bool IsPlayerAlive(uint8_t mask, uint8_t index);
 		const glm::vec2 PlayerPosition(uint8_t playerIdx, uint8_t playerCount, const glm::vec2& centre, float horizontalMargin);
+		uint32_t PlayerIdxToHexColor(uint8_t index);
 	}
 }

@@ -24,10 +24,12 @@ namespace dae
 
         void SetMode(GameMode mode);
         void SetAmoundOfPlayers(uint8_t nPlayers);
+        void FillAliveMask(int playerAmount);
         GameMode GetMode() const;
 
         void SetResult(const MatchResult& result);
         const MatchResult& GetResult() const;
+        MatchResult& GetResult();
 
     private:
         GameMode m_Mode{ GameMode::Solo };

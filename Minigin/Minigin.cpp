@@ -163,8 +163,9 @@ void dae::Minigin::RunOneFrame()
 
 	m_Quit = !InputManager::GetInstance().ProcessInput();
 	m_Game->HandleInput();
-	m_Game->Update();
 	SceneManager::GetInstance().Update();
+	m_Game->Update();	// Late Update
+
 	Renderer::GetInstance().Render();
 
 	const auto frameEnd{ std::chrono::high_resolution_clock::now() };

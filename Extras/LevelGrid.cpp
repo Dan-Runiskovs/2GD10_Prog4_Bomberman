@@ -9,7 +9,7 @@
 #include "GameObject.h"
 #include "RenderComponent.h"
 #include "TransformComponent.h"
-
+#include "PhysicsComponent.h"
 
 void dae::LevelGrid::InitLevelGrid(std::filesystem::path path, const glm::vec2 gridTopLeft, int cellSize)
 {
@@ -100,7 +100,7 @@ void dae::LevelGrid::InitLevelGrid(std::filesystem::path path, const glm::vec2 g
     m_Cells[0].type = CellType::Wall;
 }
 
-void dae::LevelGrid::VisualiseProps(PropAmount& pa)
+void dae::LevelGrid::VisualiseProps(Scene& scene, PropAmount& pa)
 {
     
     std::vector<GridCell*> barrelCandidates;
@@ -126,20 +126,19 @@ void dae::LevelGrid::VisualiseProps(PropAmount& pa)
         static_cast<int>(barrelCandidates.size()));
 
     // --- Create and Visualise ---
-    auto& scene{ SceneManager::GetInstance().CreateScene() };
     const auto cellSize = barrelCandidates[0]->m_CellSizePx;
     for (int ballerIdx{}; ballerIdx < pa.barrelN; ++ballerIdx)
     {
         barrelCandidates[ballerIdx]->type = CellType::Barrel;
-
+        const glm::vec2 dimensions{ static_cast<float>(cellSize),
+                                    static_cast<float>(cellSize) };
         auto go{ std::make_unique<dae::GameObject>() };
         go->AddComponent<dae::RenderComponent>();
         go->GetComponent<dae::RenderComponent>().SetTexture("cell_brick.png");
         go->GetComponent<dae::RenderComponent>().SetCentered(true);
-        go->GetComponent<dae::RenderComponent>().SetDimensions(
-            static_cast<float>(cellSize),
-            static_cast<float>(cellSize));
+        go->GetComponent<dae::RenderComponent>().SetDimensions(dimensions.x, dimensions.y);
         go->GetComponent<dae::TransformComponent>().SetWorldPosition(barrelCandidates[ballerIdx]->center);
+        go->AddComponent<dae::PhysicsComponent>(scene, dimensions, 0.f, false);
         scene.Add(std::move(go));
     }
 }
@@ -151,6 +150,8 @@ void dae::LevelGrid::VisualiseBaseGrid(Scene& scene)
     // --- Base Start ---
     for (const auto& cell : m_Cells)
     {
+        const glm::vec2 dimensions{ static_cast<float>(cell.m_CellSizePx),
+                                    static_cast<float>(cell.m_CellSizePx) };
         auto go{ std::make_unique<dae::GameObject>() };
         go->AddComponent<dae::RenderComponent>();
         // --- Set Texture ---
@@ -158,6 +159,7 @@ void dae::LevelGrid::VisualiseBaseGrid(Scene& scene)
         {
         case CellType::Wall:
             go->GetComponent<dae::RenderComponent>().SetTexture("cell_wall.png");
+            go->AddComponent<dae::PhysicsComponent>(scene, dimensions, 0.f, false);
             break;
         case CellType::Empty:
         case CellType::Free:
@@ -166,12 +168,27 @@ void dae::LevelGrid::VisualiseBaseGrid(Scene& scene)
             break;
         }
         go->GetComponent<dae::RenderComponent>().SetDimensions(
-            static_cast<float>(cell.m_CellSizePx), 
-            static_cast<float>(cell.m_CellSizePx));
+            dimensions.x, 
+            dimensions.y);
         go->GetComponent<dae::TransformComponent>().SetWorldPosition(cell.center);
         go->GetComponent<dae::RenderComponent>().SetCentered(true);
         scene.Add(std::move(go));
     }
+}
+
+glm::vec2 dae::LevelGrid::GetSpawnpoint(int playerIdx) const
+{
+    for (const auto& cell : m_Cells)
+    {
+        if (cell.type == CellType::Spawn)
+        {
+            if (cell.spawnIdx == static_cast<uint8_t>(playerIdx))
+            {
+                return cell.center;
+            }
+        }
+    }
+    return { 0,0 };
 }
 
 dae::LevelGrid::GridCell& dae::LevelGrid::At(uint8_t x, uint8_t y)

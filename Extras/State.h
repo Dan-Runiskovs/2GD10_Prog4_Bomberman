@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "MatchSession.h"
 #include "LevelGrid.h"
+#include "Player.h"
 #include <vector>
 #include <cstdint>
 
@@ -157,10 +158,12 @@ namespace dae
         void CreateGame(dae::MatchSession::GameMode gamemode);
         void CreatePvpLevel(Scene& scene, const glm::vec2& windowCentre);
         //void CreateNormaLevel(Scene& scene, const glm::vec2& windowCentre);
+        void CreatePlayers(Scene& scene, int playerAmount);
 
         void FakeResults(dae::MatchSession::GameMode gamemode);
 
         LevelGrid m_Level{};
+        std::vector<std::unique_ptr<Player>> m_Players{};
     };
     
     class GameOverState final : public GameState

@@ -814,6 +814,10 @@ void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
         //CreateNormaLevel(scene, windowSize);
     }
 
+    // --- Create Player(s) ---
+    const int nPlayers{ static_cast<dae::Bomberman&>(m_Game).GetMatchSession().GetResult().playerAmount };
+    CreatePlayers(scene, nPlayers);
+
     auto& controllerRef = dae::InputManager::GetInstance().AddController(static_cast<uint8_t>(0));
 
     dae::InputManager::GetInstance().AddBinding(
@@ -854,7 +858,19 @@ void dae::InGameState::CreatePvpLevel(Scene& scene, const glm::vec2& windowSize)
     dae::LevelGrid::PropAmount pa{
         70, 10, 10, 5
     };
-    m_Level.VisualiseProps(pa);
+    m_Level.VisualiseProps(scene, pa);
+}
+
+void dae::InGameState::CreatePlayers(Scene& scene, int playerAmount)
+{
+    m_Players.clear();
+    m_Players.reserve(playerAmount);
+    for(int playerIdx{ 0 }; playerIdx < playerAmount; ++playerIdx)
+    {
+        const auto& spawnpoint{ m_Level.GetSpawnpoint(playerIdx) };
+        const auto& size{ static_cast<float>(m_Level.At(0, 0).m_CellSizePx) };
+        m_Players.emplace_back(std::make_unique<dae::Player>(scene, spawnpoint, glm::vec2{ size*0.8f, size * 0.8f }, size, playerIdx));
+    }
 }
 
 

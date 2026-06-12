@@ -28,14 +28,13 @@ namespace dae
 	class MoveCommand final : public GameObjectCommand
 	{
 	public:
-		MoveCommand(GameObject& object, int8_t x, int8_t y) noexcept;
+		MoveCommand(GameObject& object, int8_t x, int8_t y, float searchRadius) noexcept;
 
 		void Execute() override;
 	private:
 		PhysicsComponent& m_Movement;
 		int8_t m_DirX{};
 		int8_t m_DirY{};
-		
-		// TODO: direction is a vector
+		float m_SearchRadius{};
 	};
 }

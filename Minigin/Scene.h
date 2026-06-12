@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <glm/glm.hpp>
 #include "GameObject.h"
 
 namespace dae
@@ -18,7 +19,8 @@ namespace dae
 		void Render() const;
 		void CleanUpScene();
 
-		std::vector<PhysicsComponent*>& GetPhysicalObjects();
+		std::vector<PhysicsComponent*>& GetPhysicalObjects() { return m_PhysicalObjects; }
+		std::vector<PhysicsComponent*> GetNearbyPhysicalObjects(const glm::vec2& origin, float radius);
 
 		~Scene() = default;
 		Scene(const Scene& other) = delete;

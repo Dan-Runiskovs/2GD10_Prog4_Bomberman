@@ -48,9 +48,11 @@ namespace dae
 
         void InitLevelGrid(std::filesystem::path path, const glm::vec2 gridTopLeft, int cellSize);
 
-        void VisualiseProps(PropAmount& pa);
+        void VisualiseProps(Scene& scene, PropAmount& pa);
 
         void VisualiseBaseGrid(Scene& scene);
+
+        glm::vec2 GetSpawnpoint(int playerIdx) const;
 
         GridCell& At(uint8_t x, uint8_t y);
         const GridCell& At(uint8_t x, uint8_t y) const;
@@ -60,7 +62,6 @@ namespace dae
 
     private:
         std::vector<GridCell> m_Cells{};
-
         uint8_t m_Width{};
         uint8_t m_Height{};
     };

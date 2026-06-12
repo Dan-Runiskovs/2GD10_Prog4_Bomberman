@@ -7,11 +7,12 @@ dae::GameObjectCommand::GameObjectCommand(GameObject& object) noexcept
 {
 }
 
-dae::MoveCommand::MoveCommand(GameObject& object, int8_t x, int8_t y) noexcept
+dae::MoveCommand::MoveCommand(GameObject& object, int8_t x, int8_t y, float searchRadius) noexcept
 	: GameObjectCommand(object)
 	, m_Movement{ object.GetComponent<PhysicsComponent>() }
 	, m_DirX{ x }
 	, m_DirY{ y }
+	, m_SearchRadius{ searchRadius }
 {
 }
 
@@ -21,7 +22,7 @@ void dae::MoveCommand::Execute()
 		glm::vec2(
 			static_cast<float>(m_DirX),
 			static_cast<float>(m_DirY)
-		));
+		), m_SearchRadius);
 }
 
 

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <random>
 #include <string>
+#include <algorithm>
 #include "SceneManager.h"
 #include "Scene.h"
 #include "GameObject.h"
@@ -199,6 +200,37 @@ dae::LevelGrid::GridCell& dae::LevelGrid::At(uint8_t x, uint8_t y)
 const dae::LevelGrid::GridCell& dae::LevelGrid::At(uint8_t x, uint8_t y) const
 {
 	return m_Cells[y * m_Width + x];
+}
+
+const dae::LevelGrid::GridCell& dae::LevelGrid::WorldPosToGridCell(const glm::vec2& pos) const
+{
+    const auto& firstCell{ At(0, 0) };
+    const auto& cellSize{ At(0, 0).m_CellSizePx };
+
+    const glm::vec2 gridTopLeft
+    {
+        firstCell.center.x - cellSize * 0.5f,
+        firstCell.center.y - cellSize * 0.5f
+    };
+
+    int x
+    {
+        static_cast<int>(
+            (pos.x - gridTopLeft.x) / cellSize)
+    };
+
+    int y
+    {
+        static_cast<int>(
+            (pos.y - gridTopLeft.y) / cellSize)
+    };
+
+    x = std::clamp(x, 0, static_cast<int>(m_Width) - 1);
+    y = std::clamp(y, 0, static_cast<int>(m_Height) - 1);
+
+    return At(
+        static_cast<uint8_t>(x),
+        static_cast<uint8_t>(y));
 }
 
 dae::LevelGrid::GridCell::GridCell(uint8_t xPos, uint8_t yPos, int cellSizePx)

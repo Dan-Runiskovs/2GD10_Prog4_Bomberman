@@ -783,14 +783,39 @@ void dae::InGameState::OnExit()
     std::cout << "GameState: Game Simulation Exited\n";
 }
 
+void dae::InGameState::Update()
+{
+    for (auto& bomb : m_Bombs)
+    {
+        bomb.get()->Update();
+    }
+
+    // --- Erase exploded bombs ---
+    std::erase_if(m_Bombs,
+        [](auto& bomb)
+        {
+            return bomb.get()->HasExploded();
+        });
+}
+
+void dae::InGameState::TryPlaceBomb(dae::Player& player)
+{
+    if (!player.TryPlaceBomb()) return;
+
+    const auto& cell{ m_Level.WorldPosToGridCell(player.GetWorldPos()) };
+    const glm::vec2& bombPos{ cell.center };
+    m_Bombs.emplace_back(
+        std::make_unique<dae::Bomb>(
+            *m_pScene, bombPos, cell.m_CellSizePx, player.GetBlastRange(), player));    
+}
+
 void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
 {
-    auto& scene{ SceneManager::GetInstance().CreateScene() };
     const auto windowSize{ Renderer::GetInstance().GetWindowSize() };
     //const auto windowCentre{ glm::vec2(windowSize.x / 2.f, windowSize.y / 2.f) };
     // Optional: Set background to Grey
     //Renderer::GetInstance().SetBackgroundColor(HexToSDLColor(HCol::GREY));
-
+    m_pScene = &SceneManager::GetInstance().CreateScene();
     auto go{ std::make_unique<dae::GameObject>() };
 
 #ifdef _DEBUG
@@ -802,12 +827,12 @@ void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
     go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::DEBUG_RED));
     go->GetComponent<dae::TransformComponent>().SetWorldPosition(20.f, 20.f);
     go->AddComponent<dae::FPSComponent>();
-    scene.Add(std::move(go));
+    m_pScene->Add(std::move(go));
 #endif // _DEBUG
 
     if (gamemode == dae::MatchSession::GameMode::Pvp)
     {
-        CreatePvpLevel(scene, windowSize);
+        CreatePvpLevel(*m_pScene, windowSize);
     }
     else
     {
@@ -816,13 +841,13 @@ void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
 
     // --- Create Player(s) ---
     const int nPlayers{ static_cast<dae::Bomberman&>(m_Game).GetMatchSession().GetResult().playerAmount };
-    CreatePlayers(scene, nPlayers);
+    CreatePlayers(*m_pScene, nPlayers);
 
     auto& controllerRef = dae::InputManager::GetInstance().AddController(static_cast<uint8_t>(0));
 
     dae::InputManager::GetInstance().AddBinding(
         std::make_unique<ControllerBinding>(
-            controllerRef, ControllerButton::GAMEPAD_A,
+            controllerRef, ControllerButton::GAMEPAD_START,
 
             std::make_unique<dae::ChangeStateCommand>(
                 m_Game,
@@ -870,6 +895,22 @@ void dae::InGameState::CreatePlayers(Scene& scene, int playerAmount)
         const auto& spawnpoint{ m_Level.GetSpawnpoint(playerIdx) };
         const auto& size{ static_cast<float>(m_Level.At(0, 0).m_CellSizePx) };
         m_Players.emplace_back(std::make_unique<dae::Player>(scene, spawnpoint, glm::vec2{ size*0.8f, size * 0.8f }, size, playerIdx));
+
+        auto& controllerRef = dae::InputManager::GetInstance().AddController(static_cast<uint8_t>(playerIdx));
+
+        // --- Add bomb placement for just inserted player ---
+        Player* playerPtr{ m_Players.back().get() };
+        dae::InputManager::GetInstance().AddBinding(
+            std::make_unique<ControllerBinding>(
+                controllerRef,
+                ControllerButton::GAMEPAD_A,
+                std::make_unique<ExecuteCallbackCommand>(
+                    [this, playerPtr]()
+                    {
+                        TryPlaceBomb(*playerPtr);
+                    }),
+                CommandType::OnPress)
+        );
     }
 }
 

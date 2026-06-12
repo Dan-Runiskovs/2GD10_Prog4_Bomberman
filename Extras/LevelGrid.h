@@ -37,6 +37,8 @@ namespace dae
             uint8_t x{};
             uint8_t y{};
 
+            bool isInBlast{ false };
+
             glm::vec2 center{};
             int m_CellSizePx{};
 
@@ -56,6 +58,7 @@ namespace dae
 
         GridCell& At(uint8_t x, uint8_t y);
         const GridCell& At(uint8_t x, uint8_t y) const;
+        const GridCell& WorldPosToGridCell(const glm::vec2& pos) const;
 
         uint8_t GetWidth() const { return m_Width; }
         uint8_t GetHeight() const { return m_Height; }

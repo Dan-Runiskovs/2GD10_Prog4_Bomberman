@@ -5,6 +5,7 @@
 #include "MatchSession.h"
 #include "LevelGrid.h"
 #include "Player.h"
+#include "Bomb.h"
 #include <vector>
 #include <cstdint>
 
@@ -152,8 +153,10 @@ namespace dae
         void OnExit() override;
 
         void HandleInput() override {};
-        void Update() override {};
+        void Update() override;
         void Render() const override {};
+
+        void TryPlaceBomb(dae::Player& player);
     private:
         void CreateGame(dae::MatchSession::GameMode gamemode);
         void CreatePvpLevel(Scene& scene, const glm::vec2& windowCentre);
@@ -163,7 +166,9 @@ namespace dae
         void FakeResults(dae::MatchSession::GameMode gamemode);
 
         LevelGrid m_Level{};
-        std::vector<std::unique_ptr<Player>> m_Players{};
+        Scene* m_pScene{};
+        std::vector<std::unique_ptr<dae::Player>> m_Players{};
+        std::vector<std::unique_ptr<dae::Bomb>> m_Bombs{};
     };
     
     class GameOverState final : public GameState

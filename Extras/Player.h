@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <glm/glm.hpp>
+#include <SDL3/SDL.h>
 
 namespace dae
 {
@@ -17,8 +18,10 @@ namespace dae
 		void AddRange();
 		void AddSpeed(float margin);
 
-		void PlaceBomb();
+		bool TryPlaceBomb();
 		void OnBombExploded();
+		const glm::vec2& GetWorldPos() const;
+		SDL_FRect GetBounds() const;
 
 		uint8_t GetActiveBombCount() const;
 		uint8_t GetBlastRange() const;

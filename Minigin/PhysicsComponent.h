@@ -20,7 +20,11 @@ namespace dae
 		bool TryMove(const glm::vec2& dir, float searchRadius);
 		const glm::vec2& GetOrigin() const;
 		SDL_FRect GetBounds() const;
+		void SetTrigger(bool newTriggerStatus) { m_IsTrigger = newTriggerStatus; }
 		bool IsTrigger() const { return m_IsTrigger; }
+		bool DoesIntersect(const PhysicsComponent& other) const;
+		
+		static bool DoesIntersect(const SDL_FRect& a, const SDL_FRect& b);
 
 		PhysicsComponent(const PhysicsComponent& other) = delete;
 		PhysicsComponent(PhysicsComponent&& other) = delete;
@@ -33,7 +37,6 @@ namespace dae
 		glm::vec2 m_Dimensions{};
 		TransformComponent& m_Transform;
 
-		static bool DoesIntersect(const SDL_FRect& a, const SDL_FRect& b);
 		SDL_FRect GetBoundsAt(const glm::vec2& position) const;
 	};
 }

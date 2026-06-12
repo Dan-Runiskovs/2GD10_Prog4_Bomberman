@@ -74,17 +74,28 @@ void dae::Player::AddSpeed(float margin)
 	m_PhysicsComponent->SetSpeed(m_MoveSpeed);
 }
 
-void dae::Player::PlaceBomb()
+bool dae::Player::TryPlaceBomb()
 {
-    if (m_CurrentBombs >= m_MaxBombs) return;
+	if (m_CurrentBombs >= m_MaxBombs) return false;
 
 	++m_CurrentBombs;
-    std::cout << "Placing bomb!\n";
+	std::cout << "Placing bomb!\n";
+	return true;
 }
 
 void dae::Player::OnBombExploded()
 {
 	if (m_CurrentBombs > 0) --m_CurrentBombs;
+}
+
+const glm::vec2& dae::Player::GetWorldPos() const
+{
+	return m_PhysicsComponent->GetOrigin();
+}
+
+SDL_FRect dae::Player::GetBounds() const
+{
+	return m_PhysicsComponent->GetBounds();
 }
 
 uint8_t dae::Player::GetActiveBombCount() const

@@ -22,17 +22,11 @@ dae::PhysicsComponent::PhysicsComponent(GameObject& owner, Scene& scene, const g
 
 dae::PhysicsComponent::~PhysicsComponent()
 {
-    /*
-    std::cout << "Physics dtor: " << this << '\n';
-
     auto& objects = m_Scene.GetPhysicalObjects();
 
-    std::cout << "Physics count = "
-        << objects.size()
-        << '\n';
+    auto it = std::find(objects.begin(), objects.end(), this);
 
-    std::erase(objects, this);
-    */
+    if (it != objects.end()) objects.erase(it);
 }
 
 bool dae::PhysicsComponent::TryMove(const glm::vec2& dir, float searchRadius)

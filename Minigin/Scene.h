@@ -32,9 +32,9 @@ namespace dae
 		friend class SceneManager;
 		explicit Scene() = default;
 
+		std::vector <PhysicsComponent*> m_PhysicalObjects;
 		std::vector <std::unique_ptr<GameObject>> m_objects{};
 		std::vector <std::unique_ptr<GameObject>> m_objectsToDelete{};
-		std::vector <PhysicsComponent*> m_PhysicalObjects;
 	};
 
 }

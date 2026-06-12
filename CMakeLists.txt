@@ -217,6 +217,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Extras/LetterSelector.cpp
   Extras/LevelGrid.cpp
   Extras/Player.cpp
+  Extras/Bomb.cpp
 )
 
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)

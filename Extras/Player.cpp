@@ -14,6 +14,9 @@
 dae::Player::Player(Scene& scene, const glm::vec2& origin, const glm::vec2& dimensions, float spriteSize, int playerIndex)
 {
 	assert(playerIndex < 4u);
+
+	m_PlayerIndex = static_cast<uint8_t>(playerIndex);
+
 	auto go{ std::make_unique<GameObject>() };
     // --- Correct position ---
     go->GetComponent<dae::TransformComponent>().SetWorldPosition(origin);
@@ -106,4 +109,9 @@ uint8_t dae::Player::GetActiveBombCount() const
 uint8_t dae::Player::GetBlastRange() const
 {
     return m_BlastRange;
+}
+
+uint8_t dae::Player::GetPlayerIndex() const
+{
+	return m_PlayerIndex;
 }

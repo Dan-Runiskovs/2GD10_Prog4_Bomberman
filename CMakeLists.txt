@@ -218,6 +218,8 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Extras/LevelGrid.cpp
   Extras/Player.cpp
   Extras/Bomb.cpp
+  Extras/Blast.cpp
+  Extras/Upgrade.cpp
 )
 
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)

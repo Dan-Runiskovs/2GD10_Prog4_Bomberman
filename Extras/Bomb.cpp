@@ -6,16 +6,17 @@
 #include "PhysicsComponent.h"
 #include "Scene.h"
 #include "Timer.h"
+#include "LevelGrid.h"
 #include <memory>
 
-dae::Bomb::Bomb(Scene& scene, const glm::vec2& position, int size, uint8_t blastRange, Player& owner)
-	: m_BlastRange{ blastRange }
+dae::Bomb::Bomb(Scene& scene, GridCell& cell, int size, uint8_t blastRange, Player& owner)
+	: m_HostCell{ cell }
+	, m_BlastRange{ blastRange }
 	, m_Owner{ owner }
-	, m_Scene{ scene }
 {
 	auto go{ std::make_unique<GameObject>() };
 	// --- Position : must be grid clamped ---
-	go->GetComponent<dae::TransformComponent>().SetWorldPosition(position);
+	go->GetComponent<dae::TransformComponent>().SetWorldPosition(m_HostCell.center);
 	// --- Make it physical ---
 	const glm::vec2 dimensions{ static_cast<float>(size), static_cast<float>(size) };
 	m_PC = &go->AddComponent<dae::PhysicsComponent>(scene, dimensions, 0.f, true);
@@ -31,18 +32,30 @@ dae::Bomb::Bomb(Scene& scene, const glm::vec2& position, int size, uint8_t blast
 
 void dae::Bomb::Update()
 {
+	if (m_HasExploded) return;
+	
+	// --- Watch chain reaction ---
+	for (auto& occupant : m_HostCell.occupants)
+	{
+		if (occupant.type == dae::GridCell::OccupantType::Blast)
+		{
+			Explode();
+			return;
+		}
+	}
+	
 	// --- Timer ---
 	const auto elapsedSec{ Timer::GetInstance().GetElapsed() };
 	m_Timer -= elapsedSec;
 	
-	if (m_Timer <= 0.f and not m_HasExploded)
+	if (m_Timer <= 0.f)
 	{
 		Explode();
 		return;
 	}
 
 	// --- Handle Owner collision --- 
-	if (!m_OwnerHasExited and not m_HasExploded)
+	if (!m_OwnerHasExited)
 	{
 		const auto bombBounds{ m_PC->GetBounds() };
 		const auto ownerBounds{ m_Owner.GetBounds() };
@@ -61,6 +74,9 @@ void dae::Bomb::Explode()
 
 	assert(m_GameObject);
 	m_GameObject->MarkForDelete();
+}
 
-	// --- Create Blast ---
+dae::Utils::PlayerColors dae::Bomb::GetOwnerColor() const
+{
+	return static_cast<dae::Utils::PlayerColors>(m_Owner.GetPlayerIndex());
 }

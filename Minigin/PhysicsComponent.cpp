@@ -31,18 +31,6 @@ dae::PhysicsComponent::~PhysicsComponent()
 
 bool dae::PhysicsComponent::TryMove(const glm::vec2& dir, float searchRadius)
 {
-    /*
-    @DEV pass only physics component references of physics objects 
-    that exist only: south, north, east, west (they always do) :)
-
-    if collides, don't move, else - move
-
-    PhysicsComponent* (&myArray)[8] collect array of pointers
-    Scene can yield a std::vector<PhysicsComponent*>
-    set limitRadius
-    */
-
-    std::cout << "Trying to move!\n";
     const auto elapsedSec{ Timer::GetInstance().GetElapsed() };
 
     // --- Safety + direction ---
@@ -63,8 +51,6 @@ bool dae::PhysicsComponent::TryMove(const glm::vec2& dir, float searchRadius)
         if (DoesIntersect(nextBounds, other->GetBounds()))
         {
             if (!other->IsTrigger()) return false;
-
-            // Callback to TriggerEvent?
         }
     }
 

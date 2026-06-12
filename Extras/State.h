@@ -6,6 +6,8 @@
 #include "LevelGrid.h"
 #include "Player.h"
 #include "Bomb.h"
+#include "Blast.h"
+#include "Upgrade.h"
 #include <vector>
 #include <cstdint>
 
@@ -156,12 +158,13 @@ namespace dae
         void Update() override;
         void Render() const override {};
 
-        void TryPlaceBomb(dae::Player& player);
     private:
         void CreateGame(dae::MatchSession::GameMode gamemode);
         void CreatePvpLevel(Scene& scene, const glm::vec2& windowCentre);
         //void CreateNormaLevel(Scene& scene, const glm::vec2& windowCentre);
         void CreatePlayers(Scene& scene, int playerAmount);
+        void CreateBlast(Scene& scene, GridCell& origin, dae::Utils::PlayerColors color, uint8_t range);
+        void TryPlaceBomb(dae::Player& player);
 
         void FakeResults(dae::MatchSession::GameMode gamemode);
 
@@ -169,6 +172,7 @@ namespace dae
         Scene* m_pScene{};
         std::vector<std::unique_ptr<dae::Player>> m_Players{};
         std::vector<std::unique_ptr<dae::Bomb>> m_Bombs{};
+        std::vector<std::unique_ptr<dae::Blast>> m_Blasts{};
     };
     
     class GameOverState final : public GameState

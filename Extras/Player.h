@@ -16,7 +16,7 @@ namespace dae
 
 		void AddBomb();
 		void AddRange();
-		void AddSpeed(float margin);
+		void AddSpeed(float margin = 50.f);
 
 		bool TryPlaceBomb();
 		void OnBombExploded();
@@ -25,11 +25,13 @@ namespace dae
 
 		uint8_t GetActiveBombCount() const;
 		uint8_t GetBlastRange() const;
+		uint8_t GetPlayerIndex() const;
 
 	private:
 		uint8_t m_MaxBombs{ 1 };
 		uint8_t m_CurrentBombs{ 0 };
 		uint8_t m_BlastRange{ 1 };
+		uint8_t m_PlayerIndex{ 0 };
 
 		PhysicsComponent* m_PhysicsComponent{};
 		GameObject* m_GameObject{};

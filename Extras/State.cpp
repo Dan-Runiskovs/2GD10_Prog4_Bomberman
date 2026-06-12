@@ -785,10 +785,26 @@ void dae::InGameState::OnExit()
 
 void dae::InGameState::Update()
 {
+    // --- Update Bombs ---
     for (auto& bomb : m_Bombs)
     {
-        bomb.get()->Update();
+       auto* pB{ bomb.get() };
+       pB->Update();
+       if (pB->HasExploded())
+       {
+           auto& cell{ m_Level.WorldPosToGridCell(pB->GetPosition()) };
+           CreateBlast(*m_pScene, cell, pB->GetOwnerColor(), pB->GetBlastRange());
+       };
     }
+
+    // --- Update Blasts ---
+    for (auto& blast : m_Blasts)
+    {
+        blast.get()->Update();
+    }
+
+    // --- Update Upgrades ---
+    m_Level.ProcessUpgrades(m_Players);
 
     // --- Erase exploded bombs ---
     std::erase_if(m_Bombs,
@@ -802,11 +818,10 @@ void dae::InGameState::TryPlaceBomb(dae::Player& player)
 {
     if (!player.TryPlaceBomb()) return;
 
-    const auto& cell{ m_Level.WorldPosToGridCell(player.GetWorldPos()) };
-    const glm::vec2& bombPos{ cell.center };
+    auto& cell{ m_Level.WorldPosToGridCell(player.GetWorldPos()) };
     m_Bombs.emplace_back(
         std::make_unique<dae::Bomb>(
-            *m_pScene, bombPos, cell.m_CellSizePx, player.GetBlastRange(), player));    
+            *m_pScene, cell, cell.m_CellSizePx, player.GetBlastRange(), player));    
 }
 
 void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
@@ -911,6 +926,86 @@ void dae::InGameState::CreatePlayers(Scene& scene, int playerAmount)
                     }),
                 CommandType::OnPress)
         );
+    }
+}
+
+void dae::InGameState::CreateBlast(Scene& scene, GridCell& origin, dae::Utils::PlayerColors color, uint8_t range)
+{
+    const int size{ origin.m_CellSizePx };
+
+    // --- Center ---
+    m_Blasts.emplace_back(
+        std::make_unique<Blast>(
+            scene,
+            origin,
+            size,
+            Blast::Orientation::Central,
+            color));
+
+    constexpr std::pair<int, int> directions[]
+    {
+        { 1,  0},
+        {-1,  0},
+        { 0,  1},
+        { 0, -1}
+    };
+
+    for (const auto& [dx, dy] : directions)
+    {
+        const auto orientation
+        {
+            dx != 0
+            ? Blast::Orientation::Horizontal
+            : Blast::Orientation::Vertical
+        };
+
+        for (uint8_t step{}; step < range; ++step)
+        {
+            const int x
+            {
+                static_cast<int>(origin.x) + dx * (step + 1)
+            };
+
+            const int y
+            {
+                static_cast<int>(origin.y) + dy * (step + 1)
+            };
+
+            // --- Bounds ---
+            if (x < 0 ||
+                y < 0 ||
+                x >= m_Level.GetWidth() ||
+                y >= m_Level.GetHeight())
+            {
+                break;
+            }
+
+            auto& cell
+            {
+                m_Level.At(
+                    static_cast<uint8_t>(x),
+                    static_cast<uint8_t>(y))
+            };
+
+            // --- Wall blocks ---
+            if (cell.type == CellType::Wall)
+                break;
+
+            const auto cellTypeCached{ cell.type };
+
+            // --- Spawn blast ---
+            m_Blasts.emplace_back(
+                std::make_unique<Blast>(
+                    scene,
+                    cell,
+                    size,
+                    orientation,
+                    color)); 
+
+            // --- Barrel stops ---
+            if (cellTypeCached == CellType::Barrel)
+                break;
+        }
     }
 }
 

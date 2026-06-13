@@ -43,9 +43,24 @@ bool dae::Leaderboard::TryLoadEntries(std::filesystem::path path)
     // --- This byte stores how many leaderboard entries exist ---
     file.read(reinterpret_cast<char*>(&count),sizeof(count));
     std::cout << "Loaded leaderboard with " << std::to_string(static_cast<int>(count)) << " entries!\n";
+    std::cout << "File size: "
+        << std::filesystem::file_size(m_Filepath)
+        << '\n';
 
-    if (!file.good()) return false;
-
+    std::cout
+        << "g=" << file.good()
+        << " eof=" << file.eof()
+        << " fail=" << file.fail()
+        << " bad=" << file.bad()
+        << '\n';
+    /*
+    if (!file.good())
+    {
+        std::cout << "File not good?1\n";
+        return false;
+    }
+    */
+    
     // --- Safety clamp ---
     // --- If file somehow says there are 200 entries ---
     // --- only load up to MAX_ENTRIES ---
@@ -58,6 +73,9 @@ bool dae::Leaderboard::TryLoadEntries(std::filesystem::path path)
 
     // --- Close file ---
     file.close();
+
+    // --- Load possible dummy data --
+    if (m_EntryCount == 0) LoadDummyData();
 
     // --- Sort for safety ---
     SortEntries();
@@ -106,6 +124,10 @@ void dae::Leaderboard::SaveEntry(const Entry& entry)
 
     file.close();
     std::cout << "Entry saved!\n";
+    std::cout
+        << "File size after save: "
+        << std::filesystem::file_size(m_Filepath)
+        << '\n';
 }
 
 bool dae::Leaderboard::DoesScoreQualify(uint16_t scoreHundreds) const
@@ -146,4 +168,26 @@ inline void dae::Leaderboard::SortEntries()
         {
             return lhs.scoreHundreds > rhs.scoreHundreds;
         });
+}
+
+void dae::Leaderboard::LoadDummyData()
+{
+    Entry entry1{};
+    entry1.initials[0] = 'T';
+    entry1.initials[1] = 'O';
+    entry1.initials[2] = 'M';
+    entry1.scoreHundreds = 6900;
+    SaveEntry(entry1);
+    Entry entry2{};
+    entry2.initials[0] = 'A';
+    entry2.initials[1] = 'V';
+    entry2.initials[2] = 'A';
+    entry2.scoreHundreds = 1111;
+    SaveEntry(entry2);
+    Entry entry3{};
+    entry3.initials[0] = 'D';
+    entry3.initials[1] = 'A';
+    entry3.initials[2] = 'N';
+    entry3.scoreHundreds = 20;
+    SaveEntry(entry3);
 }

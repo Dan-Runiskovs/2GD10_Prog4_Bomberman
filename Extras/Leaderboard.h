@@ -55,7 +55,7 @@ namespace dae
 		int GetProjectedPlacement(uint16_t scoreHundreds) const;
 
 		const std::array<Entry, MAX_ENTRIES>& GetEntries() const { return m_Entries; }
-
+		size_t GetEntryCount() const { return m_EntryCount; }
 		// DANGEROUS:
 		void ClearLeaderboard();
 
@@ -65,5 +65,6 @@ namespace dae
 		size_t m_EntryCount{};	// Stores amount of valid entries 0 <= m_EntryCount <= MAX_ENTRIES
 
 		inline void SortEntries();
+		void LoadDummyData();
 	};
 }

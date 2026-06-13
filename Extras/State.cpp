@@ -313,14 +313,14 @@ void dae::MainMenuState::CreateMainMenu()
         }
     );
     m_SceneButtons[1].GetSubject().AddObserver(
-        [](Event event)
+        [this](Event event)
         {
             switch (event)
             {
             case dae::Event::OnClick:
                 std::cout << "Bomberman: Opening Leaderboard!\n";
                 std::cout << "Bomberman: WARNING: Not implemented yet!\n";
-                // TODO: Open Leaderboard
+                ChangeState(std::make_unique<dae::LeaderboardState>(m_Game));
                 break;
             default:
                 break;
@@ -877,8 +877,38 @@ void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
         CreateNormaLevel(*m_pScene, windowSize);
     }
 
+    // --- Draw Overlay ---
+    // --- 1: Black filler --- 
+    const glm::vec2 centre{ windowSize.x * 0.5f, 27.f };
+    const glm::vec2 dimensions{ windowSize.x, 54.f };
+    go = std::make_unique<dae::GameObject>();
+    go->AddComponent<dae::RenderComponent>();
+    go->GetComponent<dae::RenderComponent>().SetTexture("filler.png");
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(centre.x, centre.y);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
+    go->GetComponent<dae::RenderComponent>().SetDimensions(dimensions.x, dimensions.y);
+    go->GetComponent<dae::RenderComponent>().SetStatic(true);
+    m_pScene->Add(std::move(go));
+
+    // --- 2. Score: ---
+    auto subFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 36) };
+    go = std::make_unique<dae::GameObject>();
+    go->AddComponent<dae::RenderComponent>().SetCentered(true);
+    go->AddComponent<dae::TextComponent>("Score", subFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::WHITE));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(200.f, 27.f);
+    m_pScene->Add(std::move(go));
+
+    TextComponent* pText{ nullptr };
+    go = std::make_unique<dae::GameObject>();
+    go->AddComponent<dae::RenderComponent>().SetCentered(true);
+    pText = &go->AddComponent<dae::TextComponent>("0\'000\'000", subFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::YELLOW));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(500.f, 27.f);
+    m_pScene->Add(std::move(go));
+
     m_Level.GetSubject().AddObserver(
-        [this](Event e)
+        [this, pText](Event e)
         {
             if (e == Event::OnScoreChanged)
             {
@@ -886,6 +916,34 @@ void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
                 result.score = m_Level.GetCurrentScore();
                 // TODO: visualise score as well
                 std::cout << "Game state: SCORE: " << std::to_string(static_cast<int>(result.score) * 100) << "!\n";
+                if (pText)
+                {
+                    auto text{ std::to_string(result.score) };
+                    text += "00";
+
+                    std::cout << "Score pre insert: " << text << "\n";
+
+                    // --- Insert missing amount of leading 0 ---
+                    for (size_t digitN{ text.length() }; digitN < 7; ++digitN)
+                    {
+                        text = "0" + text; // Add a leading 0
+                    }
+
+                    std::cout << "Score post insert: " << text << "\n";
+
+                    // --- Quick and brutal format ---
+                    const std::string newText =
+                        std::string(1, text[0]) +
+                        "\'" +
+                        text[1] +
+                        text[2] +
+                        text[3] +
+                        "\'" +
+                        text[4] +
+                        text[5] +
+                        text[6];
+                    pText->SetText(newText);
+                }
             }
         }
     );
@@ -935,6 +993,15 @@ void dae::InGameState::CreatePvpLevel(Scene& scene, const glm::vec2& windowSize)
         70, 10, 10, 5
     };
     m_Level.VisualiseProps(scene, pa);
+
+    auto debugFont{ dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 30) };
+    auto go{ std::make_unique<dae::GameObject>() };
+    go->AddComponent<dae::RenderComponent>();
+    go->AddComponent<dae::TextComponent>("Your ad here", debugFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::DEBUG_RED));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(100.f, 100.f);
+    m_pScene->Add(std::move(go));
+
 }
 
 void dae::InGameState::CreateNormaLevel(Scene& scene, const glm::vec2& windowSize)
@@ -1808,4 +1875,100 @@ void dae::GameOverState::CreateScoreBoardBindings()
 
 #pragma endregion
 
+dae::LeaderboardState::LeaderboardState(Game& game)
+    :GameState(game)
+{
+}
 
+void dae::LeaderboardState::OnEnter()
+{
+    std::cout << "GameState: Leaderboard entered\n";
+    CreateLeaderboardState();
+}
+
+void dae::LeaderboardState::OnExit()
+{
+    InputManager::GetInstance().ClearBindings();
+    SceneManager::GetInstance().DestroyAllScenes();
+    std::cout << "GameState: TitleScreenExited\n";
+}
+
+void dae::LeaderboardState::CreateLeaderboardState()
+{
+    // --- Data ---
+    auto& scene{ SceneManager::GetInstance().CreateScene() };
+    const auto windowSize{ Renderer::GetInstance().GetWindowSize() };
+    const auto windowCentre{ glm::vec2(windowSize.x / 2.f, windowSize.y / 2.f) };
+
+    // --- Fonts ---
+    auto mainFont{ dae::ResourceManager::GetInstance().LoadFont("MainFont.ttf", 150) };
+    auto subFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 36) };
+
+    // --- Title Background ---
+    auto go{ std::make_unique<dae::GameObject>() };
+    go->AddComponent<dae::RenderComponent>();
+    go->AddComponent<dae::TextComponent>("Leaderboard", mainFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::PALE_BROWN));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x + 5.f, 105.f);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
+    scene.Add(std::move(go));
+
+    // --- Title Foreground ---
+    go = std::make_unique<dae::GameObject>();
+    go->AddComponent<dae::RenderComponent>();
+    go->AddComponent<dae::TextComponent>("Leaderboard", mainFont);
+    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::YELLOW));
+    go->GetComponent<dae::TransformComponent>().SetWorldPosition(windowCentre.x, 100.f);
+    go->GetComponent<dae::RenderComponent>().SetCentered(true);
+    scene.Add(std::move(go));
+
+    // --- Leaderboard Entries ---
+    constexpr float startY{ 250.f };
+    constexpr float rowSpacing{ 50.f };
+
+    const auto& lb{ Leaderboard::GetInstance() };
+
+    for (size_t i{}; i < lb.GetEntryCount(); ++i)
+    {
+        const auto& entry{ lb.GetEntries()[i] };
+
+        std::string text
+        {
+            std::to_string(i + 1)
+            + ". "
+            + entry.initials[0] + entry.initials[1] + entry.initials[2]
+            + "    "
+            + std::to_string(entry.scoreHundreds) + "00"
+        };
+
+        auto row{ std::make_unique<dae::GameObject>() };
+
+        row->AddComponent<dae::RenderComponent>();
+        row->AddComponent<dae::TextComponent>(text, subFont);
+
+        row->GetComponent<dae::TextComponent>()
+            .SetColor(HexToSDLColor(HCol::WHITE));
+
+        row->GetComponent<dae::TransformComponent>()
+            .SetWorldPosition(
+                windowCentre.x,
+                startY + rowSpacing * static_cast<float>(i));
+
+        row->GetComponent<dae::RenderComponent>()
+            .SetCentered(true);
+
+        scene.Add(std::move(row));
+
+        // --- Bindings ---
+        auto& controllerRef = dae::InputManager::GetInstance().AddController(static_cast<uint8_t>(0));
+
+        dae::InputManager::GetInstance().AddBinding(
+            std::make_unique<ControllerBinding>(
+                controllerRef, ControllerButton::GAMEPAD_B,
+                std::make_unique<dae::ChangeStateCommand>(m_Game,
+                    std::make_unique<dae::MainMenuState>(m_Game)
+                ),
+                CommandType::OnRelease)
+        );
+    }
+}

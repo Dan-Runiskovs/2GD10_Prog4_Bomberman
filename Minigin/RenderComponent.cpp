@@ -63,7 +63,8 @@ void dae::RenderComponent::Render() const
 
 	const auto& texture{ *m_pTexture.get() };
 	auto pos{ m_TransformComponent.GetWorldPosition() };
-	pos -= Camera::GetInstance().GetPosition();
+	
+	if (!m_IsStatic) pos -= Camera::GetInstance().GetPosition();
 
 	if (m_Width && m_Heigth)
 	{

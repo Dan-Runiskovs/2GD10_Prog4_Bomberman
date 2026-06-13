@@ -23,6 +23,7 @@ namespace dae
 		void SetTexture(std::shared_ptr<Texture2D> pTexture);
 		void SetCentered(bool drawCentered) { m_DrawCentered = drawCentered; }
 		void SetRotation(float newRotation) { m_Rotation = newRotation; }
+		void SetStatic(bool newStatic) { m_IsStatic = newStatic; }
 
 		void Render() const;
 
@@ -39,6 +40,7 @@ namespace dae
 		float m_Heigth{};
 
 		bool m_DrawCentered{ false };
+		bool m_IsStatic{ false };
 		float m_Rotation{ 0.f };
 	};
 }

@@ -24,6 +24,7 @@
 #include "Timer.h"
 #include "Subject.h"
 #include "Camera.h"
+#include "Leaderboard.h"
 
 #include <iostream>
 #include <cassert>
@@ -234,6 +235,9 @@ void dae::MainMenuState::OnEnter()
 {
     std::cout << "GameState: Main menu entered\n";
     CreateMainMenu();
+    auto path{ ResourceManager::GetInstance().GetDataPath() };
+    path.append("Leaderboard.bin");
+    Leaderboard::GetInstance().TryLoadEntries(path);
 }
 
 void dae::MainMenuState::OnExit()
@@ -823,7 +827,7 @@ void dae::InGameState::Update()
     }
 
     // --- Update Upgrades ---
-    m_Level.ProcessUpgrades(m_Players);
+    m_Level.ProcessGrid(m_Players);
 
     // --- Erase exploded bombs ---
     std::erase_if(m_Bombs,
@@ -872,6 +876,19 @@ void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
     {
         CreateNormaLevel(*m_pScene, windowSize);
     }
+
+    m_Level.GetSubject().AddObserver(
+        [this](Event e)
+        {
+            if (e == Event::OnScoreChanged)
+            {
+                auto& result{ static_cast<dae::Bomberman&>(m_Game).GetMatchSession().GetResult() };
+                result.score = m_Level.GetCurrentScore();
+                // TODO: visualise score as well
+                std::cout << "Game state: SCORE: " << std::to_string(static_cast<int>(result.score) * 100) << "!\n";
+            }
+        }
+    );
 
     // --- Create Player(s) ---
     const int nPlayers{ static_cast<dae::Bomberman&>(m_Game).GetMatchSession().GetResult().playerAmount };
@@ -1251,7 +1268,7 @@ void dae::GameOverState::CreateGameOver()
             scene.Add(std::move(go));
         }
         CreateMenuButtons(scene, false, windowCentre);
-        CreateScoreDisplay(scene, windowCentre, session.GetResult().isWin);
+        CreateScoreDisplay(scene, windowCentre);
         VisualiseSubtext(scene, windowCentre, session.GetResult().isWin);
         break;
     }
@@ -1529,13 +1546,14 @@ void dae::GameOverState::CreateMenuButtons(Scene& scene, bool isVertical, const 
     );
 }
 
-void dae::GameOverState::CreateScoreDisplay(Scene& scene, const glm::vec2& centerPos, bool isWin)
+void dae::GameOverState::CreateScoreDisplay(Scene& scene, const glm::vec2& centerPos)
 {
     auto letterFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 50) };
     const auto interLetterOffset{ 50.f };
     auto globalLetterOffset{ 75.f };
-
-    if (isWin)
+    const auto& session{ static_cast<dae::Bomberman&>(m_Game).GetMatchSession() };
+    const auto& score{ session.GetResult().score };
+    if (Leaderboard::GetInstance().DoesScoreQualify(score))
     {
         SetMenuButtonsLock(true);
 
@@ -1639,9 +1657,11 @@ void dae::GameOverState::VisualiseSubtext(Scene& scene, const glm::vec2& centerP
     auto letterFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 50) };
     std::string subtext{};
     uint32_t hexColor{ HCol::GREY };
-    if (isWin)
+    const auto& result{ static_cast<dae::Bomberman&>(m_Game).GetMatchSession().GetResult() };
+    const int placement{ Leaderboard::GetInstance().GetProjectedPlacement(result.score) };
+    if (placement <= 10)
     {
-        const int placement{ 2 };
+        
         switch (placement)
         {
         case 1:
@@ -1660,7 +1680,7 @@ void dae::GameOverState::VisualiseSubtext(Scene& scene, const glm::vec2& centerP
     }
     else
     {
-        subtext = "You Lost!";
+        subtext = (isWin) ? "You won" : "You Lost!";
     }
 
     auto go{ std::make_unique<dae::GameObject>() };
@@ -1717,6 +1737,7 @@ void dae::GameOverState::CreateScoreBoardBindings()
             char char1{};
             char char2{};
             std::string text{};
+            Leaderboard::Entry entry{};
 
             switch (m_SelectedLetterIdx)
             {
@@ -1741,6 +1762,12 @@ void dae::GameOverState::CreateScoreBoardBindings()
                 std::cout << "Record for: " << std::string(1, char0) 
                                             << std::string(1, char1) 
                                             << std::string(1, char2) << "!\n";
+                
+                entry.initials[0] = char0;
+                entry.initials[1] = char1;
+                entry.initials[2] = char2;
+                entry.scoreHundreds = static_cast<Bomberman&>(m_Game).GetMatchSession().GetResult().score;
+                Leaderboard::GetInstance().SaveEntry(entry);
 
                 SetLetterSelectorsLock(true);
                 SetMenuButtonsLock(false);

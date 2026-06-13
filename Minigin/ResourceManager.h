@@ -17,6 +17,7 @@ namespace dae
 		std::shared_ptr<Font> LoadFont(const std::string& file, uint8_t size);
 
 		const std::filesystem::path& GetDataPath() const { return m_dataPath; }
+		std::filesystem::path& GetDataPath() { return m_dataPath; }
 	private:
 		friend class Singleton<ResourceManager>;
 		ResourceManager() = default;

@@ -79,6 +79,10 @@ void dae::LevelGrid::InitLevelGrid(std::filesystem::path path, const glm::vec2 g
             {
                 cell.type = CellType::Free;
             }
+            else if (token == "b")
+            {
+                cell.type = CellType::EnemyBalloom;
+            }
             else if (token == "0" ||
                      token == "1" ||
                      token == "2" ||
@@ -260,10 +264,31 @@ void dae::LevelGrid::VisualiseBaseGrid(Scene& scene)
         go->GetComponent<dae::RenderComponent>().SetCentered(true);
         scene.Add(std::move(go));
     }
+    for (const auto& cell : m_Cells)
+    {
+        if (cell.type == CellType::EnemyBalloom)
+        {
+            const glm::vec2 dimensions{ static_cast<float>(cell.m_CellSizePx),
+                                    static_cast<float>(cell.m_CellSizePx) };
+            m_Enemies.push_back(std::make_unique<dae::Balloom>(
+                scene, *this, cell.center, dimensions.x));
+            auto& enemy{ m_Enemies.back() };
+            enemy.get()->GetSubject().AddObserver(
+                [this, score = enemy->GetScoreValue()](Event e)
+                {
+                    if (e == Event::OnDeath)
+                    {
+                        m_Score += static_cast<uint16_t>(score);
+                        m_Subject.Notify(Event::OnScoreChanged);
+                    }
+                });
+        }
+    }
 }
 
-void dae::LevelGrid::ProcessUpgrades(std::vector<std::unique_ptr<dae::Player>>& players)
+void dae::LevelGrid::ProcessGrid(std::vector<std::unique_ptr<dae::Player>>& players)
 {
+    // --- 1. Process Upgrades ---
     for (auto& upgrade : m_Upgrades)
     {
         upgrade.get()->Update(players);
@@ -274,6 +299,13 @@ void dae::LevelGrid::ProcessUpgrades(std::vector<std::unique_ptr<dae::Player>>& 
         {
             return upgrade->IsCollected();
         });
+
+    // --- 2. Process enemies ---
+    for (auto& enemy : m_Enemies)
+    {
+        // TEMP SOLUTION FOR ONE ENEMY TYPE ONLY
+        static_cast<Balloom*>(enemy.get())->Update(players);
+    }
 }
 
 glm::vec2 dae::LevelGrid::GetSpawnpoint(int playerIdx) const

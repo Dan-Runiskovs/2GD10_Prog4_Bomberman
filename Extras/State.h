@@ -194,7 +194,7 @@ namespace dae
 
         void CreateDeadPeopleScreen(Scene& scene, const glm::vec2& centerPos, const dae::MatchSession& session);
         void CreateMenuButtons(Scene& scene, bool isVertical, const glm::vec2& centre);
-        void CreateScoreDisplay(Scene& scene, const glm::vec2& centerPos, bool isWin);
+        void CreateScoreDisplay(Scene& scene, const glm::vec2& centerPos);
         void VisualiseScore(Scene& scene, const glm::vec2& centerPos);
         void VisualiseSubtext(Scene& scene, const glm::vec2& centerPos, bool isWin);
         void SetMenuButtonsLock(bool newLock);

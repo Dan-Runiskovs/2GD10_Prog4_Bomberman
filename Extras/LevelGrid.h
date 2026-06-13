@@ -9,7 +9,8 @@
 #include "Texture2D.h"
 #include "Upgrade.h"
 #include "Player.h"
-
+#include "Enemies.h"
+#include "Subject.h"
 
 namespace dae
 {
@@ -23,7 +24,8 @@ namespace dae
         Wall,
         Barrel,
         Spawn,
-        Door
+        Door,
+        EnemyBalloom
     };
 
     struct GridCell
@@ -75,7 +77,7 @@ namespace dae
 
         void VisualiseBaseGrid(Scene& scene);
 
-        void ProcessUpgrades(std::vector<std::unique_ptr<dae::Player>>& players);
+        void ProcessGrid(std::vector<std::unique_ptr<dae::Player>>& players);
 
         glm::vec2 GetSpawnpoint(int playerIdx) const;
 
@@ -87,11 +89,15 @@ namespace dae
         uint8_t GetWidth() const { return m_Width; }
         uint8_t GetHeight() const { return m_Height; }
         glm::vec2 GetWorldDimensions() const;
-
+        Subject& GetSubject() { return m_Subject; }
+        uint16_t GetCurrentScore() { return m_Score; }
     private:
         std::vector<GridCell> m_Cells{};
         std::vector<std::unique_ptr<dae::Upgrade>> m_Upgrades{};
+        std::vector<std::unique_ptr<dae::Enemy>> m_Enemies{};
+        uint16_t m_Score{ 0 };
         uint8_t m_Width{};
         uint8_t m_Height{};
+        Subject m_Subject{};
     };
 }

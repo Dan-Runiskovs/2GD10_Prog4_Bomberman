@@ -1,12 +1,16 @@
 #include "Leaderboard.h"
 #include <fstream>
 #include <algorithm>
+#include <iostream>
+#include <string>
 
 bool dae::Leaderboard::TryLoadEntries(std::filesystem::path path)
 {
     // --- Save filepath for future writes ---
     m_Filepath = std::move(path);
-
+    std::cout << "Loading from: "
+        << m_Filepath.string()
+        << '\n';
     // --- Reset current leaderboard ---
     m_EntryCount = 0;
     m_Entries.fill({});
@@ -17,6 +21,7 @@ bool dae::Leaderboard::TryLoadEntries(std::filesystem::path path)
     // --- File doesn't exist -> create empty leaderboard ---
     if (!file.is_open())
     {
+        std::cout << "No such file, creating new...\n";
         std::ofstream createFile{ m_Filepath, std::ios::binary };
 
         // --- Write current amoun of entries -> none ---
@@ -37,6 +42,7 @@ bool dae::Leaderboard::TryLoadEntries(std::filesystem::path path)
     // --- Read first byte of file ---
     // --- This byte stores how many leaderboard entries exist ---
     file.read(reinterpret_cast<char*>(&count),sizeof(count));
+    std::cout << "Loaded leaderboard with " << std::to_string(static_cast<int>(count)) << " entries!\n";
 
     if (!file.good()) return false;
 
@@ -61,6 +67,10 @@ bool dae::Leaderboard::TryLoadEntries(std::filesystem::path path)
 
 void dae::Leaderboard::SaveEntry(const Entry& entry)
 {
+    std::cout << "Saving Entry with score: " << std::to_string(static_cast<int>(entry.scoreHundreds)) << "!\n";
+    std::cout << "Saving to: "
+        << m_Filepath.string()
+        << '\n';
     // --- Leaderboard not full yet ---
     if (m_EntryCount < MAX_ENTRIES)
     {
@@ -95,6 +105,7 @@ void dae::Leaderboard::SaveEntry(const Entry& entry)
         static_cast<std::streamsize>(m_EntryCount * sizeof(Entry)));
 
     file.close();
+    std::cout << "Entry saved!\n";
 }
 
 bool dae::Leaderboard::DoesScoreQualify(uint16_t scoreHundreds) const

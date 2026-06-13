@@ -875,79 +875,78 @@ void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
     else
     {
         CreateNormaLevel(*m_pScene, windowSize);
-    }
 
-    // --- Draw Overlay ---
+        // --- Draw Overlay ---
     // --- 1: Black filler --- 
-    const glm::vec2 centre{ windowSize.x * 0.5f, 27.f };
-    const glm::vec2 dimensions{ windowSize.x, 54.f };
-    go = std::make_unique<dae::GameObject>();
-    go->AddComponent<dae::RenderComponent>();
-    go->GetComponent<dae::RenderComponent>().SetTexture("filler.png");
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(centre.x, centre.y);
-    go->GetComponent<dae::RenderComponent>().SetCentered(true);
-    go->GetComponent<dae::RenderComponent>().SetDimensions(dimensions.x, dimensions.y);
-    go->GetComponent<dae::RenderComponent>().SetStatic(true);
-    m_pScene->Add(std::move(go));
+        const glm::vec2 centre{ windowSize.x * 0.5f, 27.f };
+        const glm::vec2 dimensions{ windowSize.x, 54.f };
+        go = std::make_unique<dae::GameObject>();
+        go->AddComponent<dae::RenderComponent>();
+        go->GetComponent<dae::RenderComponent>().SetTexture("filler.png");
+        go->GetComponent<dae::TransformComponent>().SetWorldPosition(centre.x, centre.y);
+        go->GetComponent<dae::RenderComponent>().SetCentered(true);
+        go->GetComponent<dae::RenderComponent>().SetDimensions(dimensions.x, dimensions.y);
+        go->GetComponent<dae::RenderComponent>().SetStatic(true);
+        m_pScene->Add(std::move(go));
 
-    // --- 2. Score: ---
-    auto subFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 36) };
-    go = std::make_unique<dae::GameObject>();
-    go->AddComponent<dae::RenderComponent>().SetCentered(true);
-    go->AddComponent<dae::TextComponent>("Score", subFont);
-    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::WHITE));
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(200.f, 27.f);
-    m_pScene->Add(std::move(go));
+        // --- 2. Score: ---
+        auto subFont{ dae::ResourceManager::GetInstance().LoadFont("SubFont.ttf", 36) };
+        go = std::make_unique<dae::GameObject>();
+        go->AddComponent<dae::RenderComponent>().SetCentered(true);
+        go->AddComponent<dae::TextComponent>("Score", subFont);
+        go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::WHITE));
+        go->GetComponent<dae::TransformComponent>().SetWorldPosition(200.f, 27.f);
+        m_pScene->Add(std::move(go));
 
-    TextComponent* pText{ nullptr };
-    go = std::make_unique<dae::GameObject>();
-    go->AddComponent<dae::RenderComponent>().SetCentered(true);
-    pText = &go->AddComponent<dae::TextComponent>("0\'000\'000", subFont);
-    go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::YELLOW));
-    go->GetComponent<dae::TransformComponent>().SetWorldPosition(500.f, 27.f);
-    m_pScene->Add(std::move(go));
+        TextComponent* pText{ nullptr };
+        go = std::make_unique<dae::GameObject>();
+        go->AddComponent<dae::RenderComponent>().SetCentered(true);
+        pText = &go->AddComponent<dae::TextComponent>("0\'000\'000", subFont);
+        go->GetComponent<dae::TextComponent>().SetColor(HexToSDLColor(HCol::YELLOW));
+        go->GetComponent<dae::TransformComponent>().SetWorldPosition(500.f, 27.f);
+        m_pScene->Add(std::move(go));
 
-    m_Level.GetSubject().AddObserver(
-        [this, pText](Event e)
-        {
-            if (e == Event::OnScoreChanged)
+        m_Level.GetSubject().AddObserver(
+            [this, pText](Event e)
             {
-                auto& result{ static_cast<dae::Bomberman&>(m_Game).GetMatchSession().GetResult() };
-                result.score = m_Level.GetCurrentScore();
-                // TODO: visualise score as well
-                std::cout << "Game state: SCORE: " << std::to_string(static_cast<int>(result.score) * 100) << "!\n";
-                if (pText)
+                if (e == Event::OnScoreChanged)
                 {
-                    auto text{ std::to_string(result.score) };
-                    text += "00";
-
-                    std::cout << "Score pre insert: " << text << "\n";
-
-                    // --- Insert missing amount of leading 0 ---
-                    for (size_t digitN{ text.length() }; digitN < 7; ++digitN)
+                    auto& result{ static_cast<dae::Bomberman&>(m_Game).GetMatchSession().GetResult() };
+                    result.score = m_Level.GetCurrentScore();
+                    // TODO: visualise score as well
+                    std::cout << "Game state: SCORE: " << std::to_string(static_cast<int>(result.score) * 100) << "!\n";
+                    if (pText)
                     {
-                        text = "0" + text; // Add a leading 0
+                        auto text{ std::to_string(result.score) };
+                        text += "00";
+
+                        std::cout << "Score pre insert: " << text << "\n";
+
+                        // --- Insert missing amount of leading 0 ---
+                        for (size_t digitN{ text.length() }; digitN < 7; ++digitN)
+                        {
+                            text = "0" + text; // Add a leading 0
+                        }
+
+                        std::cout << "Score post insert: " << text << "\n";
+
+                        // --- Quick and brutal format ---
+                        const std::string newText =
+                            std::string(1, text[0]) +
+                            "\'" +
+                            text[1] +
+                            text[2] +
+                            text[3] +
+                            "\'" +
+                            text[4] +
+                            text[5] +
+                            text[6];
+                        pText->SetText(newText);
                     }
-
-                    std::cout << "Score post insert: " << text << "\n";
-
-                    // --- Quick and brutal format ---
-                    const std::string newText =
-                        std::string(1, text[0]) +
-                        "\'" +
-                        text[1] +
-                        text[2] +
-                        text[3] +
-                        "\'" +
-                        text[4] +
-                        text[5] +
-                        text[6];
-                    pText->SetText(newText);
                 }
             }
-        }
-    );
-
+        );
+    }
     // --- Create Player(s) ---
     const int nPlayers{ static_cast<dae::Bomberman&>(m_Game).GetMatchSession().GetResult().playerAmount };
     CreatePlayers(*m_pScene, nPlayers);
@@ -966,6 +965,7 @@ void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
             CommandType::OnRelease
         )
     );
+    
 
     // --- Fake Results ---
     //CollectResults(static_cast<dae::Bomberman&>(m_Game).GetMatchSession());

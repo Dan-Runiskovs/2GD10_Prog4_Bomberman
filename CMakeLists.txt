@@ -269,6 +269,8 @@ if(WIN32)
 
   set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     PROPERTY VS_STARTUP_PROJECT ${TARGET_NAME})
+    # Set working directory to output folder
+  set_target_properties(${TARGET_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${TARGET_NAME}>")
 
   foreach(dllTarget
     SDL3::SDL3

@@ -86,6 +86,7 @@ namespace dae
 
         uint8_t GetWidth() const { return m_Width; }
         uint8_t GetHeight() const { return m_Height; }
+        glm::vec2 GetWorldDimensions() const;
 
     private:
         std::vector<GridCell> m_Cells{};

@@ -23,6 +23,7 @@
 #include "Utils.h"
 #include "Timer.h"
 #include "Subject.h"
+#include "Camera.h"
 
 #include <iostream>
 #include <cassert>
@@ -781,6 +782,7 @@ void dae::InGameState::OnExit()
 {
     InputManager::GetInstance().ClearBindings();
     SceneManager::GetInstance().DestroyAllScenes();
+    Camera::GetInstance().Reset();
     Renderer::GetInstance().SetBackgroundColor(HexToSDLColor(HCol::BLACK));
     CollectResults(static_cast<Bomberman&>(m_Game).GetMatchSession());
     std::cout << "GameState: Game Simulation Exited\n";
@@ -788,6 +790,8 @@ void dae::InGameState::OnExit()
 
 void dae::InGameState::Update()
 {
+    AimCamera();
+
     // --- Update Bombs ---
     for (auto& bomb : m_Bombs)
     {
@@ -927,7 +931,7 @@ void dae::InGameState::CreateNormaLevel(Scene& scene, const glm::vec2& windowSiz
     const int cellSize{ 54 };
     // --- TopLeft ---
     const glm::vec2 topLeft{
-        windowSize.x * 0.35f,
+        0.f,
         (windowSize.y - (cellSize * 13.f))
     };
 
@@ -992,6 +996,25 @@ void dae::InGameState::CreatePlayers(Scene& scene, int playerAmount)
                 }
             });
         
+    }
+}
+
+void dae::InGameState::AimCamera()
+{
+    const auto& session{ static_cast<Bomberman&>(m_Game).GetMatchSession() };
+    if (session.GetMode() != MatchSession::GameMode::Pvp)
+    {
+        glm::vec2 center{};
+
+        for (auto& player : m_Players)
+        {
+            if (!player.get()->IsAlive()) continue;
+            center += player.get()->GetWorldPos();
+        }
+
+        center /= m_PlayersAlive;
+        const auto levelDimensions{ m_Level.GetWorldDimensions() };
+        Camera::GetInstance().Aim(center, levelDimensions.x, levelDimensions.y);
     }
 }
 
@@ -1207,7 +1230,7 @@ void dae::GameOverState::CreateGameOver()
             go->GetComponent<dae::RenderComponent>().SetCentered(true);
             scene.Add(std::move(go));
         }
-        else // LOSS
+        else
         {
             // --- Title Background ---
             go = std::make_unique<dae::GameObject>();
@@ -1755,7 +1778,6 @@ void dae::GameOverState::CreateScoreBoardBindings()
         dae::CommandType::OnRelease)
     );
 }
-
 
 #pragma endregion
 

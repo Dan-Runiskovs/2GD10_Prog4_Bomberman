@@ -164,6 +164,10 @@ void dae::LevelGrid::VisualiseProps(Scene& scene, PropAmount& pa)
                                     static_cast<float>(cellSize) };
     if(pToRemember)
     {
+        m_Upgrades.emplace_back(
+            std::make_unique<dae::Upgrade>(
+                scene, *pToRemember, Upgrade::UpgradeType::Exit));
+
         pToRemember->type = CellType::Barrel;
         // --- Create Barrel ---
         auto go{ std::make_unique<dae::GameObject>() };
@@ -355,6 +359,14 @@ dae::GridCell& dae::LevelGrid::WorldPosToGridCell(const glm::vec2& pos)
     return At(
         static_cast<uint8_t>(x),
         static_cast<uint8_t>(y));
+}
+
+glm::vec2 dae::LevelGrid::GetWorldDimensions() const
+{
+    const auto cellSize{ static_cast<float>(At(0, 0).m_CellSizePx) };
+    return glm::vec2(
+        m_Width * cellSize, 
+        m_Height * cellSize);
 }
 
 dae::GridCell::GridCell(uint8_t xPos, uint8_t yPos, int cellSizePx)

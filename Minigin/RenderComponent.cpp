@@ -4,6 +4,7 @@
 #include "GameObject.h"
 #include "Renderer.h"
 #include "TransformComponent.h"
+#include "Camera.h"
 #include <assert.h>
 #include <SDL3/SDL.h>
 
@@ -62,12 +63,13 @@ void dae::RenderComponent::Render() const
 
 	const auto& texture{ *m_pTexture.get() };
 	auto pos{ m_TransformComponent.GetWorldPosition() };
+	pos -= Camera::GetInstance().GetPosition();
 
 	if (m_Width && m_Heigth)
 	{
 		if (m_DrawCentered)
 		{
-			Renderer::GetInstance().RenderTexture(texture, pos.x - (m_Width * .5f), pos.y - (m_Width * .5f), m_Width, m_Heigth);
+			Renderer::GetInstance().RenderTexture(texture, pos.x - (m_Width * .5f), pos.y - (m_Heigth * .5f), m_Width, m_Heigth);
 			return;
 		}
 		Renderer::GetInstance().RenderTexture(texture, pos.x, pos.y, m_Width, m_Heigth);

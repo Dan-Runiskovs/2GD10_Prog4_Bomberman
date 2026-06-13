@@ -171,12 +171,14 @@ add_library(minigin_lib STATIC
   Minigin/Timer.cpp
   Minigin/TransformComponent.cpp
   Minigin/RenderComponent.cpp
+  Minigin/Camera.cpp
 
   #TODO: Move the following outside the engine
   Minigin/PhysicsComponent.cpp
   Minigin/HealthComponent.cpp
   Minigin/Subject.cpp
   Minigin/ScoreManager.cpp
+
 )
 
 target_compile_features(minigin_lib PUBLIC cxx_std_20)

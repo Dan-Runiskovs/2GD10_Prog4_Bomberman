@@ -163,6 +163,7 @@ namespace dae
         void CreatePvpLevel(Scene& scene, const glm::vec2& windowSize);
         void CreateNormaLevel(Scene& scene, const glm::vec2& windowSize);
         void CreatePlayers(Scene& scene, int playerAmount);
+        void AimCamera();
         void CheckGameOver();
         void CreateBlast(Scene& scene, GridCell& origin, dae::Utils::PlayerColors color, uint8_t range);
         void TryPlaceBomb(dae::Player& player);
@@ -199,6 +200,7 @@ namespace dae
         void SetMenuButtonsLock(bool newLock);
         void SetLetterSelectorsLock(bool newLock);
         void CreateScoreBoardBindings(); // Only called in case of WIN
+        
 
         size_t m_SelectedLetterIdx{ 0 };
         std::vector<dae::LetterSelector> m_LetterSelectors{};

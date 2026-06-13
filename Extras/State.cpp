@@ -782,6 +782,7 @@ void dae::InGameState::OnExit()
     InputManager::GetInstance().ClearBindings();
     SceneManager::GetInstance().DestroyAllScenes();
     Renderer::GetInstance().SetBackgroundColor(HexToSDLColor(HCol::BLACK));
+    CollectResults(static_cast<Bomberman&>(m_Game).GetMatchSession());
     std::cout << "GameState: Game Simulation Exited\n";
 }
 
@@ -865,7 +866,7 @@ void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
     }
     else
     {
-        //CreateNormaLevel(scene, windowSize);
+        CreateNormaLevel(*m_pScene, windowSize);
     }
 
     // --- Create Player(s) ---
@@ -915,6 +916,35 @@ void dae::InGameState::CreatePvpLevel(Scene& scene, const glm::vec2& windowSize)
     m_Level.VisualiseProps(scene, pa);
 }
 
+void dae::InGameState::CreateNormaLevel(Scene& scene, const glm::vec2& windowSize)
+{
+    // --- Path ---
+    auto& rm{ ResourceManager::GetInstance() };
+    std::filesystem::path path = rm.GetDataPath();
+    path.append("Level/level_normal.csv");
+
+    // --- Cell Size ---
+    const int cellSize{ 54 };
+    // --- TopLeft ---
+    const glm::vec2 topLeft{
+        windowSize.x * 0.35f,
+        (windowSize.y - (cellSize * 13.f))
+    };
+
+    m_Level.InitLevelGrid(path, topLeft, cellSize);
+    // --- Visualise Base ---
+    m_Level.VisualiseBaseGrid(scene);
+    // --- Populate Level ---
+    const bool isSolo{ static_cast<dae::Bomberman&>(m_Game).GetMatchSession().GetResult().playerAmount == 1 };
+    dae::LevelGrid::PropAmount pa{
+        50, 
+        (isSolo) ? 5 : 10, 
+        (isSolo) ? 10 : 15,
+        5
+    };
+    m_Level.VisualiseProps(scene, pa);
+}
+
 void dae::InGameState::CreatePlayers(Scene& scene, int playerAmount)
 {
     m_Players.clear();
@@ -940,17 +970,28 @@ void dae::InGameState::CreatePlayers(Scene& scene, int playerAmount)
                     }),
                 CommandType::OnPress)
         );
-        playerPtr->GetOnDeath().AddObserver(
-            [this, playerPtr](Event)
+        playerPtr->GetOnStateChanged().AddObserver(
+            [this, playerPtr](Event e)
             {
-                InputManager::GetInstance()
-                    .ClearControllerBindings(
-                        playerPtr->GetPlayerIndex());
-                --m_PlayersAlive;
-                std::cout << "Player dead! Remaining: " << std::to_string(m_PlayersAlive) << "\n";
-                static_cast<Bomberman&>(m_Game).GetMatchSession().OnPlayerDead(playerPtr->GetPlayerIndex());
-                CheckGameOver();
+                if (e == Event::OnDeath)
+                {
+                    InputManager::GetInstance()
+                        .ClearControllerBindings(
+                            playerPtr->GetPlayerIndex());
+                    --m_PlayersAlive;
+                    std::cout << "Player dead! Remaining: " << std::to_string(m_PlayersAlive) << "\n";
+                    static_cast<Bomberman&>(m_Game).GetMatchSession().OnPlayerDead(playerPtr->GetPlayerIndex());
+                    CheckGameOver();
+                }
+                else if (e == Event::OnWin)
+                {
+                    static_cast<Bomberman&>(m_Game).GetMatchSession().GetResult().winnerIdx = playerPtr->GetPlayerIndex();
+                    static_cast<Bomberman&>(m_Game).GetMatchSession().GetResult().isWin = true;
+                    std::cout << "GG, Players alive: " << std::to_string(m_PlayersAlive) << "\n";
+                    CheckGameOver();
+                }
             });
+        
     }
 }
 
@@ -963,10 +1004,27 @@ void dae::InGameState::CheckGameOver()
         {
             session.GetResult().isWin = true;
 
-            CollectResults(session);
+            
             
             // --- End Game ---
             ChangeState(std::make_unique<dae::GameOverState>(m_Game));
+        }
+    }
+    else // solo/coop
+    {
+        if (session.GetResult().isWin) //marked as win
+        {
+            
+            ChangeState(std::make_unique<dae::GameOverState>(m_Game));
+        }
+        else
+        {
+            if (m_PlayersAlive == 0) // see if all are dead
+            {
+                static_cast<Bomberman&>(m_Game).GetMatchSession().GetResult().isWin = false;
+                
+                ChangeState(std::make_unique<dae::GameOverState>(m_Game));
+            }
         }
     }
 }
@@ -1052,15 +1110,6 @@ void dae::InGameState::CreateBlast(Scene& scene, GridCell& origin, dae::Utils::P
 }
 
 
-/*
-void dae::InGameState::CreateNormaLevel(Scene& scene, const glm::vec2& windowCentre)
-{
-    const auto& c{ windowCentre };
-    const auto& ref{ scene };
-}
-*/
-
-
 void dae::InGameState::CollectResults(dae::MatchSession& session)
 {
     static std::random_device rd;
@@ -1072,12 +1121,8 @@ void dae::InGameState::CollectResults(dae::MatchSession& session)
     {
     case dae::MatchSession::GameMode::Solo:
     {
-        // --- WIN? + SCORE ---
-        std::bernoulli_distribution winDist{ 0.5 };
-        std::uniform_int_distribution<uint16_t> scoreDist{ 0, UINT16_MAX };
-
-        result.isWin = winDist(eng);
-        result.score = scoreDist(eng);
+        result.isWin = session.GetResult().isWin;
+        result.score = session.GetResult().score;
         break;
     }
     case dae::MatchSession::GameMode::Pvp:
@@ -1090,23 +1135,9 @@ void dae::InGameState::CollectResults(dae::MatchSession& session)
     
     case dae::MatchSession::GameMode::Coop:
     {
-        // --- WIN? + SCORE + ALIVE MASK ---
-        std::bernoulli_distribution winDist{ 0.5 };
-        std::uniform_int_distribution<uint16_t> scoreDist{ 0, UINT16_MAX };
-
-        result.isWin = winDist(eng);
-        result.score = scoreDist(eng);
-
-        // --- Guarantee at least one alive player on win ---
-        if (result.isWin)
-        {
-            std::uniform_int_distribution<uint16_t> aliveDist{ 1, 15 };
-            result.aliveMask = static_cast<uint8_t>(aliveDist(eng));
-        }
-        else
-        {
-            result.aliveMask = 0;
-        }
+        result.isWin = session.GetResult().isWin;
+        result.score = session.GetResult().score;
+        result.aliveMask = session.GetResult().aliveMask;
         break;
     }
     
@@ -1526,13 +1557,16 @@ void dae::GameOverState::VisualiseScore(Scene& scene, const glm::vec2& centerPos
     const int scoreHundreds{ static_cast<int>(static_cast<dae::Bomberman&>(m_Game).GetMatchSession().GetResult().score) };
     auto text{ std::to_string(scoreHundreds) };
     text += "00";
-    const size_t digitN{ text.length() };
+    
+    std::cout << "Score pre insert: " << text << "\n";
 
     // --- Insert missing amount of leading 0 ---
-    for (size_t digitsDesired{ 7 }; digitsDesired < digitN; ++digitsDesired)
+    for (size_t digitN{ text.length() }; digitN < 7; ++digitN)
     {
         text = "0" + text; // Add a leading 0
     }
+
+    std::cout << "Score post insert: " << text << "\n";
 
     // --- Quick and brutal format ---
     const std::string newText =

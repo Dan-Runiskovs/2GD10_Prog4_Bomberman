@@ -87,6 +87,10 @@ void dae::LevelGrid::InitLevelGrid(std::filesystem::path path, const glm::vec2 g
                 cell.type = CellType::Spawn;
                 cell.spawnIdx = static_cast<uint8_t>(token[0] - '0');
             }
+            else if (token == "d")
+            {
+                cell.type = CellType::Door;
+            }
             else
             {
                 // Candidate barrel location
@@ -104,10 +108,14 @@ void dae::LevelGrid::InitLevelGrid(std::filesystem::path path, const glm::vec2 g
 void dae::LevelGrid::VisualiseProps(Scene& scene, PropAmount& pa)
 {
     std::vector<GridCell*> barrelCandidates;
-
+    GridCell* pToRemember{ nullptr };
     for (auto& cell : m_Cells)
     {
-        if (cell.type == CellType::Empty)
+        if (cell.type == CellType::Door)
+        {
+            pToRemember = &cell;
+        }
+        if (cell.type == CellType::Empty || cell.type == CellType::Door)
         {
             barrelCandidates.push_back(&cell);
         }
@@ -150,14 +158,41 @@ void dae::LevelGrid::VisualiseProps(Scene& scene, PropAmount& pa)
 
     std::shuffle(hiddenUpgrades.begin(), hiddenUpgrades.end(), eng);
 
+    // --- Guarantee a barrel on the door ---
+        const auto cellSize = barrelCandidates[0]->m_CellSizePx;
+        const glm::vec2 dimensions{ static_cast<float>(cellSize),
+                                    static_cast<float>(cellSize) };
+    if(pToRemember)
+    {
+        pToRemember->type = CellType::Barrel;
+        // --- Create Barrel ---
+        auto go{ std::make_unique<dae::GameObject>() };
+        go->AddComponent<dae::RenderComponent>();
+        go->GetComponent<dae::RenderComponent>().SetTexture("cell_brick.png");
+        go->GetComponent<dae::RenderComponent>().SetCentered(true);
+        go->GetComponent<dae::RenderComponent>().SetDimensions(dimensions.x, dimensions.y);
+        go->GetComponent<dae::TransformComponent>().SetWorldPosition(pToRemember->center);
+        go->AddComponent<dae::PhysicsComponent>(scene, dimensions, 0.f, false);
+        std::cout << "Created barrel on door at: [" << std::to_string(static_cast<int>(pToRemember->x))
+            << "][" << std::to_string(static_cast<int>(pToRemember->y)) << "]!\n";
+        auto* barrelPtr = go.get();
+
+        pToRemember->occupants.push_back({
+            barrelPtr, GridCell::OccupantType::Barrel
+            });
+
+        scene.Add(std::move(go));
+    }
+    
+
     // --- Create and Visualise ---
     if (barrelCandidates.empty()) return;
-    const auto cellSize = barrelCandidates[0]->m_CellSizePx;
 
     for (int barrelIdx{}; barrelIdx < pa.barrelN; ++barrelIdx)
     {
         auto* pCell{ barrelCandidates[barrelIdx] };
 
+        if (pCell->type == CellType::Barrel) continue;
         pCell->type = CellType::Barrel;
 
         // --- Hide upgrade in this barrel? ---
@@ -172,8 +207,6 @@ void dae::LevelGrid::VisualiseProps(Scene& scene, PropAmount& pa)
         }
 
         // --- Create Barrel ---
-        const glm::vec2 dimensions{ static_cast<float>(cellSize),
-                                    static_cast<float>(cellSize) };
         auto go{ std::make_unique<dae::GameObject>() };
         go->AddComponent<dae::RenderComponent>();
         go->GetComponent<dae::RenderComponent>().SetTexture("cell_brick.png");

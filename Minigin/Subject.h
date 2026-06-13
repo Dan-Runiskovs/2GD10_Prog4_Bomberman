@@ -10,7 +10,8 @@ namespace dae
 		OnHealthChanged,
 		OnDeath,
 		OnScoreChanged,
-		OnClick
+		OnClick,
+		OnWin
 	};
 
 	class Subject

@@ -32,6 +32,8 @@ dae::Upgrade::Upgrade(Scene& scene, GridCell& hostCell, UpgradeType type)
 	case dae::Upgrade::UpgradeType::Speed:
 		name += "speed.png";
 		break;
+	case dae::Upgrade::UpgradeType::Exit:
+		name += "door.png";
 	default:
 		break;
 	}
@@ -72,6 +74,9 @@ void dae::Upgrade::Update(std::vector<std::unique_ptr<dae::Player>>& players)
 				break;
 			case dae::Upgrade::UpgradeType::Speed:
 				playerRef.AddSpeed();
+				break;
+			case dae::Upgrade::UpgradeType::Exit:
+				playerRef.GetOnStateChanged().Notify(Event::OnWin);
 				break;
 			case dae::Upgrade::UpgradeType::None:
 			default:

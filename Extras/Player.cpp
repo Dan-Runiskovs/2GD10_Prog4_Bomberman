@@ -109,7 +109,7 @@ void dae::Player::Kill()
 
 	m_IsAlive = false;
 	
-	m_OnDeath.Notify(Event::OnDeath);
+	m_OnStateChanged.Notify(Event::OnDeath);
 	
 	m_GameObject->MarkForDelete();
 }

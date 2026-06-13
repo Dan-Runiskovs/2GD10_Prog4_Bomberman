@@ -24,7 +24,7 @@ namespace dae
 		void OnBombExploded();
 		const glm::vec2& GetWorldPos() const;
 		SDL_FRect GetBounds() const;
-		Subject& GetOnDeath() { return m_OnDeath; }
+		Subject& GetOnStateChanged() { return m_OnStateChanged; }
 		void Kill();
 
 		bool IsAlive() const { return m_IsAlive; }
@@ -40,7 +40,8 @@ namespace dae
 
 		PhysicsComponent* m_PhysicsComponent{};
 		GameObject* m_GameObject{};
-		Subject m_OnDeath{};
+		Subject m_OnStateChanged{};
+		Subject m_OnWin{};
 
 		bool m_IsAlive{ true };
 		float m_MoveSpeed{ 100.f };

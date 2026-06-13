@@ -160,8 +160,8 @@ namespace dae
 
     private:
         void CreateGame(dae::MatchSession::GameMode gamemode);
-        void CreatePvpLevel(Scene& scene, const glm::vec2& windowCentre);
-        //void CreateNormaLevel(Scene& scene, const glm::vec2& windowCentre);
+        void CreatePvpLevel(Scene& scene, const glm::vec2& windowSize);
+        void CreateNormaLevel(Scene& scene, const glm::vec2& windowSize);
         void CreatePlayers(Scene& scene, int playerAmount);
         void CheckGameOver();
         void CreateBlast(Scene& scene, GridCell& origin, dae::Utils::PlayerColors color, uint8_t range);

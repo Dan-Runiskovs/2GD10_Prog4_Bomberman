@@ -19,7 +19,8 @@ namespace dae
 			None,
 			BombCount,
 			BlastIncrease,
-			Speed
+			Speed,
+			Exit
 		};
 		explicit Upgrade(Scene& scene, GridCell& hostCell, UpgradeType type);
 

@@ -22,7 +22,8 @@ namespace dae
         Free,   // forced to stay empty
         Wall,
         Barrel,
-        Spawn
+        Spawn,
+        Door
     };
 
     struct GridCell

@@ -207,3 +207,7 @@ Select - Skip levels
 I may have forgotten something, but i am heavily sleep-deprived... 
 
 Thank you for reading :)
+
+## Github link
+
+https://github.com/Dan-Runiskovs/2GD10_Prog4_Bomberman

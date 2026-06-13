@@ -25,6 +25,8 @@ namespace dae
         void SetMode(GameMode mode);
         void SetAmoundOfPlayers(uint8_t nPlayers);
         void FillAliveMask(int playerAmount);
+        void OnPlayerDead(int playerIndex);
+        void SetLastPlayerAliveAsWinner();
         GameMode GetMode() const;
 
         void SetResult(const MatchResult& result);

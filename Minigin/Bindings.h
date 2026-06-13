@@ -22,6 +22,8 @@ namespace dae
         Binding(std::unique_ptr<Command> command, CommandType type) noexcept;
         virtual void TryExecute() = 0;
 
+        virtual bool BelongsToController(uint8_t ID) const = 0;
+
         virtual ~Binding() noexcept = default;
     protected:
         std::unique_ptr<Command> m_pCommand;
@@ -34,6 +36,7 @@ namespace dae
     public:
         KeyboardBinding(SDL_Scancode key, std::unique_ptr<Command> command, CommandType type) noexcept;
         void TryExecute() override;
+
     private:
         SDL_Scancode m_Key;
         bool m_PreviousState{ false };
@@ -44,6 +47,8 @@ namespace dae
     public:
         ControllerBinding(Controller& controller, ControllerButton button, std::unique_ptr<Command> command, CommandType type) noexcept;
         void TryExecute() override;
+
+        virtual bool BelongsToController(uint8_t ID) const;
     private:
         Controller& m_Controller;
         ControllerButton m_Button;

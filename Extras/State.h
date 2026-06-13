@@ -163,13 +163,15 @@ namespace dae
         void CreatePvpLevel(Scene& scene, const glm::vec2& windowCentre);
         //void CreateNormaLevel(Scene& scene, const glm::vec2& windowCentre);
         void CreatePlayers(Scene& scene, int playerAmount);
+        void CheckGameOver();
         void CreateBlast(Scene& scene, GridCell& origin, dae::Utils::PlayerColors color, uint8_t range);
         void TryPlaceBomb(dae::Player& player);
 
-        void FakeResults(dae::MatchSession::GameMode gamemode);
+        void CollectResults(dae::MatchSession& session);
 
         LevelGrid m_Level{};
         Scene* m_pScene{};
+        int m_PlayersAlive{ 0 };
         std::vector<std::unique_ptr<dae::Player>> m_Players{};
         std::vector<std::unique_ptr<dae::Bomb>> m_Bombs{};
         std::vector<std::unique_ptr<dae::Blast>> m_Blasts{};

@@ -70,3 +70,14 @@ void dae::InputManager::ClearBindings()
 {
 	m_Bindings.clear();
 }
+
+void dae::InputManager::ClearControllerBindings(uint8_t controllerID)
+{
+	std::erase_if(
+		m_Bindings,
+		[controllerID](const auto& binding)
+		{
+			return binding->BelongsToController(
+				controllerID);
+		});
+}

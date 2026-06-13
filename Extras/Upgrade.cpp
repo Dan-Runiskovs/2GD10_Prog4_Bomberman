@@ -55,6 +55,8 @@ void dae::Upgrade::Update(std::vector<std::unique_ptr<dae::Player>>& players)
 	for(auto& player : players)
 	{
 		auto& playerRef{ *player.get() };
+		if (!playerRef.IsAlive()) continue;
+
 		const auto theseBounds{ m_PC->GetBounds() };
 		const auto playerBounds{ playerRef.GetBounds() };
 		if (PhysicsComponent::DoesIntersect(theseBounds, playerBounds))

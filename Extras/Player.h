@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <glm/glm.hpp>
 #include <SDL3/SDL.h>
+#include "Subject.h"
+#include "Interface.h"
 
 namespace dae
 {
@@ -22,7 +24,10 @@ namespace dae
 		void OnBombExploded();
 		const glm::vec2& GetWorldPos() const;
 		SDL_FRect GetBounds() const;
+		Subject& GetOnDeath() { return m_OnDeath; }
+		void Kill();
 
+		bool IsAlive() const { return m_IsAlive; }
 		uint8_t GetActiveBombCount() const;
 		uint8_t GetBlastRange() const;
 		uint8_t GetPlayerIndex() const;
@@ -35,6 +40,9 @@ namespace dae
 
 		PhysicsComponent* m_PhysicsComponent{};
 		GameObject* m_GameObject{};
+		Subject m_OnDeath{};
+
+		bool m_IsAlive{ true };
 		float m_MoveSpeed{ 100.f };
 	};
 }

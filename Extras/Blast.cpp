@@ -75,9 +75,12 @@ dae::Blast::Blast(Scene& scene, GridCell& cell, int size, Orientation orientatio
 	}
 }
 
-dae::Blast::~Blast()
+bool dae::Blast::DoesCollide(const SDL_FRect& other)
 {
-	
+	if (m_HasExpired) return false;
+
+	const auto myBounds{ m_PC->GetBounds() };
+	return PhysicsComponent::DoesIntersect(myBounds, other);
 }
 
 void dae::Blast::Update()

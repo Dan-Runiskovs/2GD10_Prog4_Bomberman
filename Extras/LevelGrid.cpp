@@ -169,27 +169,6 @@ void dae::LevelGrid::VisualiseProps(Scene& scene, PropAmount& pa)
                 std::make_unique<dae::Upgrade>(
                     scene, *pCell, upgradeType));
 
-            // --- 
-            GridCell::OccupantType occType{};
-            
-            switch (upgradeType)
-            {
-            case Upgrade::UpgradeType::BombCount:
-                occType = GridCell::OccupantType::BombUpgrade;
-                break;
-
-            case Upgrade::UpgradeType::BlastIncrease:
-                occType = GridCell::OccupantType::BlastUpgrade;
-                break;
-
-            case Upgrade::UpgradeType::Speed:
-                occType = GridCell::OccupantType::SpeedUpgrade;
-                break;
-
-            default:
-                break;
-            }
-
         }
 
         // --- Create Barrel ---

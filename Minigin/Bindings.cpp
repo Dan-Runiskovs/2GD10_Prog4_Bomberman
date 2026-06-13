@@ -65,3 +65,8 @@ void dae::ControllerBinding::TryExecute()
 
 	if (isTriggered) m_pCommand->Execute();
 }
+
+bool dae::ControllerBinding::BelongsToController(uint8_t ID) const
+{
+	return m_Controller.GetID() == ID;
+}

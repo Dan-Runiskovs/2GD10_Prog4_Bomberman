@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include "Utils.h"
 #include "LevelGrid.h"
+#include "Interface.h"
 
 namespace dae
 {
@@ -9,7 +10,7 @@ namespace dae
 	class PhysicsComponent;
 	class GameObject;
 	// --- More like blast cell ---
-	class Blast final
+	class Blast final : public IICollideable
 	{
 	public:
 		enum class Orientation
@@ -19,7 +20,8 @@ namespace dae
 			Horizontal
 		};
 		explicit Blast(Scene& scene, GridCell& cell, int size, Orientation orientation, dae::Utils::PlayerColors color);
-		~Blast();
+		
+		bool DoesCollide(const SDL_FRect& other) override;
 
 		void Update();
 

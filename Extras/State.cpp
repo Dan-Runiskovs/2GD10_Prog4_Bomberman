@@ -22,6 +22,7 @@
 #include "Renderer.h"
 #include "Utils.h"
 #include "Timer.h"
+#include "Subject.h"
 
 #include <iostream>
 #include <cassert>
@@ -754,6 +755,7 @@ dae::InGameState::InGameState(Game& game)
 void dae::InGameState::OnEnter()
 {
     auto& session{ static_cast<Bomberman&>(m_Game).GetMatchSession() };
+    session.FillAliveMask(session.GetResult().playerAmount);
     const auto gamemode{ session.GetMode() };    
 #ifdef _DEBUG
     switch (gamemode)
@@ -792,6 +794,7 @@ void dae::InGameState::Update()
        pB->Update();
        if (pB->HasExploded())
        {
+           // --- Create Blast ---
            auto& cell{ m_Level.WorldPosToGridCell(pB->GetPosition()) };
            CreateBlast(*m_pScene, cell, pB->GetOwnerColor(), pB->GetBlastRange());
        };
@@ -800,7 +803,18 @@ void dae::InGameState::Update()
     // --- Update Blasts ---
     for (auto& blast : m_Blasts)
     {
-        blast.get()->Update();
+        auto& blastRef{ *blast.get() };
+        blastRef.Update();
+        for(auto& player : m_Players)
+        {
+            auto& playerRef{ *player.get() };
+            if (!playerRef.IsAlive()) continue;
+            if (blastRef.DoesCollide(playerRef.GetBounds()))
+            {
+                playerRef.Kill();
+                continue;
+            }
+        }
     }
 
     // --- Update Upgrades ---
@@ -857,7 +871,7 @@ void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
     // --- Create Player(s) ---
     const int nPlayers{ static_cast<dae::Bomberman&>(m_Game).GetMatchSession().GetResult().playerAmount };
     CreatePlayers(*m_pScene, nPlayers);
-
+    m_PlayersAlive = nPlayers;
     auto& controllerRef = dae::InputManager::GetInstance().AddController(static_cast<uint8_t>(0));
 
     dae::InputManager::GetInstance().AddBinding(
@@ -874,7 +888,7 @@ void dae::InGameState::CreateGame(dae::MatchSession::GameMode gamemode)
     );
 
     // --- Fake Results ---
-    FakeResults(gamemode);
+    //CollectResults(static_cast<dae::Bomberman&>(m_Game).GetMatchSession());
 }
 void dae::InGameState::CreatePvpLevel(Scene& scene, const glm::vec2& windowSize)
 {
@@ -926,6 +940,34 @@ void dae::InGameState::CreatePlayers(Scene& scene, int playerAmount)
                     }),
                 CommandType::OnPress)
         );
+        playerPtr->GetOnDeath().AddObserver(
+            [this, playerPtr](Event)
+            {
+                InputManager::GetInstance()
+                    .ClearControllerBindings(
+                        playerPtr->GetPlayerIndex());
+                --m_PlayersAlive;
+                std::cout << "Player dead! Remaining: " << std::to_string(m_PlayersAlive) << "\n";
+                static_cast<Bomberman&>(m_Game).GetMatchSession().OnPlayerDead(playerPtr->GetPlayerIndex());
+                CheckGameOver();
+            });
+    }
+}
+
+void dae::InGameState::CheckGameOver()
+{
+    auto& session{ static_cast<Bomberman&>(m_Game).GetMatchSession() };
+    if (session.GetMode() == dae::MatchSession::GameMode::Pvp)
+    {
+        if (m_PlayersAlive == 1)
+        {
+            session.GetResult().isWin = true;
+
+            CollectResults(session);
+            
+            // --- End Game ---
+            ChangeState(std::make_unique<dae::GameOverState>(m_Game));
+        }
     }
 }
 
@@ -1019,13 +1061,13 @@ void dae::InGameState::CreateNormaLevel(Scene& scene, const glm::vec2& windowCen
 */
 
 
-void dae::InGameState::FakeResults(dae::MatchSession::GameMode gamemode)
+void dae::InGameState::CollectResults(dae::MatchSession& session)
 {
     static std::random_device rd;
     static std::default_random_engine eng(rd());
 
     MatchSession::MatchResult result{};
-
+    const auto& gamemode{ session.GetMode() };
     switch (gamemode)
     {
     case dae::MatchSession::GameMode::Solo:
@@ -1040,12 +1082,12 @@ void dae::InGameState::FakeResults(dae::MatchSession::GameMode gamemode)
     }
     case dae::MatchSession::GameMode::Pvp:
     {
-        // --- WINNER COLOR ---
-        std::uniform_int_distribution<uint16_t> winnerDist{ 0, 3 };
-
-        result.winnerIdx = static_cast<uint8_t>(winnerDist(eng));
+        session.SetLastPlayerAliveAsWinner();
+        result.isWin = session.GetResult().isWin;
+        result.winnerIdx = session.GetResult().winnerIdx;
         break;
     }
+    
     case dae::MatchSession::GameMode::Coop:
     {
         // --- WIN? + SCORE + ALIVE MASK ---
@@ -1065,9 +1107,9 @@ void dae::InGameState::FakeResults(dae::MatchSession::GameMode gamemode)
         {
             result.aliveMask = 0;
         }
-    }
-
         break;
+    }
+    
     default:
         break;
     }

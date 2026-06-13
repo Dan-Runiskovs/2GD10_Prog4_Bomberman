@@ -101,6 +101,19 @@ SDL_FRect dae::Player::GetBounds() const
 	return m_PhysicsComponent->GetBounds();
 }
 
+void dae::Player::Kill()
+{
+	if (!m_IsAlive) return;
+
+	std::cout << "Player killed!\n";
+
+	m_IsAlive = false;
+	
+	m_OnDeath.Notify(Event::OnDeath);
+	
+	m_GameObject->MarkForDelete();
+}
+
 uint8_t dae::Player::GetActiveBombCount() const
 {
     return m_CurrentBombs;

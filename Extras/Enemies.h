@@ -61,7 +61,5 @@ namespace dae
 		{
 			Direction::Down
 		};
-
-		float m_DirectionCooldown{};
 	};
 }

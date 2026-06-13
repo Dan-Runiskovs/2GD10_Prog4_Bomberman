@@ -1,92 +1,209 @@
-﻿# Minigin
+﻿# Bomberman - Custom C++ Engine Project
 
-Minigin is a very small project using [SDL3](https://www.libsdl.org/) and [glm](https://github.com/g-truc/glm) for 2D c++ game projects. It is in no way a game engine, only a barebone start project where everything sdl related has been set up. It contains glm for vector math, to aleviate the need to write custom vector and matrix classes.
+## Overview
 
-[![Build Status](https://github.com/avadae/minigin/actions/workflows/cmake.yml/badge.svg)](https://github.com/avadae/cmake/actions)
-[![Build Status](https://github.com/avadae/minigin/actions/workflows/emscripten.yml/badge.svg)](https://github.com/avadae/emscripten/actions)
-[![GitHub Release](https://img.shields.io/github/v/release/avadae/minigin?logo=github&sort=semver)](https://github.com/avadae/minigin/releases/latest)
+For this project I developed a Bomberman clone using my own custom C++ game engine built on top of SDL3. The goal of the project was not only to recreate Bomberman gameplay, but also to design a reusable engine architecture that could support multiple games and game states.
 
-# Goal
+The engine provides functionality for:
 
-Minigin can/may be used as a start project for the exam assignment in the course [Programming 4](https://youtu.be/j96Oh6vzhmg) at DAE. In that assignment students need to recreate a popular 80's arcade game with a game engine they need to program themselves. During the course we discuss several game programming patterns, using the book '[Game Programming Patterns](https://gameprogrammingpatterns.com/)' by [Robert Nystrom](https://github.com/munificent) as reading material. 
+- Scene management
+- Component-based GameObjects
+- Input handling
+- Audio playback
+- State management
+- Physics and collision detection
+- Resource management
+- Observer/Event systems
+- Save file handling
 
-# Disclaimer
+Throughout the project I tried to prioritize readability, maintainability and separation of responsibilities over premature optimization. That ws in the beginning, latter stages were truly rushed, reminding me of a gameJam... The code needs quite a bit of polishing in any case.
 
-Minigin is, despite perhaps the suggestion in its name, **not** a game engine. It is just a very simple SDL3 ready project with some of the scaffolding in place to get started. None of the patterns discussed in the course are used yet (except singleton which use we challenge during the course). It is up to the students to implement their own vision for their engine, apply patterns as they see fit, create their game as efficient as possible.
+## Engine Architecture
 
-# Use
+### Component-Based Design
 
-Get the source from this project, or since students need to have their work on github too, they can use this repository as a template. Hit the "Use this template" button on the top right corner of the github page of this project.
+GameObjects themselves contain very little logic. Instead, functionality is split into reusable components.
 
-## Windows version
+Examples include:
 
-Either
-- Open the root folder in Visual Studio 2026; this will be recognized as a cmake project.
-  
-Or
-- Install CMake 
-- Install CMake and CMake Tools extensions in Visual Code
-- Open the root folder in Visual Code,  this will be recognized as a cmake project.
+- TransformComponent
+- RenderComponent
+- PhysicsComponent
+- TextComponent
+- FPSComponent
+- etc.
 
-Or
-- Use whatever editor you like :)
+This approach allows objects to be composed from behaviors rather than relying on large inheritance hierarchies.
 
-## Emscripten (web) version
+### Scene System
 
-### On windows
+The engine uses a Scene / SceneManager architecture.
 
-For installing all of the needed tools on Windows I recommend using [Chocolatey](https://chocolatey.org/). You can then run the following in a terminal to install what is needed:
+The SceneManager owns all active scenes and is responsible for updating and rendering them.
 
-    choco install -y cmake
-    choco install -y emscripten
-    choco install -y ninja
-    choco install -y python
+Each Scene owns its GameObjects using `std::unique_ptr`, guaranteeing automatic cleanup and preventing memory leaks.
 
-In a terminal, navigate to the root folder. Run this: 
+### State Stack
 
-    mkdir build_web
-    cd build_web
-    emcmake cmake ..
-    emmake ninja
+To manage menus and gameplay I implemented a GameState stack. My favorite part I believe...
 
-To be able to see the webpage you can start a python webserver in the build_web folder
+Current states include:
 
-    python -m http.server
+- Title Screen
+- Main Menu
+- In Game
+- Game Over
+- Leaderboard
 
-Then browse to http://localhost:8000 and you're good to go.
+The stack supports Push, Pop and Change operations and allows transitions to be queued safely.
 
-### On OSX
+## Input System
 
-On Mac you can use homebrew
+The input system is command based.
 
-    brew install cmake
-    brew install emscripten
-    brew install python
+Instead of binding gameplay logic directly to controller buttons, buttons execute Command objects.
 
-In a terminal on OSX, navigate to the root folder. Run this: 
+Examples include:
 
-    mkdir build_web
-    cd build_web
-    emcmake cmake .. -DCMAKE_OSX_ARCHITECTURES=""
-    emmake make
+- MoveCommand
+- ChangeStateCommand
+- ExecuteCallbackCommand (late and powerful addition, let's me do anything)
 
-To be able to see the webpage you can start a python webserver in the build_web folder
+This design decouples input devices from gameplay systems.
 
-    python3 -m http.server
+## Physics System
 
-Then browse to http://localhost:8000 and you're good to go.
+The physics system is intentionally lightweight.
 
-## Github Actions
+Objects use axis-aligned bounding boxes and collision checks are performed through rectangle intersection tests.
 
-This project is build with github actions.
-- The CMake workflow builds the project in Debug and Release for Windows and serves as a check that the project builds on that platform.
-- The Emscripten workflow generates a web version of the project and publishes it as a [github page](https://avadae.github.io/minigin/). 
-  - The url of that page will be `https://<username>.github.io/<repository>/`
-- You can embed this page with 
+Since Bomberman does not require realistic physics simulation, a custom solution was sufficient and easier to debug.
 
-```<iframe style="position: absolute; top: 0px; left: 0px; width: 1024px; height: 576px;" src="https://<username>.github.io/<repository>/" loading="lazy"></iframe>```
+## Observer Pattern
 
-# From Author -> Dan
+Several gameplay systems communicate through the Observer pattern.
 
-I know folder structure is a mess now, all due to the program being WIP,
-Please excuse the mess, it will be cleaned up later.
+Examples include:
+
+- Enemy death notifications
+- Player death notifications
+- Score updates
+
+This reduces coupling between gameplay systems and improves maintainability.
+
+## Level Generation
+
+Levels are loaded from CSV files.
+
+The level is converted into a LevelGrid structure containing GridCells.
+
+Each GridCell stores:
+
+- Grid coordinates
+- World position
+- Cell type
+- Occupants
+
+The occupant system became a central part of gameplay because it allows bombs, blasts, barrels and upgrades to interact through the grid.
+Kind of a procedural way? Nice.
+
+## Bomb and Blast System
+
+Bombs are updated separately from scene objects and managed through the InGameState.
+
+When a bomb explodes:
+
+1. The bomb marks itself for deletion.
+2. Blast cells are spawned.
+3. Blast occupants are registered inside affected GridCells.
+4. Barrels are destroyed.
+5. Chain reactions are triggered.
+
+Because Bomberman is grid based, explosion propagation is also grid based rather than radius based.
+
+## Upgrade System
+
+Upgrades are hidden inside destructible barrels.
+
+Available upgrades include:
+
+- Increased bomb count
+- Increased blast range
+- Increased movement speed
+
+## Enemy AI
+
+For this project I implemented Balloom enemies.
+
+Ballooms use simple random movement:
+
+1. Choose a valid neighboring cell.
+2. Move in that direction.
+3. If blocked, choose another direction.
+4. Kill players on contact.
+5. Die when touching a blast.
+
+This behavior accurately reflects the original Bomberman design.
+
+## Save System
+
+The leaderboard uses a custom binary save format.
+
+Each save file stores:
+
+- Entry count
+- Player names
+- Scores
+
+Binary serialization was chosen because it is compact and fast to load.
+
+## Memory Management
+
+The engine relies heavily on modern C++ ownership patterns.
+
+Key containers and utilities include:
+
+- std::unique_ptr
+- std::vector
+- std::array
+
+Raw pointers are only used as non-owning references.
+
+## Design Decisions
+
+### Grid-Based Gameplay
+
+Many systems operate directly on GridCells, simplifying:
+
+- Explosions
+- Upgrade spawning
+- Enemy movement
+- Chain reactions
+
+### Composition Over Inheritance
+
+Whenever possible I preferred composition through components instead of deep inheritance hierarchies.
+
+### Simplicity Over Overengineering
+
+Many systems could have been made more generic or complex. Instead, I focused on solutions that matched the requirements of the project while remaining easy to debug and maintain.
+
+## Conclusion
+
+This project allowed me to apply software engineering concepts including component-based architecture, state machines, command patterns, observer systems, resource management and custom serialization.
+
+The final result is a complete playable Bomberman game supported by a custom C++ engine that I developed and extended throughout the project.
+
+## Controls
+
+No keyboard bindings this time... At least not yet (hopefully to appear during summer)
+Must Be played on a controller:
+
+DPAD - Movement. 
+A - Select/Press/Drop bomb
+B - Go back in some menus
+Select - Skip levels
+
+I may have forgotten something, but i am heavily sleep-deprived... 
+
+Thank you for reading :)

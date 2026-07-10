@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include <vector>
-#include "State.h"
+#include "GameStateBase.h"
 
 namespace dae
 {

@@ -1,26 +1,9 @@
 #include "Bomberman.h"
-#include <cstdint>
-
-// --- components ---
-#include "FPSComponent.h"
-#include "RenderComponent.h"
-#include "TextComponent.h"
-#include "TransformComponent.h"
-#include "PhysicsComponent.h"
-#include "HealthComponent.h"
-#include "Commands.h"
 
 // --- essential ---
-#include "ResourceManager.h"
-#include "SceneManager.h"
-#include "InputManager.h"
 #include "SoundSystem.h"
 #include "ServiceLocator.h"
-#include "Renderer.h"
-#include "CustomCommands.h"
-
-//TODO: Remove in production
-#include <iostream>
+#include "../GameStates/TitleState.h"
 
 void dae::Bomberman::Init()
 {
@@ -46,11 +29,6 @@ void dae::Bomberman::Update()
 	m_GameStateStack.Update();
 
 	m_GameStateStack.ProcessPendingChanges();
-}
-
-void dae::Bomberman::Render()
-{
-
 }
 
 

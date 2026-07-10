@@ -206,10 +206,10 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   GameComponents/OrbitComponent.cpp
   GameComponents/TextComponent.cpp
 
+  Extras/GameStateBase.cpp
   Extras/Achievements.cpp
   Extras/StatsAndAchievements.cpp
   Extras/GameStateStack.cpp
-  Extras/State.cpp
   Extras/CustomCommands.cpp
   Extras/Button.cpp
   #Extras/ThrashTheCache.cpp
@@ -223,6 +223,16 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Extras/Blast.cpp
   Extras/Upgrade.cpp
   Extras/Enemies.cpp
+  
+  GameStates/TitleState.cpp
+  GameStates/MainMenuState.cpp
+  GameStates/LeaderboardState.cpp
+  GameStates/GamemodeSelectionState.cpp
+  GameStates/PreGameState.cpp
+  GameStates/InGameState.cpp
+  GameStates/GameOverState.cpp
+
+
 )
 
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)

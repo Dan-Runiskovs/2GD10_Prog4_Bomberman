@@ -1,9 +1,8 @@
 #pragma once
 
 #include "Commands.h"
-#include "State.h"
 #include "Game.h"
-
+#include "GameStateBase.h"
 #include <memory>
 #include <functional>
 #include <utility>
